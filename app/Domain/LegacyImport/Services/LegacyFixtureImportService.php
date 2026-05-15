@@ -41,6 +41,7 @@ class LegacyFixtureImportService
                 'tasktypes' => $this->importTaskTypes($payload['tasktypes'] ?? []),
                 'categories' => $this->importCategories($payload['categories'] ?? []),
                 'tasks' => $this->importTasks($payload['tasks'] ?? []),
+                'taskscategories' => $this->importTasksCategories($payload['taskscategories'] ?? []),
                 'taskcosts' => $this->importTaskCosts($payload['taskcosts'] ?? []),
                 'voters' => $this->importVoters($payload['voters'] ?? []),
                 'votecards' => $this->importVoteCards($payload['votecards'] ?? []),
@@ -174,6 +175,21 @@ class LegacyFixtureImportService
                 'description' => Arr::get($row, 'description'),
                 'amount' => Arr::get($row, 'amount', 0),
             ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importTasksCategories(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $category = $this->category((int) Arr::get($row, 'categoryId'));
+
+            $project->categories()->syncWithoutDetaching([$category->id]);
         }
 
         return count($rows);

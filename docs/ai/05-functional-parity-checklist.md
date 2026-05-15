@@ -52,6 +52,7 @@
 - [x] Bazowe raporty kart: statusy i demografia zaakceptowanych kart bez PII.
 - [x] Publiczny eksport CSV wyników bez PII.
 - [x] Import słowników imion, nazwisk i nazwisk matek z legacy.
+- [x] Import relacji `taskscategories` do pivotu kategorii projektów.
 - [x] Policy/bramki dla kart głosowania, wyników i eksportów raportów.
 - [x] Baseline importu fixture legacy: `legacy_id`, relacje, statusy, głosy i statystyki partii.
 - [x] Baseline korespondencji i komentarzy projektu z uprawnieniami i odczytem.

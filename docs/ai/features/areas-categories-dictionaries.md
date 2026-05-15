@@ -28,6 +28,7 @@ Status: częściowo zaimplementowane.
 - Logika listy obszarów: `App\Domain\Projects\Services\ProjectAreaCatalog`.
 - Słowniki legacy: `DictionaryEntry` konsoliduje `firstnamedictionary`, `lastnamedictionary`, `motherlastnamedictionary`.
 - Import słowników: `LegacyDictionaryImportService` jest idempotentny po `source_table + legacy_id`, ponieważ legacy tabele mają niezależne identyfikatory.
+- Import fixture przenosi `taskscategories` do pivotu `category_project`, zachowując wiele kategorii projektu.
 - Testy: `AreasCategoriesDictionariesTest`, `LegacyDictionaryImportTest`.
 
 ## Uwagi legacy

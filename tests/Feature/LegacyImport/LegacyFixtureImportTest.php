@@ -4,6 +4,7 @@ use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
 use App\Domain\LegacyImport\Services\LegacyFixtureImportService;
 use App\Domain\Projects\Enums\ProjectStatus;
+use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCostItem;
@@ -35,6 +36,9 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         'categories' => [[
             'id' => 30,
             'name' => 'Zieleń',
+        ], [
+            'id' => 31,
+            'name' => 'Sport',
         ]],
         'tasks' => [[
             'id' => 40,
@@ -59,6 +63,13 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'taskId' => 40,
             'description' => 'Nasadzenia',
             'amount' => 1000,
+        ]],
+        'taskscategories' => [[
+            'taskId' => 40,
+            'categoryId' => 30,
+        ], [
+            'taskId' => 40,
+            'categoryId' => 31,
         ]],
         'voters' => [[
             'id' => 60,
@@ -95,10 +106,13 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
     expect($batch->source_path)->toBe('unit-fixture')
         ->and($batch->finished_at)->not->toBeNull()
         ->and($batch->stats['tasks'])->toBe(1)
+        ->and($batch->stats['taskscategories'])->toBe(2)
         ->and($edition->legacy_id)->toBe(10)
         ->and(ProjectArea::query()->where('legacy_id', 20)->firstOrFail()->is_local)->toBeTrue()
         ->and($project->status)->toBe(ProjectStatus::Picked)
         ->and($project->budget_edition_id)->toBe($edition->id)
+        ->and($project->categories()->pluck('categories.id')->sort()->values()->all())
+        ->toBe(Category::query()->whereIn('legacy_id', [30, 31])->pluck('id')->sort()->values()->all())
         ->and(ProjectCostItem::query()->where('legacy_id', 50)->firstOrFail()->project_id)->toBe($project->id)
         ->and($voteCard->status)->toBe(VoteCardStatus::Accepted)
         ->and(Vote::query()->where('legacy_id', 80)->firstOrFail()->project_id)->toBe($project->id)

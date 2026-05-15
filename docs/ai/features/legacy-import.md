@@ -23,8 +23,9 @@ Status: baseline fixture zaimplementowany.
 
 ## Implementacja Laravel
 
-- `LegacyFixtureImportService` importuje podstawowy wycinek danych w transakcji: `taskgroups`, `tasktypes`, `categories`, `tasks`, `taskcosts`, `voters`, `votecards`, `votes`.
+- `LegacyFixtureImportService` importuje podstawowy wycinek danych w transakcji: `taskgroups`, `tasktypes`, `categories`, `tasks`, `taskscategories`, `taskcosts`, `voters`, `votecards`, `votes`.
 - Import jest idempotentny po `legacy_id` przez `updateOrCreate`.
+- Relacje wielu kategorii projektu są przenoszone przez pivot `category_project` z `taskscategories`.
 - `legacy_import_batches` zapisuje `source_path`, statystyki per tabela oraz czas startu i zakończenia.
 - Brakujące relacje są logowane jako `WARN` bez PII i kończą import wyjątkiem domenowym.
 

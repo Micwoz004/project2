@@ -33,6 +33,7 @@ use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Verification\Models\LocationVerification;
 use App\Domain\Verification\Models\ProjectBoardVote;
+use App\Domain\Verification\Models\ProjectUserAssignment;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Verification\Models\VerificationVersion;
 use App\Domain\Voting\Enums\VoteCardStatus;
@@ -87,6 +88,16 @@ class LegacyFixtureImportService
                 'detailedverification' => $this->importDetailedVerifications($payload['detailedverification'] ?? []),
                 'locationverification' => $this->importLocationVerifications($payload['locationverification'] ?? []),
                 'verificationversion' => $this->importVerificationVersions($payload['verificationversion'] ?? []),
+                'coordinatorassignment' => $this->importProjectUserAssignments(
+                    $payload['coordinatorassignment'] ?? [],
+                    'coordinatorassignment',
+                    ProjectUserAssignment::ROLE_COORDINATOR,
+                ),
+                'verifierassignment' => $this->importProjectUserAssignments(
+                    $payload['verifierassignment'] ?? [],
+                    'verifierassignment',
+                    ProjectUserAssignment::ROLE_VERIFIER,
+                ),
                 'taskdepartmentassignment' => $this->importVerificationAssignments($payload['taskdepartmentassignment'] ?? []),
                 'zkvotes' => $this->importBoardVotes($payload['zkvotes'] ?? [], BoardType::Zk),
                 'otvotes' => $this->importBoardVotes($payload['otvotes'] ?? [], BoardType::Ot),
@@ -483,6 +494,28 @@ class LegacyFixtureImportService
                 'raw_data' => Arr::get($row, 'data'),
                 'created_at' => $createdAt,
                 'updated_at' => $createdAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importProjectUserAssignments(array $rows, string $legacyTable, string $role): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $user = $this->user((int) Arr::get($row, 'userId'));
+
+            ProjectUserAssignment::query()->updateOrCreate([
+                'legacy_table' => $legacyTable,
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'user_id' => $user->id,
+                'role' => $role,
             ]);
         }
 

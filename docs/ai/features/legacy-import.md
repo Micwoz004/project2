@@ -23,7 +23,7 @@ Status: baseline fixture zaimplementowany.
 
 ## Implementacja Laravel
 
-- `LegacyFixtureImportService` importuje podstawowy wycinek danych w transakcji: `taskgroups`, `settings`, `pages`, `tasktypes`, `categories`, `tasks`, `taskscategories`, `taskcosts`, `files`, `filesprivate`, `cocreators`, `taskverification`, `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation`, `detailedverification`, `locationverification`, `verificationversion`, `taskdepartmentassignment`, `zkvotes`, `atvotes`, `otvotes`, `atotvotesrejection`, `correspondence`, `taskcomments`, `comments`, `notification`, `maillogs`, `taskcorrection`, `taskchangessuggestion`, `versions`, `newverification`, `votingtokens`, `voters`, `smslogs`, `votecards`, `votes`.
+- `LegacyFixtureImportService` importuje podstawowy wycinek danych w transakcji: `taskgroups`, `settings`, `pages`, `tasktypes`, `categories`, `tasks`, `taskscategories`, `taskcosts`, `files`, `filesprivate`, `cocreators`, `taskverification`, `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation`, `detailedverification`, `locationverification`, `verificationversion`, `coordinatorassignment`, `verifierassignment`, `taskdepartmentassignment`, `zkvotes`, `atvotes`, `otvotes`, `atotvotesrejection`, `correspondence`, `taskcomments`, `comments`, `notification`, `maillogs`, `taskcorrection`, `taskchangessuggestion`, `versions`, `newverification`, `votingtokens`, `voters`, `smslogs`, `votecards`, `votes`.
 - `LegacyUserImportService` importuje `departments` i `users`.
 - Import jest idempotentny po `legacy_id` przez `updateOrCreate`.
 - Ustawienia aplikacji zachowują surową wartość z legacy `settings.value`, także jeśli jest to serializowany format Yii/PHP; typizacja ustawień będzie osobnym etapem po potwierdzeniu wszystkich kluczy z dumpa.
@@ -31,6 +31,7 @@ Status: baseline fixture zaimplementowany.
 - Powiadomienia projektu i logi mailowe są rozdzielone na `project_notifications` oraz `mail_logs`, zgodnie z różnym znaczeniem legacy `notification` i `maillogs`.
 - Publiczne komentarze projektu z `comments` zachowują moderację, ukrycie przez autora/admina i relację odpowiedzi po `parentId`.
 - Dodatkowe karty weryfikacyjne `detailedverification`, `locationverification` i ich `verificationversion` są importowane z odpowiedziami formularza w JSON i surowym snapshotem wersji.
+- Przypisania `coordinatorassignment` i `verifierassignment` są skonsolidowane do `project_user_assignments` z rolą `coordinator` albo `verifier`.
 - Relacje wielu kategorii projektu są przenoszone przez pivot `category_project` z `taskscategories`.
 - `legacy_import_batches` zapisuje `source_path`, statystyki per tabela oraz czas startu i zakończenia.
 - Brakujące relacje są logowane jako `WARN` bez PII i kończą import wyjątkiem domenowym.

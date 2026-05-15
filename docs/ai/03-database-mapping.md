@@ -36,6 +36,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `detailedverification` | `detailed_verifications` | Szczegółowa karta weryfikacji; odpowiedzi formularza w JSON, wynik i rekomendacje osobno. |
 | `locationverification` | `location_verifications` | Karta lokalizacyjna; odpowiedzi formularza w JSON, wynik i rekomendacje osobno. |
 | `verificationversion` | `verification_versions` | Surowy snapshot JSON karty, typ, użytkownik i legacy ID karty. |
+| `coordinatorassignment`, `verifierassignment` | `project_user_assignments` | Konsolidacja przez `role`: `coordinator` lub `verifier`. |
 
 ## Głosowanie
 

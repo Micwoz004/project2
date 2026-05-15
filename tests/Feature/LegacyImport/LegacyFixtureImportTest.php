@@ -32,6 +32,7 @@ use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Verification\Models\LocationVerification;
 use App\Domain\Verification\Models\ProjectBoardVote;
+use App\Domain\Verification\Models\ProjectUserAssignment;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Verification\Models\VerificationVersion;
 use App\Domain\Voting\Enums\VoteCardStatus;
@@ -232,6 +233,16 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'userId' => 600,
             'data' => '{"verificationResult":"1","resultReason":"Pozytywnie"}',
             'createTime' => '2025-03-11 12:05:00',
+        ]],
+        'coordinatorassignment' => [[
+            'id' => 119,
+            'taskId' => 40,
+            'userId' => 600,
+        ]],
+        'verifierassignment' => [[
+            'id' => 120,
+            'taskId' => 40,
+            'userId' => 600,
         ]],
         'taskdepartmentassignment' => [[
             'id' => 96,
@@ -496,6 +507,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['detailedverification'])->toBe(1)
         ->and($batch->stats['locationverification'])->toBe(1)
         ->and($batch->stats['verificationversion'])->toBe(1)
+        ->and($batch->stats['coordinatorassignment'])->toBe(1)
+        ->and($batch->stats['verifierassignment'])->toBe(1)
         ->and($batch->stats['taskdepartmentassignment'])->toBe(1)
         ->and($batch->stats['zkvotes'])->toBe(1)
         ->and($batch->stats['atvotes'])->toBe(1)
@@ -536,6 +549,10 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(LocationVerification::query()->where('legacy_id', 117)->firstOrFail()->recommendations_at)->toBeNull()
         ->and(VerificationVersion::query()->where('legacy_id', 118)->firstOrFail()->raw_data)
         ->toBe('{"verificationResult":"1","resultReason":"Pozytywnie"}')
+        ->and(ProjectUserAssignment::query()->where('legacy_table', 'coordinatorassignment')->where('legacy_id', 119)->firstOrFail()->role)
+        ->toBe(ProjectUserAssignment::ROLE_COORDINATOR)
+        ->and(ProjectUserAssignment::query()->where('legacy_table', 'verifierassignment')->where('legacy_id', 120)->firstOrFail()->role)
+        ->toBe(ProjectUserAssignment::ROLE_VERIFIER)
         ->and(VerificationAssignment::query()->where('legacy_id', 96)->firstOrFail()->type)->toBe(VerificationAssignmentType::MeritInitial)
         ->and(ProjectBoardVote::query()->where('legacy_id', 98)->firstOrFail()->user_id)->toBe($boardUser->id)
         ->and(ProjectBoardVote::query()->where('legacy_id', 99)->firstOrFail()->board_type)->toBe(BoardType::At)

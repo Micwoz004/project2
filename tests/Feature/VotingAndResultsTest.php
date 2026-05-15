@@ -8,6 +8,7 @@ use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Reports\Exports\AdminVoteCardsCsvExporter;
+use App\Domain\Reports\Exports\CategoryComparisonCsvExporter;
 use App\Domain\Reports\Exports\ProjectCorrectionsCsvExporter;
 use App\Domain\Reports\Exports\ProjectHistoryCsvExporter;
 use App\Domain\Reports\Exports\SubmittedProjectsCsvExporter;
@@ -629,6 +630,39 @@ it('compares primary category results with multi category results', function ():
             'difference' => 0,
         ],
     ]);
+});
+
+it('exports category comparison results as csv', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $greenCategory = Category::query()->create(['name' => 'Zieleń']);
+    $sportCategory = Category::query()->create(['name' => 'Sport']);
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'category_id' => $greenCategory->id,
+        'status' => ProjectStatus::Picked,
+    ]));
+    $project->categories()->sync([$greenCategory->id, $sportCategory->id]);
+    $voter = Voter::query()->create([
+        'pesel' => '44051401458',
+        'first_name' => 'Jan',
+        'last_name' => 'Kowalski',
+    ]);
+    $voteCard = VoteCard::query()->create([
+        'budget_edition_id' => $edition->id,
+        'voter_id' => $voter->id,
+        'status' => VoteCardStatus::Accepted,
+    ]);
+    $voteCard->votes()->create([
+        'voter_id' => $voter->id,
+        'project_id' => $project->id,
+        'points' => 1,
+    ]);
+
+    $csv = app(CategoryComparisonCsvExporter::class)->export($edition);
+
+    expect($csv)->toContain('category_id,category_name,primary_category_points,multi_category_points,difference')
+        ->and($csv)->toContain($sportCategory->id.',Sport,0,1,1')
+        ->and($csv)->toContain($greenCategory->id.',Zieleń,1,1,0');
 });
 
 it('builds vote card status and demographic reports without pii', function (): void {

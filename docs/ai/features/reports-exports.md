@@ -36,6 +36,7 @@ Status: baseline domenowy rozpoczęty.
 - `ProjectReportService::projectHistoryRows()` i `ProjectHistoryCsvExporter` odtwarzają awaryjny raport `FuckupController::actionGetTaskHistory` z danych historycznych `versions.data`.
 - `ProjectReportService::verificationResultManifestRows()` i `VerificationResultManifestCsvExporter` odtwarzają selekcję paczki `DocumentController::actionGenVerificationResultReport`: projekty poza `WorkingCopy` i `Revoked`, które mają formalną albo wysłane karty merytoryczne/konsultacje.
 - `PublicResultsCsvExporter` eksportuje publiczne wyniki CSV z kolumnami `project_id`, `project_number`, `title`, `area`, `points`.
+- `CategoryComparisonCsvExporter` eksportuje raport porównujący punkty po legacy kategorii głównej projektu i po wielu kategoriach z `category_project`; raport nie zawiera PII.
 - `/wyniki/export.csv` jest dostępne tylko w oknie publikacji wyników.
 
 ## Inwentaryzacja legacy

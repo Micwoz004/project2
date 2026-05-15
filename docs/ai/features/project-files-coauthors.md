@@ -15,7 +15,7 @@
 
 Status: częściowo zaimplementowane w etapie 1.
 
-1. [ ] Dodać storage publiczny/prywatny i fizyczny upload plików.
+1. [x] Dodać storage publiczny/prywatny i fizyczny upload plików.
 2. [x] Rozbudować `ProjectFileType` o pełne typy legacy i limity liczby plików.
 3. [x] Dodać domenową synchronizację współautorów i zgód.
 4. [ ] Ustalić reguły anonimizacji załączników.
@@ -36,12 +36,12 @@ Status: częściowo zaimplementowane w etapie 1.
 - `ProjectFileType` zawiera typy legacy i metody `legacyAllowedExtensions()` oraz `maxFiles()`.
 - `ProjectFileValidator` sprawdza rozszerzenie, rozmiar i limit liczby plików danego typu.
 - `RegisterProjectFileAction` rejestruje metadane pliku i loguje operację bez treści pliku oraz bez PII.
+- `StoreProjectFileAction` zapisuje fizyczny plik na dysku `public` albo `local`, a następnie tworzy `ProjectFile`; walidacja legacy jest wykonywana przed zapisem do storage.
 - `ProjectCoauthorValidator` waliduje limit dwóch współautorów, wymagane dane kontaktowe, potwierdzenie przeczytania i zgodę na co najmniej jedną formę kontaktu.
 - `SyncProjectCoauthorsAction` wymienia listę współautorów projektu transakcyjnie.
 - `LegacyFixtureImportService` rozdziela `files` i `filesprivate` flagą `is_private` oraz przenosi współautorów z `cocreators`.
 
 ## Zgodność do sprawdzenia
 
-- Dodać fizyczne zapisywanie plików w storage po wybraniu docelowego public/private disk.
 - Potwierdzić, czy historyczny limit `1024 * 1024 * 10000` ma zostać zachowany, czy świadomie skorygowany do 10 MB w UI i walidacji.
 - Dopisać anonimizację załączników po rozpoznaniu reguł publikacji plików w widokach publicznych.

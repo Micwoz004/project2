@@ -1,11 +1,14 @@
 <?php
 
 use App\Domain\Files\Actions\RegisterProjectFileAction;
+use App\Domain\Files\Actions\StoreProjectFileAction;
 use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Projects\Actions\SyncProjectCoauthorsAction;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 function draftProjectWithAuthor(User $user): Project
 {
@@ -64,6 +67,50 @@ it('rejects project files with extensions outside legacy allow-list', function (
         'script.php',
         'script.php',
         1024,
+        $user,
+    );
+})->throws(DomainException::class, 'Niedozwolony typ pliku załącznika.');
+
+it('stores public and private project files on matching disks', function (): void {
+    Storage::fake('public');
+    Storage::fake('local');
+    $user = User::factory()->create();
+    $project = draftProjectWithAuthor($user);
+
+    $publicFile = app(StoreProjectFileAction::class)->execute(
+        $project,
+        ProjectFileType::Other,
+        UploadedFile::fake()->create('zalacznik.pdf', 128, 'application/pdf'),
+        $user,
+        'Opis publiczny',
+    );
+    $privateFile = app(StoreProjectFileAction::class)->execute(
+        $project,
+        ProjectFileType::OwnerAgreement,
+        UploadedFile::fake()->create('zgoda.pdf', 128, 'application/pdf'),
+        $user,
+        'Opis prywatny',
+        true,
+    );
+
+    Storage::disk('public')->assertExists($publicFile->stored_name);
+    Storage::disk('local')->assertExists($privateFile->stored_name);
+
+    expect($publicFile->is_private)->toBeFalse()
+        ->and($privateFile->is_private)->toBeTrue()
+        ->and($publicFile->original_name)->toBe('zalacznik.pdf')
+        ->and($privateFile->original_name)->toBe('zgoda.pdf');
+});
+
+it('does not store project file when legacy validation rejects upload', function (): void {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    $project = draftProjectWithAuthor($user);
+
+    app(StoreProjectFileAction::class)->execute(
+        $project,
+        ProjectFileType::Other,
+        UploadedFile::fake()->create('skrypt.php', 128, 'application/x-php'),
         $user,
     );
 })->throws(DomainException::class, 'Niedozwolony typ pliku załącznika.');

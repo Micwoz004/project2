@@ -101,11 +101,12 @@
 - [x] Import fixture rejestrów PESEL z tabel `pesel` i `verification`.
 - [x] Import fixture historycznych logów administracyjnych z tabeli `logs`.
 - [x] Komenda Artisan `sbo:legacy-import` do importu znormalizowanego JSON fixture.
+- [x] Fizyczny zapis załączników projektu do publicznego/prywatnego storage z walidacją legacy przed zapisem.
 
 ## Do pełnego parytetu
 
 - [ ] Pełny formularz projektu z uploadami i zgodami 1:1 względem widoków Yii.
-- [ ] Fizyczny upload plików, storage prywatny/publiczny i anonimizacja załączników.
+- [ ] Anonimizacja załączników i pełne podpięcie uploadów w formularzach UI.
 - [ ] Korekty projektu w UI autora/admina oraz korekty załączników/kosztów.
 - [ ] Weryfikacja formalna z pełną listą pól legacy.
 - [ ] Weryfikacje merytoryczne i konsultacje departamentów.

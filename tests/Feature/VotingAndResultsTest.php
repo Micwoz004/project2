@@ -622,3 +622,40 @@ it('builds vote card status and demographic reports without pii', function (): v
             'over_60' => 1,
         ]);
 });
+
+it('builds legacy age group totals per project from accepted cards', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'status' => ProjectStatus::Picked,
+    ]));
+
+    foreach ([24, 40, 55, 72] as $index => $age) {
+        $voter = Voter::query()->create([
+            'pesel' => '4405140145'.$index,
+            'first_name' => 'Jan',
+            'last_name' => 'Kowalski',
+            'age' => $age,
+        ]);
+        $voteCard = VoteCard::query()->create([
+            'budget_edition_id' => $edition->id,
+            'voter_id' => $voter->id,
+            'status' => VoteCardStatus::Accepted,
+        ]);
+        $voteCard->votes()->create([
+            'voter_id' => $voter->id,
+            'project_id' => $project->id,
+            'points' => 1,
+        ]);
+    }
+
+    $rows = app(VoteCardReportService::class)->projectAgeGroupTotals($edition);
+    $row = $rows->first();
+
+    expect($rows)->toHaveCount(1)
+        ->and((int) $row->age_16_30)->toBe(1)
+        ->and((int) $row->age_31_45)->toBe(1)
+        ->and((int) $row->age_46_60)->toBe(1)
+        ->and((int) $row->age_61_plus)->toBe(1)
+        ->and((int) $row->total)->toBe(4);
+});

@@ -25,11 +25,12 @@ Status: baseline domenowy rozpoczęty.
 
 - `VoteCardReportService::statusCounts()` zwraca liczby kart po statusach dla edycji.
 - `VoteCardReportService::acceptedVoterDemographics()` zwraca zagregowane płcie i przedziały wieku wyłącznie dla zaakceptowanych kart, bez PESEL, telefonu ani danych osobowych.
+- `VoteCardReportService::projectAgeGroupTotals()` odtwarza administracyjny raport wieku z legacy dla grup `16-30`, `31-45`, `46-60`, `61+` per projekt.
 - `PublicResultsCsvExporter` eksportuje publiczne wyniki CSV z kolumnami `project_id`, `project_number`, `title`, `area`, `points`.
 - `/wyniki/export.csv` jest dostępne tylko w oknie publikacji wyników.
 
 ## Świadome braki na tym etapie
 
-- Brak administracyjnych eksportów CSV/XLSX i kolejek dla dużych raportów.
+- Brak administracyjnych eksportów XLSX i kolejek dla dużych raportów.
 - Brak pełnej inwentaryzacji plików z `raporty_sbo`.
 - Brak raportów administracyjnych z kolumnami 1:1 względem legacy.

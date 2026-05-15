@@ -4,6 +4,7 @@ namespace App\Domain\Reports\Services;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Voting\Enums\VoteCardStatus;
+use App\Domain\Voting\Models\Vote;
 use App\Domain\Voting\Models\VoteCard;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -71,5 +72,37 @@ class VoteCardReportService
             'sex' => $sex,
             'age_buckets' => $ageBuckets,
         ];
+    }
+
+    public function projectAgeGroupTotals(BudgetEdition $edition): Collection
+    {
+        Log::info('vote_card_report.project_age_groups.start', [
+            'budget_edition_id' => $edition->id,
+        ]);
+
+        $rows = Vote::query()
+            ->join('vote_cards', 'votes.vote_card_id', '=', 'vote_cards.id')
+            ->join('voters', 'vote_cards.voter_id', '=', 'voters.id')
+            ->where('vote_cards.budget_edition_id', $edition->id)
+            ->where('vote_cards.status', VoteCardStatus::Accepted->value)
+            ->select([
+                'votes.project_id',
+                DB::raw('SUM(CASE WHEN voters.age BETWEEN 16 AND 30 THEN votes.points ELSE 0 END) as age_16_30'),
+                DB::raw('SUM(CASE WHEN voters.age BETWEEN 31 AND 45 THEN votes.points ELSE 0 END) as age_31_45'),
+                DB::raw('SUM(CASE WHEN voters.age BETWEEN 46 AND 60 THEN votes.points ELSE 0 END) as age_46_60'),
+                DB::raw('SUM(CASE WHEN voters.age >= 61 THEN votes.points ELSE 0 END) as age_61_plus'),
+                DB::raw('SUM(votes.points) as total'),
+            ])
+            ->groupBy('votes.project_id')
+            ->orderByDesc('total')
+            ->orderBy('votes.project_id')
+            ->get();
+
+        Log::info('vote_card_report.project_age_groups.success', [
+            'budget_edition_id' => $edition->id,
+            'projects_count' => $rows->count(),
+        ]);
+
+        return $rows;
     }
 }

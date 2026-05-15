@@ -113,6 +113,7 @@
 - [x] Głos przewodniczącego ZK rozstrzyga graniczny wynik 4:4 zgodnie z `Task::zkAccepted()`.
 - [x] Zamknięcie i restart głosowań OT/AT z efektami legacy.
 - [x] Gate dla ról rad/komisji (`cast-board-vote`) oraz zarządzania głosowaniem (`manage-board-voting`).
+- [x] Bazowy publiczny formularz głosowania z wygenerowaniem i aktywacją tokenu SMS.
 
 ## Do pełnego parytetu
 
@@ -123,7 +124,7 @@
 - [ ] Weryfikacje merytoryczne i konsultacje departamentów.
 - [ ] UI historii wersji kart weryfikacji i administracyjny podgląd agregacji wielu departamentów.
 - [ ] UI restartu/zamknięcia głosowań i podpięcie bramek w Filament.
-- [ ] Pełny publiczny formularz głosowania z aktywacją tokenu SMS w UI.
+- [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
 - [ ] Filament Resource dla kart głosowania i ręcznych kart papierowych.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
 - [ ] Raporty i eksporty administracyjne.

@@ -15,7 +15,7 @@
 
 Status: baseline domenowy rozbudowany.
 
-1. Dodać Livewire flow wyborcy, tokenu i wyboru projektów.
+1. [x] Dodać bazowy publiczny flow wyborcy, tokenu i wyboru projektów.
 2. Podpiąć `VotingTokenService` pod SMS provider lub adapter testowy.
 3. [x] Dodać weryfikację `newverification` i oświadczeń: hash legacy z fallbackiem nazwiska matki `BRAK DANYCH` i pustym stringiem, albo `CitizenConfirmation`.
 4. [x] Wymusić potwierdzenie braku jednej kategorii głosu przez `confirm_missing_category`.
@@ -33,9 +33,12 @@ Status: baseline domenowy rozbudowany.
 - `LegacyFixtureImportService` przenosi `newverification`, `votingtokens` i `smslogs`, zachowując hash rejestru, tokeny SMS, flagę `disabled`, typ tokenu, dane zgód w `extra_data` oraz relację logu SMS do wyborcy.
 - Jeżeli historyczny `votingtokens.type` jest pusty albo spoza enumu, importer traktuje rekord jako SMS, bo dump 2025 używa tej tabeli dla tokenów SMS.
 - Import fixture `voters` przenosi pełniejsze dane wyborcy z legacy: drugie imię, nazwisko matki, ojca, e-mail, adres, IP, user agent, telefon i datę utworzenia.
+- Publiczny endpoint `/glosowanie/kod-sms` tworzy token SMS przez `VotingTokenService`.
+- Publiczny endpoint `POST /glosowanie` aktywuje token przez `phone + token`, przekazuje wybór projektów do `CastVoteService` i unieważnia token po skutecznym głosie.
+- Widok `/glosowanie` zawiera formularz uzyskania kodu i formularz oddania głosu na jeden projekt lokalny oraz jeden ogólnomiejski.
 
 ## Świadome braki na tym etapie
 
-- Brak gotowego Livewire flow i ekranów publicznych dla tokenu SMS.
+- Flow publiczny jest w Blade jako baseline; docelowe Livewire może go zastąpić bez zmiany logiki domenowej.
 - Brak integracji z realnym operatorem SMS; `VotingTokenService` przygotowuje rekord domenowy.
 - Walidacja tokenu jest domenowo gotowa, ale nie jest jeszcze podpięta do pełnego UI formularza głosowania.

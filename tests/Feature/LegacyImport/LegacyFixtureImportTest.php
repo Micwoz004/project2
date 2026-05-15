@@ -313,9 +313,28 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'id' => 70,
             'taskGroupId' => 10,
             'voterId' => 60,
+            'creatorId' => 600,
+            'consultantId' => 600,
+            'checkoutUserId' => 600,
+            'statement' => true,
+            'termsAccepted' => true,
+            'cityStatement' => true,
+            'noPeselNumber' => false,
             'cardNo' => 101,
             'digital' => true,
             'status' => VoteCardStatus::Accepted->value,
+            'checkoutDateTime' => '2025-04-02 12:00:00',
+            'notes' => 'Karta testowa',
+            'citizenConfirm' => 2,
+            'livingAddress' => 'Szczecin',
+            'schoolAddress' => '',
+            'studyAddress' => '',
+            'workAddress' => '',
+            'parentName' => 'Jan Rodzic',
+            'parentConfirm' => true,
+            'ip' => '127.0.0.1',
+            'created' => '2025-04-01 11:00:00',
+            'modified' => '2025-04-02 12:00:00',
         ]],
         'votes' => [[
             'id' => 80,
@@ -395,6 +414,14 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(VotingToken::query()->where('legacy_id', 106)->firstOrFail()->extra_data['city_statement'])->toBeTrue()
         ->and(SmsLog::query()->where('legacy_id', 107)->firstOrFail()->voter_id)->toBe($voteCard->voter_id)
         ->and($voteCard->status)->toBe(VoteCardStatus::Accepted)
+        ->and($voteCard->created_by_id)->toBe($boardUser->id)
+        ->and($voteCard->consultant_id)->toBe($boardUser->id)
+        ->and($voteCard->checkout_user_id)->toBe($boardUser->id)
+        ->and($voteCard->terms_accepted)->toBeTrue()
+        ->and($voteCard->city_statement)->toBeTrue()
+        ->and($voteCard->parent_confirm)->toBeTrue()
+        ->and($voteCard->parent_name)->toBe('Jan Rodzic')
+        ->and($voteCard->ip)->toBe('127.0.0.1')
         ->and(Vote::query()->where('legacy_id', 80)->firstOrFail()->project_id)->toBe($project->id)
         ->and((int) $totals->first()->points)->toBe(1);
 });

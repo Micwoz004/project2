@@ -70,6 +70,7 @@
 - [x] Import fixture korespondencji i komentarzy projektu.
 - [x] Import fixture historycznych wersji projektu z tabeli `versions`.
 - [x] Import fixture hashy rejestru wyborców, tokenów SMS i logów SMS.
+- [x] Pełniejsze mapowanie fixture `votecards`: zgody, operatorzy, checkout, oświadczenia i dane rodzica.
 - [x] Import fixture korekt projektu z tabeli `taskcorrection`.
 - [x] Model i import fixture propozycji zmian projektu z `taskchangessuggestion`.
 - [x] Akceptacja/odrzucenie propozycji zmian projektu zgodnie z `TaskChangesSuggestion::afterSave`.

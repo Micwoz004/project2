@@ -35,6 +35,7 @@ use App\Domain\Verification\Models\LocationVerification;
 use App\Domain\Verification\Models\ProjectAppeal;
 use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\ProjectDepartmentRecommendation;
+use App\Domain\Verification\Models\ProjectDepartmentScope;
 use App\Domain\Verification\Models\ProjectUserAssignment;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Verification\Models\VerificationVersion;
@@ -270,6 +271,15 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'cost' => 'Koszt utrzymania',
             'creatorId' => 600,
             'sentTime' => '2025-03-12 11:00:00',
+        ]],
+        'tasksinitialverification' => [[
+            'taskId' => 40,
+            'departmentId' => 500,
+        ]],
+        'tasksdepartments' => [[
+            'taskId' => 40,
+            'departmentId' => 500,
+            'opinionDeadline' => '2025-03-30 12:00:00',
         ]],
         'coordinatorassignment' => [[
             'id' => 119,
@@ -557,6 +567,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['taskadvancedverification'])->toBe(1)
         ->and($batch->stats['prerecommendations'])->toBe(1)
         ->and($batch->stats['recommendationswjo'])->toBe(1)
+        ->and($batch->stats['tasksinitialverification'])->toBe(1)
+        ->and($batch->stats['tasksdepartments'])->toBe(1)
         ->and($batch->stats['coordinatorassignment'])->toBe(1)
         ->and($batch->stats['verifierassignment'])->toBe(1)
         ->and($batch->stats['taskdepartmentassignment'])->toBe(1)
@@ -604,6 +616,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(AdvancedVerification::query()->where('legacy_id', 121)->firstOrFail()->raw_legacy_payload['helperOther'])->toBe('Opinia jednostki')
         ->and(ProjectDepartmentRecommendation::query()->where('legacy_table', 'prerecommendations')->where('legacy_id', 123)->firstOrFail()->task_opinion)->toBe(1)
         ->and(ProjectDepartmentRecommendation::query()->where('legacy_table', 'recommendationswjo')->where('legacy_id', 124)->firstOrFail()->answers['facultative1CostVerified'])->toBe('1500')
+        ->and(ProjectDepartmentScope::query()->where('scope', ProjectDepartmentScope::SCOPE_INITIAL)->firstOrFail()->department_id)->toBe($department->id)
+        ->and(ProjectDepartmentScope::query()->where('scope', ProjectDepartmentScope::SCOPE_DEPARTMENT)->firstOrFail()->opinion_deadline?->format('Y-m-d H:i:s'))->toBe('2025-03-30 12:00:00')
         ->and(ProjectUserAssignment::query()->where('legacy_table', 'coordinatorassignment')->where('legacy_id', 119)->firstOrFail()->role)
         ->toBe(ProjectUserAssignment::ROLE_COORDINATOR)
         ->and(ProjectUserAssignment::query()->where('legacy_table', 'verifierassignment')->where('legacy_id', 120)->firstOrFail()->role)

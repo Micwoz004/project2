@@ -36,6 +36,7 @@ use App\Domain\Verification\Models\LocationVerification;
 use App\Domain\Verification\Models\ProjectAppeal;
 use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\ProjectDepartmentRecommendation;
+use App\Domain\Verification\Models\ProjectDepartmentScope;
 use App\Domain\Verification\Models\ProjectUserAssignment;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Verification\Models\VerificationVersion;
@@ -94,6 +95,14 @@ class LegacyFixtureImportService
                 'taskadvancedverification' => $this->importAdvancedVerifications($payload['taskadvancedverification'] ?? []),
                 'prerecommendations' => $this->importPreRecommendations($payload['prerecommendations'] ?? []),
                 'recommendationswjo' => $this->importWjoRecommendations($payload['recommendationswjo'] ?? []),
+                'tasksinitialverification' => $this->importProjectDepartmentScopes(
+                    $payload['tasksinitialverification'] ?? [],
+                    ProjectDepartmentScope::SCOPE_INITIAL,
+                ),
+                'tasksdepartments' => $this->importProjectDepartmentScopes(
+                    $payload['tasksdepartments'] ?? [],
+                    ProjectDepartmentScope::SCOPE_DEPARTMENT,
+                ),
                 'coordinatorassignment' => $this->importProjectUserAssignments(
                     $payload['coordinatorassignment'] ?? [],
                     'coordinatorassignment',
@@ -584,6 +593,27 @@ class LegacyFixtureImportService
                 'sent_at' => $sentAt,
                 'created_at' => $sentAt,
                 'updated_at' => $sentAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importProjectDepartmentScopes(array $rows, string $scope): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $department = $this->department((int) Arr::get($row, 'departmentId'));
+
+            ProjectDepartmentScope::query()->updateOrCreate([
+                'project_id' => $project->id,
+                'department_id' => $department->id,
+                'scope' => $scope,
+            ], [
+                'opinion_deadline' => $this->nullableLegacyDate(Arr::get($row, 'opinionDeadline')),
             ]);
         }
 

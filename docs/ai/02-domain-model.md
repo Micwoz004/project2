@@ -30,6 +30,7 @@
 - `DetailedVerification`, `LocationVerification`, `AdvancedVerification`, `VerificationVersion` odwzorowują dodatkowe karty i snapshoty weryfikacji.
 - `ProjectUserAssignment` odwzorowuje przypisania koordynatorów i weryfikatorów do projektu.
 - `ProjectDepartmentRecommendation` odwzorowuje prerekomendacje i rekomendacje WJO.
+- `ProjectDepartmentScope` odwzorowuje zakresy opiniowania jednostek z `tasksinitialverification` i `tasksdepartments`.
 - `ProjectAppeal` odwzorowuje odwołania od decyzji rady/komisji.
 - `Department` odwzorowuje `departments`.
 - `ApplicationSetting` odwzorowuje `settings` z zachowaniem surowych wartości legacy.

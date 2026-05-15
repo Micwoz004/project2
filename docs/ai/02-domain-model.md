@@ -52,4 +52,5 @@ Statusy legacy są zachowane jako `ProjectStatus` z wartościami integer: `1,2,3
 - `PublicResultsCsvExporter` - publiczny eksport wyników bez danych wyborców.
 - `LegacyFixtureImportService` - transakcyjny, idempotentny import baseline danych legacy po `legacy_id`.
 - `LegacyDictionaryImportService` - import słowników legacy po `source_table + legacy_id`.
+- `LegacyRbacImportService` - import ról, operacji, relacji i przypisań RBAC z Yii do Spatie.
 - `AddProjectCommentAction`, `SendProjectCorrespondenceMessageAction`, `MarkCorrespondenceMessageReadAction` - bazowa komunikacja projektu bez logowania treści.

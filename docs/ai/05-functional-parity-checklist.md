@@ -54,6 +54,7 @@
 - [x] Import słowników imion, nazwisk i nazwisk matek z legacy.
 - [x] Import relacji `taskscategories` do pivotu kategorii projektów.
 - [x] Fixture import `authitem`, `authitemchild` i `authassignment` do Spatie Permission.
+- [x] Fixture import użytkowników i departamentów legacy.
 - [x] Policy/bramki dla kart głosowania, wyników i eksportów raportów.
 - [x] Baseline importu fixture legacy: `legacy_id`, relacje, statusy, głosy i statystyki partii.
 - [x] Baseline korespondencji i komentarzy projektu z uprawnieniami i odczytem.
@@ -74,5 +75,5 @@
 - [ ] Reguły remisów po pełnym potwierdzeniu legacy.
 - [ ] Kolejki i szablony powiadomień mail/SMS z pełną mapą typów legacy.
 - [ ] Pełny import przypisań ról/uprawnień z dumpa legacy.
-- [ ] Pełny import użytkowników i departamentów z dumpa legacy.
+- [ ] Pełny import użytkowników, departamentów i RBAC bezpośrednio z dumpa legacy.
 - [ ] Polityki Laravel dla każdej roli i operacji modułów weryfikacji/głosowania/raportów.

@@ -24,6 +24,7 @@ Status: baseline fixture zaimplementowany.
 ## Implementacja Laravel
 
 - `LegacyFixtureImportService` importuje podstawowy wycinek danych w transakcji: `taskgroups`, `tasktypes`, `categories`, `tasks`, `taskscategories`, `taskcosts`, `voters`, `votecards`, `votes`.
+- `LegacyUserImportService` importuje `departments` i `users`.
 - Import jest idempotentny po `legacy_id` przez `updateOrCreate`.
 - Relacje wielu kategorii projektu są przenoszone przez pivot `category_project` z `taskscategories`.
 - `legacy_import_batches` zapisuje `source_path`, statystyki per tabela oraz czas startu i zakończenia.
@@ -33,4 +34,4 @@ Status: baseline fixture zaimplementowany.
 
 - To jeszcze nie jest parser pełnego dumpa MySQL; serwis przyjmuje znormalizowany fixture.
 - Brak komendy Artisan do importu z pliku/staging MySQL.
-- Import nie obejmuje jeszcze plików, korespondencji, weryfikacji, ról i pełnej historii głosowania.
+- Import nie obejmuje jeszcze plików, korespondencji, weryfikacji i pełnej historii głosowania.

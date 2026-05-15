@@ -16,7 +16,7 @@
 Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RBAC.
 
 1. [x] Dodać mapę ról legacy do Spatie.
-2. [ ] Dodać import użytkowników i departamentów.
+2. [x] Dodać import użytkowników i departamentów.
 3. [x] Dodać policies i guard dostępu Filament.
 4. [ ] Zbudować panel użytkowników i ról.
 5. [x] Pokryć testami aktywność i uprawnienia dostępu do panelu.
@@ -26,9 +26,11 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 - Model `User` implementuje kontrakt Filament i blokuje panel dla kont nieaktywnych.
 - Seeder uruchamia synchronizację ról/uprawnień i nadaje lokalnemu użytkownikowi testowemu rolę `admin`.
 - `SyncSystemRolesAndPermissionsAction` tworzy role legacy: `admin`, `analyst ODS`, `applicant`, `checkVoter`, `consultant`, `coordinator`, role ZK/ZOD/W JO oraz `bdo`.
+- `LegacyUserImportService` importuje `departments` i `users` po `legacy_id`, zachowuje status aktywności i przypisuje departament przez `departments.legacy_id`.
 - `LegacyRbacImportService` importuje `authitem`, `authitemchild` i `authassignment` do Spatie Permission na podstawie fixture, przypisując użytkowników przez `users.legacy_id`.
 
 ## Świadome różnice względem legacy
 
 - Nowy kod używa stabilnych permission keys zamiast wyłącznie operacji tekstowych z Yii RBAC. Operacje legacy są nadal tworzone w Spatie, aby import danych mógł zachować oryginalne nazwy.
-- Import RBAC z fixture jest gotowy, ale pełny import użytkowników i departamentów z dumpa pozostaje osobnym krokiem.
+- Import użytkowników z fixture tworzy techniczny placeholder e-mail dla historycznych kont bez adresu, ponieważ Laravel wymaga unikalnego e-maila.
+- Pełny import z dumpa pozostaje osobnym krokiem.

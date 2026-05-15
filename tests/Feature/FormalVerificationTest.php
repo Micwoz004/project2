@@ -3,8 +3,11 @@
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Actions\BeginFormalVerificationAction;
 use App\Domain\Verification\Actions\CompleteFormalVerificationAction;
+use App\Domain\Verification\Actions\ForwardFormalVerificationToInitialVerificationAction;
+use App\Domain\Verification\Enums\VerificationAssignmentType;
 use App\Models\User;
 
 function submittedProjectForFormalVerification(array $overrides = []): Project
@@ -80,3 +83,34 @@ it('completes negative formal verification with rejection status', function (): 
         ->and($verification->status)->toBe(ProjectStatus::RejectedFormally->value)
         ->and($project->refresh()->status)->toBe(ProjectStatus::RejectedFormally);
 });
+
+it('forwards formally verified project to initial merit verification departments', function (): void {
+    $actor = User::factory()->create();
+    $project = submittedProjectForFormalVerification([
+        'status' => ProjectStatus::FormallyVerified,
+    ]);
+    $firstDepartment = Department::query()->create(['name' => 'Wydział Inwestycji']);
+    $secondDepartment = Department::query()->create(['name' => 'Wydział Zieleni']);
+
+    $updated = app(ForwardFormalVerificationToInitialVerificationAction::class)->execute(
+        $project,
+        $actor,
+        [$firstDepartment, $secondDepartment],
+        notes: 'Do weryfikacji wstępnej',
+    );
+
+    expect($updated->status)->toBe(ProjectStatus::DuringInitialVerification)
+        ->and($updated->need_pre_verification)->toBeTrue()
+        ->and($project->verificationAssignments()
+            ->where('type', VerificationAssignmentType::MeritInitial->value)
+            ->count())->toBe(2);
+});
+
+it('requires department when forwarding formal verification to initial verification', function (): void {
+    $actor = User::factory()->create();
+    $project = submittedProjectForFormalVerification([
+        'status' => ProjectStatus::FormallyVerified,
+    ]);
+
+    app(ForwardFormalVerificationToInitialVerificationAction::class)->execute($project, $actor, []);
+})->throws(DomainException::class, 'Przekazanie do weryfikacji wstępnej wymaga co najmniej jednej jednostki.');

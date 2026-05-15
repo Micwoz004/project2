@@ -18,7 +18,7 @@ Status: częściowo zaimplementowane w etapie 3.
 1. [x] Spisać podstawowe pola formularza formalnego z legacy.
 2. [x] Dodać akcję rozpoczęcia i zakończenia oceny formalnej.
 3. [x] Dodać reguły pozytywnego/negatywnego wyniku.
-4. [ ] Dodać reguły korekty i przekazania dalej do weryfikacji wstępnej.
+4. [ ] Dodać reguły korekty i przekazania dalej do weryfikacji wstępnej. Wykonane częściowo: przekazanie do weryfikacji wstępnej z przydziałami departamentów.
 5. [ ] Zbudować Filament Page dla oceny formalnej.
 6. [x] Pokryć testami wymagane odpowiedzi i statusy.
 7. [x] Dodać import fixture dla `taskverification` z zachowaniem `raw_legacy_payload`.
@@ -37,6 +37,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `FormalVerification` zapisuje dane w `formal_verifications`, z odpowiedziami formularza w JSON.
 - `BeginFormalVerificationAction` przenosi projekt ze statusu `Submitted` do `DuringFormalVerification`.
 - `CompleteFormalVerificationAction` zapisuje/aktualizuje kartę formalną i ustawia status projektu na `FormallyVerified` albo `RejectedFormally`.
+- `ForwardFormalVerificationToInitialVerificationAction` przekazuje projekt ze statusu `FormallyVerified` do `DuringInitialVerification`, ustawia `need_pre_verification=true` i tworzy przydziały `MeritInitial` dla wskazanych jednostek.
 - Pozytywny wynik wymaga `projects.is_support_list=true`.
 - Negatywny wynik wymaga `result_comments`.
 - `LegacyFixtureImportService` importuje historyczne `taskverification`, mapuje wspólne pola i zachowuje pełny rekord w `raw_legacy_payload`.
@@ -45,5 +46,5 @@ Status: częściowo zaimplementowane w etapie 3.
 ## Zgodność do sprawdzenia
 
 - Uzupełnić pełną listę pytań formularza formalnego w Filament na podstawie `TaskVerification::attributeLabels()`.
-- Dopisać obsługę `needCorrection`, `needPreVerification` i `initialDepartments` po module przydziałów departamentów.
+- Dopisać obsługę `needCorrection`; `needPreVerification` i `initialDepartments` są obsługiwane w domenie, UI zostaje do podpięcia.
 - Podpiąć `VerificationVersion` do bieżących akcji zapisu kart, żeby nowe zmiany w Laravel tworzyły snapshoty tak jak `beforeSave()` w Yii.

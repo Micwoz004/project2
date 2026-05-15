@@ -105,6 +105,7 @@
 - [x] Publiczna widoczność załączników dopiero po oznaczeniu projektu jako zanonimizowanego i tylko dla plików nieprywatnych.
 - [x] Publiczny formularz zgłoszenia zapisuje realny prywatny upload listy poparcia.
 - [x] Publiczny formularz zgłoszenia zapisuje kategorię główną i pivot kategorii projektu.
+- [x] Przekazanie po weryfikacji formalnej do weryfikacji wstępnej z `need_pre_verification` i przydziałami jednostek.
 
 ## Do pełnego parytetu
 

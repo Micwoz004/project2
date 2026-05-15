@@ -5,6 +5,7 @@ use App\Domain\Communications\Models\CorrespondenceMessage;
 use App\Domain\Communications\Models\MailLog;
 use App\Domain\Communications\Models\ProjectComment;
 use App\Domain\Communications\Models\ProjectNotification;
+use App\Domain\Communications\Models\ProjectPublicComment;
 use App\Domain\Files\Models\ProjectFile;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
 use App\Domain\LegacyImport\Services\LegacyFixtureImportService;
@@ -223,6 +224,27 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'userId' => 600,
             'content' => 'Komentarz wewnętrzny',
         ]],
+        'comments' => [[
+            'id' => 114,
+            'taskId' => 40,
+            'parentId' => null,
+            'creatorId' => 600,
+            'content' => 'Publiczny komentarz',
+            'hidden' => 0,
+            'adminHidden' => 0,
+            'moderated' => 1,
+            'createTime' => '2025-04-05 10:00:00',
+        ], [
+            'id' => 115,
+            'taskId' => 40,
+            'parentId' => 114,
+            'creatorId' => 600,
+            'content' => 'Odpowiedź publiczna',
+            'hidden' => 1,
+            'adminHidden' => 0,
+            'moderated' => 1,
+            'createTime' => '2025-04-05 10:10:00',
+        ]],
         'notification' => [[
             'id' => 112,
             'creatorId' => 600,
@@ -420,6 +442,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['atotvotesrejection'])->toBe(1)
         ->and($batch->stats['correspondence'])->toBe(1)
         ->and($batch->stats['taskcomments'])->toBe(1)
+        ->and($batch->stats['comments'])->toBe(2)
         ->and($batch->stats['notification'])->toBe(1)
         ->and($batch->stats['maillogs'])->toBe(1)
         ->and($batch->stats['taskcorrection'])->toBe(1)
@@ -453,6 +476,10 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(BoardVoteRejection::query()->where('legacy_id', 101)->firstOrFail()->comment)->toBe('Powód odrzucenia')
         ->and(CorrespondenceMessage::query()->where('legacy_id', 102)->firstOrFail()->is_read)->toBeTrue()
         ->and(ProjectComment::query()->where('legacy_id', 103)->firstOrFail()->content)->toBe('Komentarz wewnętrzny')
+        ->and(ProjectPublicComment::query()->where('legacy_id', 114)->firstOrFail()->moderated)->toBeTrue()
+        ->and(ProjectPublicComment::query()->where('legacy_id', 115)->firstOrFail()->parent_id)
+        ->toBe(ProjectPublicComment::query()->where('legacy_id', 114)->firstOrFail()->id)
+        ->and(ProjectPublicComment::query()->where('legacy_id', 115)->firstOrFail()->hidden)->toBeTrue()
         ->and(ProjectNotification::query()->where('legacy_id', 112)->firstOrFail()->subject)->toBe('Powiadomienie SBO')
         ->and(ProjectNotification::query()->where('legacy_id', 112)->firstOrFail()->created_by_id)->toBe($boardUser->id)
         ->and(MailLog::query()->where('legacy_id', 113)->firstOrFail()->controller)->toBe('notification')

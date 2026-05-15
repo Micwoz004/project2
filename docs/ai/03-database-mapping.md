@@ -22,6 +22,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `settings` | `application_settings` | Klucz/kategoria/wartość; `value` zachowane surowo, także dla serializacji Yii/PHP. |
 | `notification` | `project_notifications` | Powiadomienia związane z projektem: temat, treść, autor, adresat i data wysyłki. |
 | `maillogs` | `mail_logs` | Historyczne logi wysyłek mailowych z kontrolerem i akcją legacy. |
+| `comments` | `project_public_comments` | Publiczne komentarze projektu z moderacją, ukryciem i relacją rodzic-dziecko. |
 
 ## Weryfikacje
 

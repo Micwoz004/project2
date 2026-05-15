@@ -30,7 +30,7 @@
 - `Department` odwzorowuje `departments`.
 - `ApplicationSetting` odwzorowuje `settings` z zachowaniem surowych wartości legacy.
 - `ContentPage` odwzorowuje `pages` per edycja SBO i symbol strony procesu.
-- `CorrespondenceMessage`, `ProjectComment`, `ProjectNotification`, `MailLog` odwzorowują komunikację i historię wysyłek.
+- `CorrespondenceMessage`, `ProjectComment`, `ProjectPublicComment`, `ProjectNotification`, `MailLog` odwzorowują komunikację, komentarze i historię wysyłek.
 
 ## Statusy projektu
 

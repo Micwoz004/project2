@@ -7,6 +7,7 @@ use App\Domain\Communications\Models\CorrespondenceMessage;
 use App\Domain\Communications\Models\MailLog;
 use App\Domain\Communications\Models\ProjectComment;
 use App\Domain\Communications\Models\ProjectNotification;
+use App\Domain\Communications\Models\ProjectPublicComment;
 use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Files\Models\ProjectFile;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
@@ -87,6 +88,7 @@ class LegacyFixtureImportService
                 'atotvotesrejection' => $this->importBoardVoteRejections($payload['atotvotesrejection'] ?? []),
                 'correspondence' => $this->importCorrespondence($payload['correspondence'] ?? []),
                 'taskcomments' => $this->importProjectComments($payload['taskcomments'] ?? []),
+                'comments' => $this->importProjectPublicComments($payload['comments'] ?? []),
                 'notification' => $this->importProjectNotifications($payload['notification'] ?? []),
                 'maillogs' => $this->importMailLogs($payload['maillogs'] ?? []),
                 'taskcorrection' => $this->importProjectCorrections($payload['taskcorrection'] ?? []),
@@ -480,6 +482,48 @@ class LegacyFixtureImportService
                 'user_id' => $this->optionalUserId(Arr::get($row, 'userId')),
                 'content' => Arr::get($row, 'content', Arr::get($row, 'messageText')),
             ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importProjectPublicComments(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $createdAt = Arr::get($row, 'createTime');
+
+            ProjectPublicComment::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'created_by_id' => $this->optionalUserId(Arr::get($row, 'creatorId')),
+                'content' => Arr::get($row, 'content', ''),
+                'hidden' => (bool) Arr::get($row, 'hidden', false),
+                'admin_hidden' => (bool) Arr::get($row, 'adminHidden', false),
+                'moderated' => (bool) Arr::get($row, 'moderated', false),
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+        }
+
+        foreach ($rows as $row) {
+            $parentLegacyId = Arr::get($row, 'parentId');
+
+            if ($parentLegacyId === null || $parentLegacyId === '') {
+                continue;
+            }
+
+            ProjectPublicComment::query()
+                ->where('legacy_id', $this->legacyId($row))
+                ->update([
+                    'parent_id' => ProjectPublicComment::query()
+                        ->where('legacy_id', (int) $parentLegacyId)
+                        ->value('id'),
+                ]);
         }
 
         return count($rows);

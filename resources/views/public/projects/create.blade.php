@@ -30,6 +30,15 @@
             @endforeach
         </select>
 
+        <label for="category_id">Kategoria</label>
+        <select id="category_id" name="category_id" required>
+            @foreach ($categories as $category)
+                <option value="{{ $category->id }}" @selected((int) old('category_id') === $category->id)>
+                    {{ $category->name }}
+                </option>
+            @endforeach
+        </select>
+
         <label for="title">Tytuł</label>
         <input id="title" name="title" value="{{ old('title') }}" required maxlength="600">
 

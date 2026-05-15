@@ -104,10 +104,11 @@
 - [x] Fizyczny zapis załączników projektu do publicznego/prywatnego storage z walidacją legacy przed zapisem.
 - [x] Publiczna widoczność załączników dopiero po oznaczeniu projektu jako zanonimizowanego i tylko dla plików nieprywatnych.
 - [x] Publiczny formularz zgłoszenia zapisuje realny prywatny upload listy poparcia.
+- [x] Publiczny formularz zgłoszenia zapisuje kategorię główną i pivot kategorii projektu.
 
 ## Do pełnego parytetu
 
-- [ ] Pełny formularz projektu z autorami, kategoriami, mapą i zgodami 1:1 względem widoków Yii.
+- [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
 - [ ] Pełne podpięcie pozostałych uploadów w formularzach UI oraz potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Korekty projektu w UI autora/admina oraz korekty załączników/kosztów.
 - [ ] Weryfikacja formalna z pełną listą pól legacy.

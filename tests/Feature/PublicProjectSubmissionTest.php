@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Projects\Enums\ProjectStatus;
+use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use Illuminate\Http\UploadedFile;
@@ -13,6 +14,7 @@ it('validates public project submission at the request boundary', function (): v
         ->assertSessionHasErrors([
             'budget_edition_id',
             'project_area_id',
+            'category_id',
             'title',
             'support_list',
             'support_list_file',
@@ -25,10 +27,12 @@ it('creates a submitted project through the public endpoint', function (): void 
     Storage::fake('local');
     $edition = budgetEdition();
     $area = ProjectArea::query()->create(areaAttributes());
+    $category = Category::query()->create(['name' => 'Zieleń']);
 
     $this->post(route('public.projects.store'), [
         'budget_edition_id' => $edition->id,
         'project_area_id' => $area->id,
+        'category_id' => $category->id,
         'title' => 'Nowy park kieszonkowy',
         'localization' => 'Szczecin',
         'description' => 'Opis projektu',
@@ -52,6 +56,8 @@ it('creates a submitted project through the public endpoint', function (): void 
         ->and($project->costItems()->count())->toBe(1)
         ->and($project->files()->count())->toBe(1)
         ->and($project->versions()->count())->toBe(1)
+        ->and($project->category_id)->toBe($category->id)
+        ->and($project->categories()->pluck('categories.id')->all())->toBe([$category->id])
         ->and($supportListFile->is_private)->toBeTrue()
         ->and($supportListFile->is_task_form_attachment)->toBeTrue()
         ->and($supportListFile->original_name)->toBe('lista-poparcia.pdf');

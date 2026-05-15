@@ -52,6 +52,7 @@ class PublicProjectController extends Controller
         return view('public.projects.create', [
             'edition' => BudgetEdition::query()->latest('propose_start')->first(),
             'areas' => ProjectArea::query()->orderBy('name')->get(),
+            'categories' => Category::query()->orderBy('name')->get(),
         ]);
     }
 
@@ -69,6 +70,7 @@ class PublicProjectController extends Controller
         $project = Project::query()->create([
             'budget_edition_id' => $data['budget_edition_id'],
             'project_area_id' => $data['project_area_id'],
+            'category_id' => $data['category_id'],
             'title' => $data['title'],
             'localization' => $data['localization'],
             'description' => $data['description'],
@@ -80,6 +82,7 @@ class PublicProjectController extends Controller
             'status' => ProjectStatus::WorkingCopy,
             'is_support_list' => true,
         ]);
+        $project->categories()->sync([$data['category_id']]);
 
         $project->costItems()->create([
             'description' => $data['cost_description'],

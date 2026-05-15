@@ -16,6 +16,7 @@ class StorePublicProjectRequest extends FormRequest
         return [
             'budget_edition_id' => ['required', 'exists:budget_editions,id'],
             'project_area_id' => ['required', 'exists:project_areas,id'],
+            'category_id' => ['required', 'exists:categories,id'],
             'title' => ['required', 'string', 'max:600'],
             'localization' => ['required', 'string', 'max:63000'],
             'description' => ['required', 'string', 'max:63000'],
@@ -36,6 +37,7 @@ class StorePublicProjectRequest extends FormRequest
         return [
             'budget_edition_id' => 'edycja',
             'project_area_id' => 'obszar',
+            'category_id' => 'kategoria',
             'free_of_charge' => 'bezpłatność',
             'cost_description' => 'pozycja kosztorysu',
             'cost_amount' => 'kwota',

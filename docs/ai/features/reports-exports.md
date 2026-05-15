@@ -33,6 +33,7 @@ Status: baseline domenowy rozpoczęty.
 - `ProjectReportService::submittedProjectRows()` i `SubmittedProjectsCsvExporter` odtwarzają awaryjny raport `FuckupController::actionGenerateTaskReport`: numer wniosku, tytuł i data złożenia dla projektów złożonych od `2019-07-07 00:00:00`.
 - `ProjectReportService::unsentAdvancedVerificationRows()` i `UnsentAdvancedVerificationsCsvExporter` odtwarzają awaryjny raport `FuckupController::actionGetUnsentVerifications`: projekty w statusach `Submitted`, `FormallyVerified`, `RecommendedWjo`, `RejectedFormally`, `RejectedWjo` z niewysłanymi `taskadvancedverification`.
 - `ProjectReportService::projectCorrectionRows()` i `ProjectCorrectionsCsvExporter` odtwarzają awaryjny raport `FuckupController::actionGenerateTaskCorrectionReport`, rozwijając `allowed_fields` do flag kolumn legacy z `TaskCorrection::attributeLabels`.
+- `ProjectReportService::projectHistoryRows()` i `ProjectHistoryCsvExporter` odtwarzają awaryjny raport `FuckupController::actionGetTaskHistory` z danych historycznych `versions.data`.
 - `PublicResultsCsvExporter` eksportuje publiczne wyniki CSV z kolumnami `project_id`, `project_number`, `title`, `area`, `points`.
 - `/wyniki/export.csv` jest dostępne tylko w oknie publikacji wyników.
 
@@ -45,7 +46,7 @@ Status: baseline domenowy rozpoczęty.
 - `ReportController` ma raporty dzienne/godzinowe głosowania zakomentowane w legacy; traktujemy je jako historyczne, nieaktywne, dopóki nie znajdziemy wywołania w menu.
 - `ReportController::actionCsv` używa `ECSVExport` do ogólnego eksportu `raport.csv` z przekazanego data providera.
 - `DocumentController::actionGenVerificationResultReport` generuje raport wyników weryfikacji z kart formalnych i merytorycznych.
-- `FuckupController` zawiera awaryjne XLS: niewysłane weryfikacje jednostek, lista złożonych projektów, korekty projektu i historia zmian projektu. Lista złożonych projektów, niewysłane weryfikacje jednostek i korekty projektu są odwzorowane jako CSV domenowe.
+- `FuckupController` zawiera awaryjne XLS: niewysłane weryfikacje jednostek, lista złożonych projektów, korekty projektu i historia zmian projektu. Lista złożonych projektów, niewysłane weryfikacje jednostek, korekty projektu i historia zmian są odwzorowane jako CSV domenowe.
 - Katalog `raporty_sbo` zawiera szablony: `_historia_zmian_projektow.xls`, `_koresponcenje_z_autorem.xlsx`, `_ocena_komisji_odwolawczej.xlsx`, `_ocena_rady_ds_bo.xlsx`, `_propozycja-poprawy.xlsx`, `_tresc-odwolania.xlsx`.
 
 ## Świadome braki na tym etapie

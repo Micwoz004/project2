@@ -6,8 +6,10 @@ use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCorrection;
+use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Reports\Exports\AdminVoteCardsCsvExporter;
 use App\Domain\Reports\Exports\ProjectCorrectionsCsvExporter;
+use App\Domain\Reports\Exports\ProjectHistoryCsvExporter;
 use App\Domain\Reports\Exports\SubmittedProjectsCsvExporter;
 use App\Domain\Reports\Exports\UnsentAdvancedVerificationsCsvExporter;
 use App\Domain\Reports\Services\ProjectReportService;
@@ -923,4 +925,60 @@ it('builds and exports legacy project corrections report', function (): void {
         ])
         ->and($csv)->toContain('Tytuł,"Obszary Lokalne","Lokalizacja projektu","Mapka projektu"')
         ->and($csv)->toContain('1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,"Uzupełnij kosztorys","2025-02-10 12:00:00","2025-02-20 12:00:00"');
+});
+
+it('builds and exports legacy project history report', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes([
+        'legacy_id' => 20,
+        'name' => 'Pogodno',
+        'symbol' => 'P1',
+    ]));
+    $user = User::factory()->create([
+        'name' => 'operator',
+    ]);
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'legacy_id' => 1332,
+        'number' => 7,
+    ]));
+
+    ProjectVersion::query()->create([
+        'project_id' => $project->id,
+        'user_id' => $user->id,
+        'status' => ProjectStatus::Submitted,
+        'data' => [
+            'title' => 'Park kieszonkowy',
+            'local' => 1,
+            'taskTypeId' => 20,
+            'argumentation' => 'Uzasadnienie',
+            'localization' => 'Szczecin',
+            'goal' => 'Cel',
+            'description' => 'Opis',
+            'recipients' => 'Mieszkańcy',
+            'freeOfCharge' => 'Tak',
+            'status' => ProjectStatus::Submitted->value,
+        ],
+        'files' => [],
+        'costs' => [],
+        'created_at' => '2025-01-11 12:00:00',
+        'updated_at' => '2025-01-11 12:00:00',
+    ]);
+
+    $rows = app(ProjectReportService::class)->projectHistoryRows();
+    $csv = app(ProjectHistoryCsvExporter::class)->export();
+
+    expect($rows)->toHaveCount(1)
+        ->and($rows->first())->toMatchArray([
+            'project_id' => 1332,
+            'project_number' => 'P1/0007',
+            'title' => 'Park kieszonkowy',
+            'project_category' => 'Projekt lokalny',
+            'district' => 'Pogodno',
+            'status' => ProjectStatus::Submitted->publicLabel(),
+            'changed_at' => '2025-01-11 12:00:00',
+            'changed_by' => 'operator',
+        ])
+        ->and($csv)->toContain('"Identyfikator wniosku","Numer wniosku",Tytuł,"Kategoria projektu",Dzielnica')
+        ->and($csv)->toContain('1332,P1/0007,"Park kieszonkowy","Projekt lokalny",Pogodno,Uzasadnienie,Szczecin,Cel,Opis')
+        ->and($csv)->toContain('operator');
 });

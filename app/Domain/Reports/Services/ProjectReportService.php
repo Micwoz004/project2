@@ -4,8 +4,11 @@ namespace App\Domain\Reports\Services;
 
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCorrection;
+use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Verification\Models\AdvancedVerification;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -111,9 +114,85 @@ class ProjectReportService
         return $rows;
     }
 
+    public function projectHistoryRows(): Collection
+    {
+        Log::info('project_report.project_history.start');
+
+        $areasByLegacyId = ProjectArea::query()
+            ->whereNotNull('legacy_id')
+            ->get()
+            ->keyBy('legacy_id');
+
+        $rows = ProjectVersion::query()
+            ->with(['project.area', 'user'])
+            ->whereHas('project')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (ProjectVersion $version) => [
+                'project_id' => $version->project->legacy_id ?: $version->project->id,
+                'project_number' => $this->legacyFullNumber($version->project),
+                'title' => $this->historyValue($version->data, 'title'),
+                'project_category' => $this->historyProjectCategory($version->data),
+                'district' => $this->historyDistrict($version->data, $areasByLegacyId),
+                'category_reason' => $this->historyValue($version->data, 'argumentation'),
+                'localization' => $this->historyValue($version->data, 'localization'),
+                'goal' => $this->historyValue($version->data, 'goal'),
+                'description' => $this->historyValue($version->data, 'description'),
+                'recipients' => $this->historyValue($version->data, 'recipients'),
+                'free_of_charge' => $this->historyValue($version->data, 'freeOfCharge'),
+                'status' => $this->historyStatus($version->data),
+                'changed_at' => $version->created_at?->toDateTimeString(),
+                'changed_by' => $version->user?->name ?: '---',
+            ]);
+
+        Log::info('project_report.project_history.success', [
+            'rows_count' => $rows->count(),
+        ]);
+
+        return $rows;
+    }
+
     private function correctionFieldAllowed(ProjectCorrection $correction, string $field): int
     {
         return in_array($field, $correction->allowed_fields, true) ? 1 : 0;
+    }
+
+    private function historyValue(array $data, string $key): mixed
+    {
+        $value = Arr::get($data, $key);
+
+        return $value === null || $value === '' ? '---' : $value;
+    }
+
+    private function historyProjectCategory(array $data): string
+    {
+        return match ((int) Arr::get($data, 'local', 0)) {
+            1 => 'Projekt lokalny',
+            2 => 'Projekt Zielonego SBO',
+            default => '',
+        };
+    }
+
+    private function historyDistrict(array $data, Collection $areasByLegacyId): string
+    {
+        $taskTypeId = Arr::get($data, 'taskTypeId');
+
+        if ($taskTypeId === null || $taskTypeId === '' || (int) $taskTypeId === 35) {
+            return '---';
+        }
+
+        return $areasByLegacyId->get((int) $taskTypeId)?->name ?: '---';
+    }
+
+    private function historyStatus(array $data): string
+    {
+        $status = Arr::get($data, 'status');
+
+        if ($status === null || $status === '') {
+            return '---';
+        }
+
+        return ProjectStatus::tryFrom((int) $status)?->publicLabel() ?: '---';
     }
 
     private function legacyFullNumber(Project $project): string

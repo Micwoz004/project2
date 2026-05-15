@@ -32,6 +32,7 @@ Status: baseline domenowy rozbudowany.
 
 - `LegacyFixtureImportService` przenosi `newverification`, `votingtokens` i `smslogs`, zachowując hash rejestru, tokeny SMS, flagę `disabled`, typ tokenu, dane zgód w `extra_data` oraz relację logu SMS do wyborcy.
 - Jeżeli historyczny `votingtokens.type` jest pusty albo spoza enumu, importer traktuje rekord jako SMS, bo dump 2025 używa tej tabeli dla tokenów SMS.
+- Import fixture `voters` przenosi pełniejsze dane wyborcy z legacy: drugie imię, nazwisko matki, ojca, e-mail, adres, IP, user agent, telefon i datę utworzenia.
 
 ## Świadome braki na tym etapie
 

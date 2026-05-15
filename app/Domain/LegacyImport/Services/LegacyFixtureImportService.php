@@ -601,10 +601,24 @@ class LegacyFixtureImportService
             ], [
                 'pesel' => Arr::get($row, 'pesel'),
                 'first_name' => Arr::get($row, 'firstName'),
+                'second_name' => Arr::get($row, 'secondName'),
+                'mother_last_name' => Arr::get($row, 'motherLastName'),
                 'last_name' => Arr::get($row, 'lastName'),
+                'father_name' => Arr::get($row, 'fatherName'),
+                'email' => Arr::get($row, 'email'),
+                'street' => Arr::get($row, 'street'),
+                'house_no' => Arr::get($row, 'houseNo'),
+                'flat_no' => Arr::get($row, 'flatNo'),
+                'post_code' => Arr::get($row, 'postCode'),
+                'city' => Arr::get($row, 'city'),
+                'ip' => Arr::get($row, 'ip'),
                 'birth_date' => Arr::get($row, 'birthDate'),
                 'sex' => Arr::get($row, 'sex'),
                 'age' => Arr::get($row, 'age'),
+                'user_agent' => Arr::get($row, 'userAgent'),
+                'phone' => Arr::get($row, 'phone'),
+                'created_at' => Arr::get($row, 'created'),
+                'updated_at' => Arr::get($row, 'created'),
             ]);
         }
 

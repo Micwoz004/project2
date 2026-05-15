@@ -297,10 +297,23 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'id' => 60,
             'pesel' => '44051401458',
             'firstName' => 'Jan',
+            'secondName' => 'Piotr',
+            'motherLastName' => 'Nowak',
             'lastName' => 'Kowalski',
+            'fatherName' => 'Adam',
+            'email' => 'jan@example.test',
+            'street' => 'Jasne Błonia',
+            'houseNo' => '1',
+            'flatNo' => '2',
+            'postCode' => '70-001',
+            'city' => 'Szczecin',
+            'created' => '2025-04-01 10:30:00',
+            'ip' => '127.0.0.1',
             'birthDate' => '1944-05-14',
             'sex' => 'M',
             'age' => 80,
+            'userAgent' => 'Feature test',
+            'phone' => '500600700',
         ]],
         'smslogs' => [[
             'id' => 107,
@@ -412,6 +425,9 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(VoterRegistryHash::query()->where('legacy_id', 105)->firstOrFail()->hash)->toBe('ABCDEF1234567890ABCDEF1234567890')
         ->and(VotingToken::query()->where('legacy_id', 106)->firstOrFail()->type)->toBe(VotingTokenType::Sms)
         ->and(VotingToken::query()->where('legacy_id', 106)->firstOrFail()->extra_data['city_statement'])->toBeTrue()
+        ->and($voteCard->voter->mother_last_name)->toBe('Nowak')
+        ->and($voteCard->voter->phone)->toBe('500600700')
+        ->and($voteCard->voter->city)->toBe('Szczecin')
         ->and(SmsLog::query()->where('legacy_id', 107)->firstOrFail()->voter_id)->toBe($voteCard->voter_id)
         ->and($voteCard->status)->toBe(VoteCardStatus::Accepted)
         ->and($voteCard->created_by_id)->toBe($boardUser->id)

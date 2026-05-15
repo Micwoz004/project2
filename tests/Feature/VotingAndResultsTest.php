@@ -5,7 +5,9 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Reports\Exports\AdminVoteCardsCsvExporter;
+use App\Domain\Reports\Exports\ProjectCorrectionsCsvExporter;
 use App\Domain\Reports\Exports\SubmittedProjectsCsvExporter;
 use App\Domain\Reports\Exports\UnsentAdvancedVerificationsCsvExporter;
 use App\Domain\Reports\Services\ProjectReportService;
@@ -884,4 +886,41 @@ it('builds and exports legacy unsent advanced verifications report', function ()
         ->and($csv)->toContain('"Numer wniosku",Tytuł,"Nazwa wydziału","Nazwa autora","Link do projektu"')
         ->and($csv)->toContain('P1/0009,"Projekt do opinii","Wydział testowy",operator,https://sbownioski.szczecin.eu/task/1332')
         ->and($csv)->not->toContain('Projekt wysłany');
+});
+
+it('builds and exports legacy project corrections report', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id));
+
+    ProjectCorrection::query()->create([
+        'project_id' => $project->id,
+        'allowed_fields' => [
+            'title',
+            'localization',
+            'cost',
+            'attachments',
+        ],
+        'notes' => 'Uzupełnij kosztorys',
+        'correction_deadline' => '2025-02-20 12:00:00',
+        'created_at' => '2025-02-10 12:00:00',
+        'updated_at' => '2025-02-10 12:00:00',
+    ]);
+
+    $rows = app(ProjectReportService::class)->projectCorrectionRows();
+    $csv = app(ProjectCorrectionsCsvExporter::class)->export();
+
+    expect($rows)->toHaveCount(1)
+        ->and($rows->first())->toMatchArray([
+            'title' => 1,
+            'taskTypeId' => 0,
+            'localization' => 1,
+            'cost' => 1,
+            'attachments' => 1,
+            'notes' => 'Uzupełnij kosztorys',
+            'createdAt' => '2025-02-10 12:00:00',
+            'correctionDeadline' => '2025-02-20 12:00:00',
+        ])
+        ->and($csv)->toContain('Tytuł,"Obszary Lokalne","Lokalizacja projektu","Mapka projektu"')
+        ->and($csv)->toContain('1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,"Uzupełnij kosztorys","2025-02-10 12:00:00","2025-02-20 12:00:00"');
 });

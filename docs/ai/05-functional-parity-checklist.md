@@ -61,6 +61,7 @@
 - [x] CSV administracyjnego raportu kart głosowania z kolumnami legacy.
 - [x] CSV awaryjnego raportu złożonych projektów zgodny z `FuckupController::actionGenerateTaskReport`.
 - [x] CSV awaryjnego raportu niewysłanych weryfikacji jednostek zgodny z `FuckupController::actionGetUnsentVerifications`.
+- [x] CSV awaryjnego raportu korekt projektów zgodny z `FuckupController::actionGenerateTaskCorrectionReport`.
 - [x] Publiczny eksport CSV wyników bez PII.
 - [x] Import słowników imion, nazwisk i nazwisk matek z legacy.
 - [x] Import relacji `taskscategories` do pivotu kategorii projektów.

@@ -26,7 +26,7 @@ Status: częściowo zaimplementowane w etapie 4.
 9. [x] Dodać restart i zamknięcie głosowania OT/AT zgodne z akcjami `forceClose`/`forceRestart`.
 10. [x] Dodać bramki uprawnień dla ról rad/komisji i zarządzania głosowaniem.
 11. [x] Podpiąć w Filament akcje zamknięcia i restartu głosowań OT/AT z bramką `manage-board-voting`.
-12. [ ] Uzupełnić UI/Filament dla oddawania głosów członków rad/komisji.
+12. [x] Uzupełnić UI/Filament dla oddawania głosów członków rad/komisji.
 
 ## Rozpoznane reguły legacy
 
@@ -54,6 +54,7 @@ Status: częściowo zaimplementowane w etapie 4.
 - `RestartBoardVotingAction` usuwa głosy OT albo AT danego projektu i przywraca status aktywnego głosowania, tak jak legacy `actionForceRestartOTVoting()` i `actionForceRestartATVoting()`.
 - Gate `cast-board-vote` dopuszcza role `president/vicepresident/verifier ZK` do ZK oraz `president/vicepresident/verifier ZOD` do OT/AT; `manage-board-voting` jest dla ról z `projects.manage` oraz admin/BDO.
 - `ProjectResource` w Filament pokazuje akcje zamknięcia/restartu OT albo AT tylko dla projektów w pasujących statusach i tylko użytkownikom przechodzącym `manage-board-voting`.
+- `ProjectResource` pokazuje akcje oddania głosu ZK/OT/AT tylko członkom właściwych ról, w statusach aktywnego głosowania i tylko do momentu oddania własnego głosu.
 - `BoardDecisionResolver` liczy decyzje zgodnie z akcjami `actionProcessZKVote`, `actionProcessOTVote`, `actionProcessATVote`.
 - Dla ZK resolver zachowuje szczególną regułę `Task::zkAccepted()`: przy wyniku 4:4 głos użytkownika z rolą `president ZK` rozstrzyga akceptację albo odrzucenie.
 - `LegacyFixtureImportService` konsoliduje historyczne głosy rad/komisji w `project_board_votes` i uzasadnienia odrzuceń w `board_vote_rejections`.
@@ -61,4 +62,4 @@ Status: częściowo zaimplementowane w etapie 4.
 
 ## Zgodność do sprawdzenia
 
-- Dodać UI oddawania głosów członków rad/komisji w Filament z bramką `cast-board-vote`.
+- Porównać etykiety wyborów w modalach Filament z finalnymi tekstami legacy, jeśli miasto będzie wymagało identycznego brzmienia komunikatów.

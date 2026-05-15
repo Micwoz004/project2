@@ -6,13 +6,19 @@ use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
 use App\Domain\Verification\Actions\CloseBoardVotingAction;
 use App\Domain\Verification\Actions\RestartBoardVotingAction;
+use App\Domain\Verification\Enums\AtVoteChoice;
 use App\Domain\Verification\Enums\BoardType;
+use App\Domain\Verification\Enums\OtVoteChoice;
+use App\Domain\Verification\Enums\ZkVoteChoice;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProjects;
+use App\Models\User;
 use BackedEnum;
+use DomainException;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -25,7 +31,9 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 class ProjectResource extends Resource
 {
@@ -121,12 +129,38 @@ class ProjectResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
+                self::castBoardVoteAction(BoardType::Zk),
+                self::castBoardVoteAction(BoardType::Ot),
+                self::castBoardVoteAction(BoardType::At),
                 self::closeBoardVotingAction(BoardType::Ot),
                 self::restartBoardVotingAction(BoardType::Ot),
                 self::closeBoardVotingAction(BoardType::At),
                 self::restartBoardVotingAction(BoardType::At),
                 DeleteAction::make(),
             ]);
+    }
+
+    public static function canCastBoardVote(Project $project, BoardType $boardType): bool
+    {
+        $userId = Auth::id();
+
+        if ($userId === null || ! Gate::allows('cast-board-vote', $boardType)) {
+            return false;
+        }
+
+        $statusMatches = match ($boardType) {
+            BoardType::Zk, BoardType::Ot => $project->status === ProjectStatus::DuringTeamVerification,
+            BoardType::At => $project->status === ProjectStatus::DuringTeamRecallVerification,
+        };
+
+        if (! $statusMatches) {
+            return false;
+        }
+
+        return ! $project->boardVotes()
+            ->where('user_id', $userId)
+            ->where('board_type', $boardType->value)
+            ->exists();
     }
 
     public static function canCloseBoardVoting(Project $project, BoardType $boardType): bool
@@ -186,6 +220,31 @@ class ProjectResource extends Resource
         return $options;
     }
 
+    private static function castBoardVoteAction(BoardType $boardType): Action
+    {
+        return Action::make('cast_'.strtolower($boardType->value).'_board_vote')
+            ->label('Głos '.$boardType->value)
+            ->schema([
+                Select::make('choice')
+                    ->label('Głos')
+                    ->options(self::boardVoteChoiceOptions($boardType))
+                    ->required(),
+                Textarea::make('comment')
+                    ->label('Komentarz')
+                    ->maxLength(5000),
+            ])
+            ->visible(fn (Project $record): bool => self::canCastBoardVote($record, $boardType))
+            ->action(function (array $data, Project $record) use ($boardType): void {
+                app(CastProjectBoardVoteAction::class)->execute(
+                    $record,
+                    self::authenticatedUser(),
+                    $boardType,
+                    (int) $data['choice'],
+                    $data['comment'] ?? null,
+                );
+            });
+    }
+
     private static function closeBoardVotingAction(BoardType $boardType): Action
     {
         return Action::make('close_'.strtolower($boardType->value).'_board_voting')
@@ -202,5 +261,39 @@ class ProjectResource extends Resource
             ->requiresConfirmation()
             ->visible(fn (Project $record): bool => self::canRestartBoardVoting($record, $boardType))
             ->action(fn (Project $record): Project => app(RestartBoardVotingAction::class)->execute($record, $boardType));
+    }
+
+    private static function boardVoteChoiceOptions(BoardType $boardType): array
+    {
+        return match ($boardType) {
+            BoardType::Zk => [
+                ZkVoteChoice::Up->value => 'Za',
+                ZkVoteChoice::Down->value => 'Przeciw',
+            ],
+            BoardType::Ot => [
+                OtVoteChoice::Withhold->value => 'Wstrzymuje się',
+                OtVoteChoice::VerifyAgain->value => 'Do ponownej weryfikacji',
+                OtVoteChoice::RejectedWithRecall->value => 'Odrzucony z możliwością odwołania',
+                OtVoteChoice::Accepted->value => 'Zatwierdzony na listę',
+            ],
+            BoardType::At => [
+                AtVoteChoice::Withhold->value => 'Wstrzymuje się',
+                AtVoteChoice::AcceptedToVote->value => 'Zatwierdzony na listę',
+                AtVoteChoice::Rejected->value => 'Odrzucony ostatecznie',
+            ],
+        };
+    }
+
+    private static function authenticatedUser(): User
+    {
+        $user = Auth::user();
+
+        if ($user instanceof User) {
+            return $user;
+        }
+
+        Log::warning('verification.board.vote.rejected_guest');
+
+        throw new DomainException('Użytkownik musi być zalogowany.');
     }
 }

@@ -5,7 +5,9 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemRole;
+use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
 use App\Domain\Verification\Enums\BoardType;
+use App\Domain\Verification\Enums\OtVoteChoice;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\User;
 
@@ -73,4 +75,45 @@ it('hides board management actions from users without project management permiss
         ->and(ProjectResource::canRestartBoardVoting($open, BoardType::Ot))->toBeFalse()
         ->and(ProjectResource::canCloseBoardVoting($appealOpen, BoardType::At))->toBeFalse()
         ->and(ProjectResource::canRestartBoardVoting($appealOpen, BoardType::At))->toBeFalse();
+});
+
+it('shows board vote actions for council roles by board type and project status', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $zkVerifier = User::factory()->create();
+    $zkVerifier->assignRole(SystemRole::VerifierZk->value);
+    $this->actingAs($zkVerifier);
+
+    $zkProject = boardVotingResourceProject(ProjectStatus::DuringTeamVerification);
+
+    expect(ProjectResource::canCastBoardVote($zkProject, BoardType::Zk))->toBeTrue()
+        ->and(ProjectResource::canCastBoardVote($zkProject, BoardType::Ot))->toBeFalse();
+
+    $zodVerifier = User::factory()->create();
+    $zodVerifier->assignRole(SystemRole::VerifierZod->value);
+    $this->actingAs($zodVerifier);
+
+    $otProject = boardVotingResourceProject(ProjectStatus::DuringTeamVerification);
+    $atProject = boardVotingResourceProject(ProjectStatus::DuringTeamRecallVerification);
+
+    expect(ProjectResource::canCastBoardVote($otProject, BoardType::Ot))->toBeTrue()
+        ->and(ProjectResource::canCastBoardVote($otProject, BoardType::At))->toBeFalse()
+        ->and(ProjectResource::canCastBoardVote($atProject, BoardType::At))->toBeTrue()
+        ->and(ProjectResource::canCastBoardVote($atProject, BoardType::Ot))->toBeFalse();
+});
+
+it('hides board vote action after current user has already voted', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $verifier = User::factory()->create();
+    $verifier->assignRole(SystemRole::VerifierZod->value);
+    $this->actingAs($verifier);
+
+    $project = boardVotingResourceProject(ProjectStatus::DuringTeamVerification);
+
+    expect(ProjectResource::canCastBoardVote($project, BoardType::Ot))->toBeTrue();
+
+    app(CastProjectBoardVoteAction::class)->execute($project, $verifier, BoardType::Ot, OtVoteChoice::Accepted->value);
+
+    expect(ProjectResource::canCastBoardVote($project, BoardType::Ot))->toBeFalse();
 });

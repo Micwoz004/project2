@@ -54,6 +54,7 @@
 - [x] Publiczna publikacja wyników zależna od etapu edycji.
 - [x] Bazowe raporty kart: statusy i demografia zaakceptowanych kart bez PII.
 - [x] Raport wieku per projekt w grupach legacy `16-30`, `31-45`, `46-60`, `61+`.
+- [x] Raport płci per projekt z zaakceptowanych kart.
 - [x] Publiczny eksport CSV wyników bez PII.
 - [x] Import słowników imion, nazwisk i nazwisk matek z legacy.
 - [x] Import relacji `taskscategories` do pivotu kategorii projektów.

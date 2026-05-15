@@ -105,4 +105,35 @@ class VoteCardReportService
 
         return $rows;
     }
+
+    public function projectSexTotals(BudgetEdition $edition): Collection
+    {
+        Log::info('vote_card_report.project_sex_totals.start', [
+            'budget_edition_id' => $edition->id,
+        ]);
+
+        $rows = Vote::query()
+            ->join('vote_cards', 'votes.vote_card_id', '=', 'vote_cards.id')
+            ->join('voters', 'vote_cards.voter_id', '=', 'voters.id')
+            ->where('vote_cards.budget_edition_id', $edition->id)
+            ->where('vote_cards.status', VoteCardStatus::Accepted->value)
+            ->select([
+                'votes.project_id',
+                DB::raw("SUM(CASE WHEN voters.sex = 'K' OR voters.sex = 'F' THEN votes.points ELSE 0 END) as female"),
+                DB::raw("SUM(CASE WHEN voters.sex = 'M' THEN votes.points ELSE 0 END) as male"),
+                DB::raw("SUM(CASE WHEN voters.sex IS NULL OR voters.sex NOT IN ('K', 'F', 'M') THEN votes.points ELSE 0 END) as unknown"),
+                DB::raw('SUM(votes.points) as total'),
+            ])
+            ->groupBy('votes.project_id')
+            ->orderByDesc('total')
+            ->orderBy('votes.project_id')
+            ->get();
+
+        Log::info('vote_card_report.project_sex_totals.success', [
+            'budget_edition_id' => $edition->id,
+            'projects_count' => $rows->count(),
+        ]);
+
+        return $rows;
+    }
 }

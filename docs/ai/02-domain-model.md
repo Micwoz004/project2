@@ -27,7 +27,7 @@
 - `ProjectCorrection` odwzorowuje `taskcorrection`.
 - `ProjectChangeSuggestion` odwzorowuje `taskchangessuggestion`.
 - `VoteCard`, `Vote`, `Voter`, `VotingToken`, `VoterRegistryHash`, `SmsLog` odwzorowują głosowanie.
-- `DetailedVerification`, `LocationVerification`, `VerificationVersion` odwzorowują dodatkowe karty i snapshoty weryfikacji.
+- `DetailedVerification`, `LocationVerification`, `AdvancedVerification`, `VerificationVersion` odwzorowują dodatkowe karty i snapshoty weryfikacji.
 - `ProjectUserAssignment` odwzorowuje przypisania koordynatorów i weryfikatorów do projektu.
 - `Department` odwzorowuje `departments`.
 - `ApplicationSetting` odwzorowuje `settings` z zachowaniem surowych wartości legacy.

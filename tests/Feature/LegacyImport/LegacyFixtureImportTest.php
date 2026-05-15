@@ -24,6 +24,7 @@ use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
+use App\Domain\Verification\Models\AdvancedVerification;
 use App\Domain\Verification\Models\BoardVoteRejection;
 use App\Domain\Verification\Models\ConsultationVerification;
 use App\Domain\Verification\Models\DetailedVerification;
@@ -233,6 +234,17 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'userId' => 600,
             'data' => '{"verificationResult":"1","resultReason":"Pozytywnie"}',
             'createTime' => '2025-03-11 12:05:00',
+        ]],
+        'taskadvancedverification' => [[
+            'id' => 121,
+            'taskId' => 40,
+            'creatorId' => 600,
+            'sentTime' => '2025-03-12 09:00:00',
+            'status' => 2,
+            'creatorDepartmentId' => 500,
+            'presidentOfficeQuestion1' => 1,
+            'presidentOfficeQuestion1Remarks' => 'Zgodny ze strategią',
+            'helperOther' => 'Opinia jednostki',
         ]],
         'coordinatorassignment' => [[
             'id' => 119,
@@ -507,6 +519,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['detailedverification'])->toBe(1)
         ->and($batch->stats['locationverification'])->toBe(1)
         ->and($batch->stats['verificationversion'])->toBe(1)
+        ->and($batch->stats['taskadvancedverification'])->toBe(1)
         ->and($batch->stats['coordinatorassignment'])->toBe(1)
         ->and($batch->stats['verifierassignment'])->toBe(1)
         ->and($batch->stats['taskdepartmentassignment'])->toBe(1)
@@ -549,6 +562,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(LocationVerification::query()->where('legacy_id', 117)->firstOrFail()->recommendations_at)->toBeNull()
         ->and(VerificationVersion::query()->where('legacy_id', 118)->firstOrFail()->raw_data)
         ->toBe('{"verificationResult":"1","resultReason":"Pozytywnie"}')
+        ->and(AdvancedVerification::query()->where('legacy_id', 121)->firstOrFail()->department_id)->toBe($department->id)
+        ->and(AdvancedVerification::query()->where('legacy_id', 121)->firstOrFail()->raw_legacy_payload['helperOther'])->toBe('Opinia jednostki')
         ->and(ProjectUserAssignment::query()->where('legacy_table', 'coordinatorassignment')->where('legacy_id', 119)->firstOrFail()->role)
         ->toBe(ProjectUserAssignment::ROLE_COORDINATOR)
         ->and(ProjectUserAssignment::query()->where('legacy_table', 'verifierassignment')->where('legacy_id', 120)->firstOrFail()->role)

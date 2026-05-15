@@ -66,6 +66,7 @@
 - [x] Import fixture załączników publicznych/prywatnych i współautorów projektu.
 - [x] Import fixture weryfikacji formalnej, merytorycznej i przydziałów departamentów.
 - [x] Import fixture dodatkowych kart `detailedverification`, `locationverification` i wersji `verificationversion`.
+- [x] Import fixture zaawansowanych kart jednostek z `taskadvancedverification`.
 - [x] Import fixture przypisań koordynatorów i weryfikatorów projektów.
 - [x] Import fixture konsultacji oraz głosowań ZK/OT/AT i odrzuceń.
 - [x] Baseline korespondencji i komentarzy projektu z uprawnieniami i odczytem.

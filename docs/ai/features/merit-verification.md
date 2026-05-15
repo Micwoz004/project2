@@ -24,6 +24,7 @@ Status: częściowo zaimplementowane w etapie 3.
 7. [x] Dodać import fixture dla `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation` i `taskdepartmentassignment`.
 8. [x] Dodać import fixture dla `detailedverification`, `locationverification` i `verificationversion`.
 9. [x] Dodać import fixture dla `coordinatorassignment` i `verifierassignment`.
+10. [x] Dodać import fixture dla `taskadvancedverification`.
 
 ## Rozpoznane reguły legacy
 
@@ -46,6 +47,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `LegacyFixtureImportService` importuje historyczne karty weryfikacji, konsultacje i przydziały, zapisując pełny rekord w `raw_legacy_payload`.
 - `DetailedVerification` i `LocationVerification` zachowują specyficzne formularze legacy w `answers` JSON oraz osobne pola wyniku, rekomendacji, publiczności i dat.
 - `ProjectUserAssignment` konsoliduje legacy `coordinatorassignment` i `verifierassignment` w jedną tabelę z rolą przypisania.
+- `AdvancedVerification` zachowuje historyczny formularz `taskadvancedverification` w pełnym payloadzie JSON oraz pola procesu: projekt, jednostkę, operatora, status i datę wysłania.
 
 ## Świadome uproszczenia na tym etapie
 

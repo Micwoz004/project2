@@ -25,6 +25,7 @@ use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\BoardType;
+use App\Domain\Verification\Models\AdvancedVerification;
 use App\Domain\Verification\Models\BoardVoteRejection;
 use App\Domain\Verification\Models\ConsultationVerification;
 use App\Domain\Verification\Models\DetailedVerification;
@@ -88,6 +89,7 @@ class LegacyFixtureImportService
                 'detailedverification' => $this->importDetailedVerifications($payload['detailedverification'] ?? []),
                 'locationverification' => $this->importLocationVerifications($payload['locationverification'] ?? []),
                 'verificationversion' => $this->importVerificationVersions($payload['verificationversion'] ?? []),
+                'taskadvancedverification' => $this->importAdvancedVerifications($payload['taskadvancedverification'] ?? []),
                 'coordinatorassignment' => $this->importProjectUserAssignments(
                     $payload['coordinatorassignment'] ?? [],
                     'coordinatorassignment',
@@ -494,6 +496,32 @@ class LegacyFixtureImportService
                 'raw_data' => Arr::get($row, 'data'),
                 'created_at' => $createdAt,
                 'updated_at' => $createdAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importAdvancedVerifications(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $sentAt = $this->nullableLegacyDate(Arr::get($row, 'sentTime'));
+
+            AdvancedVerification::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'created_by_id' => $this->optionalUserId(Arr::get($row, 'creatorId')),
+                'department_id' => $this->optionalDepartmentId(Arr::get($row, 'creatorDepartmentId')),
+                'status' => (int) Arr::get($row, 'status', 0),
+                'sent_at' => $sentAt,
+                'raw_legacy_payload' => $row,
+                'created_at' => $sentAt,
+                'updated_at' => $sentAt,
             ]);
         }
 

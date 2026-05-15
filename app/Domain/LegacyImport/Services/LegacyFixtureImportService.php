@@ -13,10 +13,13 @@ use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Users\Models\Department;
+use App\Domain\Verification\Enums\BoardType;
+use App\Domain\Verification\Models\BoardVoteRejection;
 use App\Domain\Verification\Models\ConsultationVerification;
 use App\Domain\Verification\Models\FinalMeritVerification;
 use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
+use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Models\Vote;
@@ -61,6 +64,10 @@ class LegacyFixtureImportService
                 'taskfinishmeritverification' => $this->importVerificationRows($payload['taskfinishmeritverification'] ?? [], FinalMeritVerification::class),
                 'taskconsultation' => $this->importVerificationRows($payload['taskconsultation'] ?? [], ConsultationVerification::class),
                 'taskdepartmentassignment' => $this->importVerificationAssignments($payload['taskdepartmentassignment'] ?? []),
+                'zkvotes' => $this->importBoardVotes($payload['zkvotes'] ?? [], BoardType::Zk),
+                'otvotes' => $this->importBoardVotes($payload['otvotes'] ?? [], BoardType::Ot),
+                'atvotes' => $this->importBoardVotes($payload['atvotes'] ?? [], BoardType::At),
+                'atotvotesrejection' => $this->importBoardVoteRejections($payload['atotvotesrejection'] ?? []),
                 'voters' => $this->importVoters($payload['voters'] ?? []),
                 'votecards' => $this->importVoteCards($payload['votecards'] ?? []),
                 'votes' => $this->importVotes($payload['votes'] ?? []),
@@ -329,6 +336,51 @@ class LegacyFixtureImportService
     /**
      * @param  list<array<string, mixed>>  $rows
      */
+    private function importBoardVotes(array $rows, BoardType $boardType): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $user = $this->user((int) Arr::get($row, 'userId'));
+
+            ProjectBoardVote::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'user_id' => $user->id,
+                'board_type' => $boardType,
+                'choice' => (int) Arr::get($row, 'choice', Arr::get($row, 'vote')),
+                'comment' => Arr::get($row, 'comment'),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importBoardVoteRejections(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $user = $this->user((int) Arr::get($row, 'userId'));
+
+            BoardVoteRejection::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'board_type' => BoardType::from((string) Arr::get($row, 'boardType', BoardType::At->value)),
+                'comment' => Arr::get($row, 'comment'),
+                'created_by_id' => $user->id,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
     private function importVoters(array $rows): int
     {
         foreach ($rows as $row) {
@@ -435,6 +487,11 @@ class LegacyFixtureImportService
     private function department(int $legacyId): Department
     {
         return $this->findLegacy(Department::class, $legacyId, 'departments');
+    }
+
+    private function user(int $legacyId): User
+    {
+        return $this->findLegacy(User::class, $legacyId, 'users');
     }
 
     private function optionalDepartmentId(mixed $legacyId): ?int

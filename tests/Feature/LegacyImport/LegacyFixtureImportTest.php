@@ -12,19 +12,27 @@ use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Users\Models\Department;
+use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
+use App\Domain\Verification\Models\BoardVoteRejection;
+use App\Domain\Verification\Models\ConsultationVerification;
 use App\Domain\Verification\Models\FinalMeritVerification;
 use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
+use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Models\Vote;
 use App\Domain\Voting\Models\VoteCard;
+use App\Models\User;
 
 it('imports a legacy fixture with ids statuses relations and result totals', function (): void {
     $department = Department::query()->create([
         'legacy_id' => 500,
         'name' => 'Wydział testowy',
+    ]);
+    $boardUser = User::factory()->create([
+        'legacy_id' => 600,
     ]);
 
     $payload = [
@@ -133,12 +141,48 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'result' => true,
             'resultComments' => 'Końcowo pozytywny',
         ]],
+        'taskconsultation' => [[
+            'id' => 97,
+            'taskId' => 40,
+            'departmentId' => 500,
+            'status' => 2,
+            'result' => true,
+            'resultComments' => 'Konsultacja pozytywna',
+        ]],
         'taskdepartmentassignment' => [[
             'id' => 96,
             'taskId' => 40,
             'departmentId' => 500,
             'type' => VerificationAssignmentType::MeritInitial->value,
             'deadline' => '2025-03-10 12:00:00',
+        ]],
+        'zkvotes' => [[
+            'id' => 98,
+            'taskId' => 40,
+            'userId' => 600,
+            'choice' => 1,
+            'comment' => 'Za',
+        ]],
+        'atvotes' => [[
+            'id' => 99,
+            'taskId' => 40,
+            'userId' => 600,
+            'choice' => 2,
+            'comment' => 'Do głosowania',
+        ]],
+        'otvotes' => [[
+            'id' => 100,
+            'taskId' => 40,
+            'userId' => 600,
+            'choice' => 4,
+            'comment' => 'Akceptacja',
+        ]],
+        'atotvotesrejection' => [[
+            'id' => 101,
+            'taskId' => 40,
+            'userId' => 600,
+            'boardType' => BoardType::At->value,
+            'comment' => 'Powód odrzucenia',
         ]],
         'voters' => [[
             'id' => 60,
@@ -182,7 +226,12 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['taskverification'])->toBe(1)
         ->and($batch->stats['taskinitialmeritverification'])->toBe(1)
         ->and($batch->stats['taskfinishmeritverification'])->toBe(1)
+        ->and($batch->stats['taskconsultation'])->toBe(1)
         ->and($batch->stats['taskdepartmentassignment'])->toBe(1)
+        ->and($batch->stats['zkvotes'])->toBe(1)
+        ->and($batch->stats['atvotes'])->toBe(1)
+        ->and($batch->stats['otvotes'])->toBe(1)
+        ->and($batch->stats['atotvotesrejection'])->toBe(1)
         ->and($edition->legacy_id)->toBe(10)
         ->and(ProjectArea::query()->where('legacy_id', 20)->firstOrFail()->is_local)->toBeTrue()
         ->and($project->status)->toBe(ProjectStatus::Picked)
@@ -196,7 +245,12 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(FormalVerification::query()->where('legacy_id', 93)->firstOrFail()->answers)->toBe(['hasSupportAttachment' => true])
         ->and(InitialMeritVerification::query()->where('legacy_id', 94)->firstOrFail()->department_id)->toBe($department->id)
         ->and(FinalMeritVerification::query()->where('legacy_id', 95)->firstOrFail()->result_comments)->toBe('Końcowo pozytywny')
+        ->and(ConsultationVerification::query()->where('legacy_id', 97)->firstOrFail()->department_id)->toBe($department->id)
         ->and(VerificationAssignment::query()->where('legacy_id', 96)->firstOrFail()->type)->toBe(VerificationAssignmentType::MeritInitial)
+        ->and(ProjectBoardVote::query()->where('legacy_id', 98)->firstOrFail()->user_id)->toBe($boardUser->id)
+        ->and(ProjectBoardVote::query()->where('legacy_id', 99)->firstOrFail()->board_type)->toBe(BoardType::At)
+        ->and(ProjectBoardVote::query()->where('legacy_id', 100)->firstOrFail()->board_type)->toBe(BoardType::Ot)
+        ->and(BoardVoteRejection::query()->where('legacy_id', 101)->firstOrFail()->comment)->toBe('Powód odrzucenia')
         ->and($voteCard->status)->toBe(VoteCardStatus::Accepted)
         ->and(Vote::query()->where('legacy_id', 80)->firstOrFail()->project_id)->toBe($project->id)
         ->and((int) $totals->first()->points)->toBe(1);

@@ -20,7 +20,8 @@ Status: częściowo zaimplementowane w etapie 4.
 3. [x] Dodać reguły jednego głosu per projekt/użytkownik/typ.
 4. [x] Dodać kalkulator decyzji i odwołań.
 5. [x] Pokryć testami remisy, odrzucenia i ponowną weryfikację.
-6. [ ] Uzupełnić UI/Filament dla oddawania i zamykania głosowań.
+6. [x] Dodać import fixture dla `zkvotes`, `atvotes`, `otvotes` i `atotvotesrejection`.
+7. [ ] Uzupełnić UI/Filament dla oddawania i zamykania głosowań.
 
 ## Rozpoznane reguły legacy
 
@@ -43,6 +44,7 @@ Status: częściowo zaimplementowane w etapie 4.
 - `RecordBoardVoteRejectionAction` wymaga komentarza i dopuszcza uzasadnienia tylko dla `AT`/`OT`.
 - `StartBoardVotingAction` ustawia status projektu na `DuringTeamVerification` albo `DuringTeamRecallVerification` i zachowuje flagę historycznego odrzucenia.
 - `BoardDecisionResolver` liczy decyzje zgodnie z akcjami `actionProcessZKVote`, `actionProcessOTVote`, `actionProcessATVote`.
+- `LegacyFixtureImportService` konsoliduje historyczne głosy rad/komisji w `project_board_votes` i uzasadnienia odrzuceń w `board_vote_rejections`.
 
 ## Świadome uproszczenia na tym etapie
 

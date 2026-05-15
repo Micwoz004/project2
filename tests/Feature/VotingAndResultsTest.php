@@ -5,6 +5,7 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Reports\Exports\AdminVoteCardsCsvExporter;
 use App\Domain\Reports\Services\VoteCardReportService;
 use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
@@ -766,4 +767,31 @@ it('builds legacy admin vote card rows with pii columns', function (): void {
             'notes' => 'Do sprawdzenia',
             'ip' => '127.0.0.1',
         ]);
+});
+
+it('exports legacy admin vote cards csv with pii columns', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $voter = Voter::query()->create([
+        'pesel' => '44051401458',
+        'first_name' => 'Jan',
+        'last_name' => 'Kowalski',
+    ]);
+
+    VoteCard::query()->create([
+        'budget_edition_id' => $edition->id,
+        'voter_id' => $voter->id,
+        'card_no' => 15,
+        'digital' => true,
+        'status' => VoteCardStatus::Accepted,
+        'citizen_confirm' => CitizenConfirmation::Default,
+        'notes' => 'OK',
+        'ip' => '127.0.0.1',
+        'created_at' => '2025-04-11 12:00:00',
+        'updated_at' => '2025-04-11 13:00:00',
+    ]);
+
+    $csv = app(AdminVoteCardsCsvExporter::class)->export($edition);
+
+    expect($csv)->toContain('"ID karty","Typ karty",PESEL,"Imie głosującego","Nazwisko głosującego","Oświadczenie zamieszkania",Status,Uwagi,"Data dodania","Data modyfikacji",IP')
+        ->and($csv)->toContain('000015,interaktywna,44051401458,Jan,Kowalski,Nie,ważna,OK,"2025-04-11 12:00:00","2025-04-11 13:00:00",127.0.0.1');
 });

@@ -58,6 +58,7 @@
 - [x] Raport typu karty elektroniczna/papierowa per projekt.
 - [x] Inwentaryzacja raportów i szablonów legacy z `ReportController`, `FuckupController`, `DocumentController` i `raporty_sbo`.
 - [x] Dane administracyjnego raportu kart głosowania z PII zgodne z `ReportController::actionVoteCardReport`.
+- [x] CSV administracyjnego raportu kart głosowania z kolumnami legacy.
 - [x] Publiczny eksport CSV wyników bez PII.
 - [x] Import słowników imion, nazwisk i nazwisk matek z legacy.
 - [x] Import relacji `taskscategories` do pivotu kategorii projektów.

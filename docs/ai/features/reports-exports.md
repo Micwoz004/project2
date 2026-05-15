@@ -29,12 +29,13 @@ Status: baseline domenowy rozpoczęty.
 - `VoteCardReportService::projectSexTotals()` odtwarza administracyjny raport punktów według płci per projekt.
 - `VoteCardReportService::projectCardTypeTotals()` odtwarza administracyjny raport punktów według typu karty: elektroniczna/papierowa.
 - `VoteCardReportService::adminVoteCardRows()` odtwarza dane dla legacy `ReportController::actionVoteCardReport`: ID karty, typ, PESEL, imię, nazwisko, oświadczenie zamieszkania, status, uwagi, daty i IP.
+- `AdminVoteCardsCsvExporter` eksportuje administracyjny raport kart głosowania z kolumnami legacy; zawiera PII i musi być udostępniany wyłącznie przez uprawnienie `reports.export`/`vote_cards.manage`.
 - `PublicResultsCsvExporter` eksportuje publiczne wyniki CSV z kolumnami `project_id`, `project_number`, `title`, `area`, `points`.
 - `/wyniki/export.csv` jest dostępne tylko w oknie publikacji wyników.
 
 ## Inwentaryzacja legacy
 
-- `ReportController::actionVoteCardReport` eksportuje XLS kart głosowania z PII: ID karty, typ, PESEL, imię, nazwisko, oświadczenie zamieszkania, status, uwagi, daty i IP. Dane są odwzorowane w `adminVoteCardRows`; sam XLSX pozostaje do warstwy eksportera.
+- `ReportController::actionVoteCardReport` eksportuje XLS kart głosowania z PII: ID karty, typ, PESEL, imię, nazwisko, oświadczenie zamieszkania, status, uwagi, daty i IP. Dane są odwzorowane w `adminVoteCardRows`; obecny eksport domenowy generuje CSV z tym samym układem kolumn.
 - `ReportController` zawiera raporty wyników per projekt z kolumnami: obszar, numer, tytuł, koszt, płeć, suma, wybrany, pula.
 - `ReportController` zawiera raporty wieku per projekt; kolumny wieku są generowane dynamicznie i w aktualnym baseline są odtworzone przez `VoteCardReportService::projectAgeGroupTotals`.
 - `ReportController` zawiera raport typu karty per projekt: elektroniczne, papierowe i łączna liczba głosów; baseline jest odtworzony przez `VoteCardReportService::projectCardTypeTotals`.
@@ -46,5 +47,5 @@ Status: baseline domenowy rozpoczęty.
 
 ## Świadome braki na tym etapie
 
-- Brak administracyjnych plików XLSX i kolejek dla dużych raportów; dane pierwszego raportu PII są już przygotowane w serwisie.
+- Brak administracyjnych plików XLSX i kolejek dla dużych raportów; pierwszy raport PII ma już dane i eksport CSV.
 - Brak raportów administracyjnych z kolumnami 1:1 względem legacy.

@@ -39,6 +39,7 @@ Status: częściowo zaimplementowane w etapie 1.
 - `StoreProjectFileAction` zapisuje fizyczny plik na dysku `public` albo `local`, a następnie tworzy `ProjectFile`; walidacja legacy jest wykonywana przed zapisem do storage.
 - `MarkProjectAttachmentsAnonymizedAction` oznacza projekt jako gotowy do publicznej prezentacji załączników.
 - `ProjectFile::publiclyVisible()` udostępnia publicznie wyłącznie pliki `is_private=false` oraz tylko wtedy, gdy projekt ma `attachments_anonymized=true`.
+- Publiczny formularz zgłoszenia projektu zapisuje plik listy poparcia w prywatnym storage i oznacza go jako załącznik formularza.
 - `ProjectCoauthorValidator` waliduje limit dwóch współautorów, wymagane dane kontaktowe, potwierdzenie przeczytania i zgodę na co najmniej jedną formę kontaktu.
 - `SyncProjectCoauthorsAction` wymienia listę współautorów projektu transakcyjnie.
 - `LegacyFixtureImportService` rozdziela `files` i `filesprivate` flagą `is_private` oraz przenosi współautorów z `cocreators`.

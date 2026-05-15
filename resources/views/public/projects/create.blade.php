@@ -9,7 +9,7 @@
         </div>
     @endif
 
-    <form class="panel" method="post" action="{{ route('public.projects.store') }}">
+    <form class="panel" method="post" action="{{ route('public.projects.store') }}" enctype="multipart/form-data">
         @csrf
 
         <label for="budget_edition_id">Edycja</label>
@@ -64,6 +64,9 @@
             <input name="support_list" type="checkbox" value="1" @checked(old('support_list')) required>
             Potwierdzam dołączenie listy poparcia zgodnie z regulaminem.
         </label>
+
+        <label for="support_list_file">Plik listy poparcia</label>
+        <input id="support_list_file" name="support_list_file" type="file" required>
 
         <p><button type="submit">Złóż projekt</button></p>
     </form>

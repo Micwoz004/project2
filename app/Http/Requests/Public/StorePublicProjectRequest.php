@@ -27,6 +27,7 @@ class StorePublicProjectRequest extends FormRequest
             'cost_description' => ['required', 'string', 'max:1000'],
             'cost_amount' => ['required', 'numeric', 'min:0'],
             'support_list' => ['accepted'],
+            'support_list_file' => ['required', 'file'],
         ];
     }
 
@@ -39,6 +40,7 @@ class StorePublicProjectRequest extends FormRequest
             'cost_description' => 'pozycja kosztorysu',
             'cost_amount' => 'kwota',
             'support_list' => 'lista poparcia',
+            'support_list_file' => 'plik listy poparcia',
         ];
     }
 }

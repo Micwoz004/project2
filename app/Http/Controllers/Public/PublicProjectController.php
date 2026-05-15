@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Public;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Files\Actions\StoreProjectFileAction;
 use App\Domain\Files\Enums\ProjectFileType;
-use App\Domain\Files\Models\ProjectFile;
 use App\Domain\Projects\Actions\SubmitProjectAction;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
@@ -16,6 +16,7 @@ use App\Http\Requests\Public\StorePublicProjectRequest;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -54,8 +55,11 @@ class PublicProjectController extends Controller
         ]);
     }
 
-    public function store(StorePublicProjectRequest $request, SubmitProjectAction $submitProject): RedirectResponse
-    {
+    public function store(
+        StorePublicProjectRequest $request,
+        StoreProjectFileAction $storeProjectFile,
+        SubmitProjectAction $submitProject,
+    ): RedirectResponse {
         Log::info('project.public_store.start', [
             'ip' => $request->ip(),
         ]);
@@ -82,17 +86,29 @@ class PublicProjectController extends Controller
             'amount' => $data['cost_amount'],
         ]);
 
-        ProjectFile::query()->create([
-            'project_id' => $project->id,
-            'stored_name' => 'support-list-public-form',
-            'original_name' => 'lista-poparcia',
-            'description' => 'Potwierdzenie listy poparcia w formularzu publicznym',
-            'type' => ProjectFileType::SupportList,
-            'is_private' => true,
-            'is_task_form_attachment' => true,
-        ]);
-
         try {
+            $supportListFile = $request->file('support_list_file');
+
+            if (! $supportListFile instanceof UploadedFile) {
+                Log::warning('project.public_store.rejected_missing_support_file', [
+                    'project_id' => $project->id,
+                ]);
+
+                return back()->withInput()->withErrors(['support_list_file' => 'Brak pliku listy poparcia.']);
+            }
+
+            $file = $storeProjectFile->execute(
+                $project,
+                ProjectFileType::SupportList,
+                $supportListFile,
+                null,
+                'Lista poparcia z formularza publicznego',
+                true,
+            );
+            $file->forceFill([
+                'is_task_form_attachment' => true,
+            ])->save();
+
             $submitProject->execute($project);
         } catch (DomainException $exception) {
             Log::warning('project.public_store.rejected', [

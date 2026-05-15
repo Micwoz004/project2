@@ -7,10 +7,13 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Reports\Exports\AdminVoteCardsCsvExporter;
 use App\Domain\Reports\Exports\SubmittedProjectsCsvExporter;
+use App\Domain\Reports\Exports\UnsentAdvancedVerificationsCsvExporter;
 use App\Domain\Reports\Services\ProjectReportService;
 use App\Domain\Reports\Services\VoteCardReportService;
 use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Domain\Users\Models\Department;
+use App\Domain\Verification\Models\AdvancedVerification;
 use App\Domain\Voting\Actions\RegisterPaperVoteCardAction;
 use App\Domain\Voting\Actions\UpdateVoteCardStatusAction;
 use App\Domain\Voting\Data\VoterIdentityData;
@@ -826,4 +829,59 @@ it('builds and exports legacy submitted projects report', function (): void {
         ->and($csv)->toContain('"Numer wniosku",Tytuł,"Data złożenia"')
         ->and($csv)->toContain('P1/0007,"Park kieszonkowy","2025-01-10 12:00:00"')
         ->and($csv)->not->toContain('Za stary projekt');
+});
+
+it('builds and exports legacy unsent advanced verifications report', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes([
+        'symbol' => 'P1',
+    ]));
+    $department = Department::query()->create([
+        'name' => 'Wydział testowy',
+    ]);
+    $user = User::factory()->create([
+        'name' => 'operator',
+    ]);
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'legacy_id' => 1332,
+        'number' => 9,
+        'title' => 'Projekt do opinii',
+        'status' => ProjectStatus::Submitted,
+    ]));
+    $sentProject = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'number' => 10,
+        'title' => 'Projekt wysłany',
+        'status' => ProjectStatus::Submitted,
+    ]));
+
+    AdvancedVerification::query()->create([
+        'project_id' => $project->id,
+        'department_id' => $department->id,
+        'created_by_id' => $user->id,
+        'status' => 1,
+        'raw_legacy_payload' => [],
+    ]);
+    AdvancedVerification::query()->create([
+        'project_id' => $sentProject->id,
+        'department_id' => $department->id,
+        'created_by_id' => $user->id,
+        'status' => 1,
+        'sent_at' => '2025-03-20 12:00:00',
+        'raw_legacy_payload' => [],
+    ]);
+
+    $rows = app(ProjectReportService::class)->unsentAdvancedVerificationRows();
+    $csv = app(UnsentAdvancedVerificationsCsvExporter::class)->export();
+
+    expect($rows)->toHaveCount(1)
+        ->and($rows->first())->toMatchArray([
+            'project_number' => 'P1/0009',
+            'title' => 'Projekt do opinii',
+            'department_name' => 'Wydział testowy',
+            'author_name' => 'operator',
+            'project_url' => 'https://sbownioski.szczecin.eu/task/1332',
+        ])
+        ->and($csv)->toContain('"Numer wniosku",Tytuł,"Nazwa wydziału","Nazwa autora","Link do projektu"')
+        ->and($csv)->toContain('P1/0009,"Projekt do opinii","Wydział testowy",operator,https://sbownioski.szczecin.eu/task/1332')
+        ->and($csv)->not->toContain('Projekt wysłany');
 });

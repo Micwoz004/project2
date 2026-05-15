@@ -16,14 +16,14 @@
 Status: baseline domenowy rozbudowany.
 
 1. [x] Rozszerzyć kalkulator o obszary i kategorie.
-2. Dodać reguły remisów po potwierdzeniu legacy.
+2. [x] Dodać deterministyczną kolejność remisów w rankingu: punkty malejąco, `number_drawn`, `project_id`.
 3. [x] Dodać publikację wyników zależną od etapu edycji.
 4. Zbudować publiczny i administracyjny widok wyników.
 5. [x] Pokryć testami accepted/rejected/verifying i agregacje.
 
 ## Implementacja Laravel
 
-- `ResultsCalculator::projectTotals()` sumuje punkty projektów wyłącznie z kart `Accepted`.
+- `ResultsCalculator::projectTotals()` sumuje punkty projektów wyłącznie z kart `Accepted` i sortuje ranking po punktach malejąco, następnie po `number_drawn` oraz `project_id`.
 - `ResultsCalculator::areaTotals()` sumuje punkty po `project_areas` dla tej samej edycji.
 - `ResultsCalculator::categoryTotals()` sumuje punkty po podstawowej kategorii projektu.
 - `ResultsPublicationService` pozwala publicznie pokazać wyniki tylko w stanie edycji `ResultAnnouncement`.
@@ -31,5 +31,5 @@ Status: baseline domenowy rozbudowany.
 
 ## Świadome braki na tym etapie
 
-- Reguły remisów wymagają dalszego potwierdzenia z legacy.
+- Brak osobnej procedury rozstrzygania remisów do wyboru projektów do realizacji; zaimplementowana jest deterministyczna kolejność rankingu/raportu.
 - Agregacja po wielu kategoriach z pivotu `category_project` nie jest jeszcze odtworzona, jeśli raport legacy używał wielu kategorii projektu.

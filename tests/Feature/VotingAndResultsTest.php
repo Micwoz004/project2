@@ -338,6 +338,45 @@ it('counts only accepted vote cards in public results', function (): void {
         ->and((int) $totals->first()->points)->toBe(1);
 });
 
+it('orders project totals by points then drawn number for deterministic ties', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $firstProject = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'number_drawn' => 2,
+        'status' => ProjectStatus::Picked,
+    ]));
+    $secondProject = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'number_drawn' => 1,
+        'title' => 'Drugi projekt',
+        'status' => ProjectStatus::Picked,
+    ]));
+
+    foreach ([$firstProject, $secondProject] as $index => $project) {
+        $voter = Voter::query()->create([
+            'pesel' => '4405140145'.$index,
+            'first_name' => 'Jan',
+            'last_name' => 'Kowalski',
+        ]);
+        $voteCard = VoteCard::query()->create([
+            'budget_edition_id' => $edition->id,
+            'voter_id' => $voter->id,
+            'status' => VoteCardStatus::Accepted,
+        ]);
+        $voteCard->votes()->create([
+            'voter_id' => $voter->id,
+            'project_id' => $project->id,
+            'points' => 1,
+        ]);
+    }
+
+    $totals = app(ResultsCalculator::class)->projectTotals($edition);
+
+    expect($totals->pluck('project_id')->all())->toBe([
+        $secondProject->id,
+        $firstProject->id,
+    ]);
+});
+
 it('updates vote card status administratively and recalculates results', function (): void {
     $edition = BudgetEdition::query()->create(editionAttributes());
     $area = ProjectArea::query()->create(areaAttributes());

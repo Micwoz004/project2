@@ -20,10 +20,17 @@ class ResultsCalculator
         ]);
 
         $totals = Vote::query()
-            ->selectRaw('project_id, SUM(points) as points')
+            ->join('projects', 'votes.project_id', '=', 'projects.id')
+            ->select([
+                'votes.project_id',
+                'projects.number_drawn',
+                DB::raw('SUM(votes.points) as points'),
+            ])
             ->whereHas('voteCard', fn (Builder $query) => $this->acceptedCardsForEdition($query, $edition))
-            ->groupBy('project_id')
+            ->groupBy('votes.project_id', 'projects.number_drawn')
             ->orderByDesc('points')
+            ->orderBy('projects.number_drawn')
+            ->orderBy('votes.project_id')
             ->get();
 
         Log::info('results.calculate.success', [

@@ -18,6 +18,7 @@ use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Projects\Models\ProjectVersion;
+use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Models\BoardVoteRejection;
@@ -62,6 +63,7 @@ class LegacyFixtureImportService
 
             $stats = [
                 'taskgroups' => $this->importTaskGroups($payload['taskgroups'] ?? []),
+                'settings' => $this->importSettings($payload['settings'] ?? []),
                 'tasktypes' => $this->importTaskTypes($payload['tasktypes'] ?? []),
                 'categories' => $this->importCategories($payload['categories'] ?? []),
                 'tasks' => $this->importTasks($payload['tasks'] ?? []),
@@ -125,6 +127,24 @@ class LegacyFixtureImportService
                 'result_announcement_end' => Arr::get($row, 'resultAnnouncementEnd'),
                 'current_digital_card_no' => (int) Arr::get($row, 'currentDigitalCardNo', 0),
                 'current_paper_card_no' => (int) Arr::get($row, 'currentPaperCardNo', 0),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importSettings(array $rows): int
+    {
+        foreach ($rows as $row) {
+            ApplicationSetting::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'category' => Arr::get($row, 'category', 'system'),
+                'key' => Arr::get($row, 'key'),
+                'value' => Arr::get($row, 'value'),
             ]);
         }
 

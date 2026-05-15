@@ -16,6 +16,7 @@ use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Results\Services\ResultsCalculator;
+use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
@@ -55,6 +56,12 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'votingEnd' => '2025-04-15 23:59:59',
             'postVotingVerificationEnd' => '2025-05-01 00:00:00',
             'resultAnnouncementEnd' => '2025-06-01 00:00:00',
+        ]],
+        'settings' => [[
+            'id' => 110,
+            'category' => 'owner',
+            'key' => 'websiteName',
+            'value' => 's:37:"Szczeciński Budżet Obywatelski 2025";',
         ]],
         'tasktypes' => [[
             'id' => 20,
@@ -366,6 +373,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
 
     expect($batch->source_path)->toBe('unit-fixture')
         ->and($batch->finished_at)->not->toBeNull()
+        ->and($batch->stats['settings'])->toBe(1)
         ->and($batch->stats['tasks'])->toBe(1)
         ->and($batch->stats['taskscategories'])->toBe(2)
         ->and($batch->stats['files'])->toBe(1)
@@ -390,6 +398,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['smslogs'])->toBe(1)
         ->and($edition->legacy_id)->toBe(10)
         ->and(ProjectArea::query()->where('legacy_id', 20)->firstOrFail()->is_local)->toBeTrue()
+        ->and(ApplicationSetting::query()->where('legacy_id', 110)->firstOrFail()->value)
+        ->toBe('s:37:"Szczeciński Budżet Obywatelski 2025";')
         ->and($project->status)->toBe(ProjectStatus::Picked)
         ->and($project->budget_edition_id)->toBe($edition->id)
         ->and($project->categories()->pluck('categories.id')->sort()->values()->all())

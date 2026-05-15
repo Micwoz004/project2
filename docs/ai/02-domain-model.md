@@ -28,6 +28,7 @@
 - `ProjectChangeSuggestion` odwzorowuje `taskchangessuggestion`.
 - `VoteCard`, `Vote`, `Voter`, `VotingToken`, `VoterRegistryHash`, `SmsLog` odwzorowują głosowanie.
 - `Department` odwzorowuje `departments`.
+- `ApplicationSetting` odwzorowuje `settings` z zachowaniem surowych wartości legacy.
 
 ## Statusy projektu
 

@@ -75,6 +75,7 @@
 - [x] Import fixture korekt projektu z tabeli `taskcorrection`.
 - [x] Model i import fixture propozycji zmian projektu z `taskchangessuggestion`.
 - [x] Akceptacja/odrzucenie propozycji zmian projektu zgodnie z `TaskChangesSuggestion::afterSave`.
+- [x] Import fixture ustawień aplikacji z tabeli `settings` z surowymi wartościami legacy.
 
 ## Do pełnego parytetu
 

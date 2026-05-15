@@ -15,4 +15,5 @@ Route::get('/projekty/zglos', [PublicProjectController::class, 'create'])->name(
 Route::post('/projekty/zglos', [PublicProjectController::class, 'store'])->name('public.projects.store');
 Route::get('/glosowanie', [PublicVotingController::class, 'welcome'])->name('public.voting.welcome');
 Route::get('/wyniki', [PublicResultsController::class, 'index'])->name('public.results.index');
+Route::get('/wyniki/export.csv', [PublicResultsController::class, 'export'])->name('public.results.export');
 Route::get('/raporty-publiczne', [PublicReportController::class, 'index'])->name('public.reports.index');

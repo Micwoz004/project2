@@ -6,6 +6,8 @@
     @elseif (! $resultsPublished)
         <p class="panel">Wyniki nie zostały jeszcze opublikowane.</p>
     @else
+        <p><a class="button" href="{{ route('public.results.export') }}">Pobierz CSV</a></p>
+
         <table>
             <thead>
             <tr>

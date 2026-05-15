@@ -8,8 +8,8 @@
 6. Walidacje: uprawnienia, zakres danych, anonimizacja PII w publicznych raportach.
 7. Role: publiczny użytkownik dla raportów publicznych; administracja dla eksportów szczegółowych.
 8. Edge case: raport historyczny, PII, różnice accepted/verifying/rejected.
-9. Laravel: moduł `Reports`, `VoteCardReportService`, kolejki dla ciężkich eksportów, `raporty-publiczne`.
-10. Zgodność: lista raportów legacy, test liczności statusów/demografii i porównanie kolumn/filtrów.
+9. Laravel: moduł `Reports`, `VoteCardReportService`, `PublicResultsCsvExporter`, kolejki dla ciężkich eksportów, `raporty-publiczne`.
+10. Zgodność: lista raportów legacy, test liczności statusów/demografii, test CSV bez PII i porównanie kolumn/filtrów.
 
 ## Plan wdrożenia
 
@@ -17,7 +17,7 @@ Status: baseline domenowy rozpoczęty.
 
 1. Zinwentaryzować raporty z `ReportController` i `raporty_sbo`.
 2. Dla każdego raportu opisać kolumny, filtry i PII.
-3. Wdrożyć eksporty CSV/XLSX przez kolejki.
+3. [x] Wdrożyć pierwszy publiczny eksport CSV wyników bez PII.
 4. [x] Dodać bazowe raporty bez danych wrażliwych: statusy kart i demografia zaakceptowanych kart.
 5. Pokryć testami kolumny i liczności względem fixture legacy.
 
@@ -25,9 +25,11 @@ Status: baseline domenowy rozpoczęty.
 
 - `VoteCardReportService::statusCounts()` zwraca liczby kart po statusach dla edycji.
 - `VoteCardReportService::acceptedVoterDemographics()` zwraca zagregowane płcie i przedziały wieku wyłącznie dla zaakceptowanych kart, bez PESEL, telefonu ani danych osobowych.
+- `PublicResultsCsvExporter` eksportuje publiczne wyniki CSV z kolumnami `project_id`, `project_number`, `title`, `area`, `points`.
+- `/wyniki/export.csv` jest dostępne tylko w oknie publikacji wyników.
 
 ## Świadome braki na tym etapie
 
-- Brak eksportów CSV/XLSX i kolejek.
+- Brak administracyjnych eksportów CSV/XLSX i kolejek dla dużych raportów.
 - Brak pełnej inwentaryzacji plików z `raporty_sbo`.
 - Brak raportów administracyjnych z kolumnami 1:1 względem legacy.

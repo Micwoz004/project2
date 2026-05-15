@@ -47,6 +47,7 @@
 - [x] Publiczne głosowanie: hash rejestru wyborców, oświadczenie, zgoda rodzica, brak PESEL jako `Verifying`.
 - [x] SMS token: 6 cyfr, aktywacja po telefonie i kodzie, limit 5 kodów na telefon, unieważnienie poprzednich i zużytych tokenów PESEL.
 - [x] Administracyjna zmiana statusu karty głosowania i wpływ na wyniki.
+- [x] Domenowa rejestracja papierowych kart głosowania z numeracją i operatorem.
 - [x] Agregacja wyników po projektach, obszarach i kategoriach z kart zaakceptowanych.
 - [x] Publiczna publikacja wyników zależna od etapu edycji.
 - [x] Bazowe raporty kart: statusy i demografia zaakceptowanych kart bez PII.

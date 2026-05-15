@@ -7,6 +7,8 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Reports\Services\VoteCardReportService;
 use App\Domain\Results\Services\ResultsCalculator;
+use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Domain\Voting\Actions\RegisterPaperVoteCardAction;
 use App\Domain\Voting\Actions\UpdateVoteCardStatusAction;
 use App\Domain\Voting\Data\VoterIdentityData;
 use App\Domain\Voting\Enums\CitizenConfirmation;
@@ -377,6 +379,68 @@ it('updates vote card status administratively and recalculates results', functio
         ->and($after)->toHaveCount(1)
         ->and((int) $after->first()->points)->toBe(1);
 });
+
+it('registers paper vote cards with operator and paper numbering', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'status' => ProjectStatus::Picked,
+    ]));
+    $operator = User::factory()->create();
+    $operator->givePermissionTo('vote_cards.manage');
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+    );
+
+    $voteCard = app(RegisterPaperVoteCardAction::class)->execute(
+        $edition,
+        $identity,
+        [$project->id],
+        [],
+        $operator,
+        [
+            'citizen_confirm' => CitizenConfirmation::Living,
+            'confirm_missing_category' => true,
+        ],
+    );
+
+    expect($voteCard->digital)->toBeFalse()
+        ->and($voteCard->card_no)->toBe(1)
+        ->and($voteCard->created_by_id)->toBe($operator->id)
+        ->and($edition->refresh()->current_paper_card_no)->toBe(1);
+});
+
+it('rejects paper vote card registration without permission', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'status' => ProjectStatus::Picked,
+    ]));
+    $operator = User::factory()->create();
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+    );
+
+    app(RegisterPaperVoteCardAction::class)->execute(
+        $edition,
+        $identity,
+        [$project->id],
+        [],
+        $operator,
+        [
+            'citizen_confirm' => CitizenConfirmation::Living,
+            'confirm_missing_category' => true,
+        ],
+    );
+})->throws(DomainException::class, 'Brak uprawnień do rejestracji papierowej karty głosowania.');
 
 it('aggregates accepted results by area and category', function (): void {
     $edition = BudgetEdition::query()->create(editionAttributes());

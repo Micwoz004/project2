@@ -25,6 +25,7 @@ Status: baseline domenowy rozbudowany.
 8. [x] Zachować limit SMS: 6 cyfr, maksymalnie 5 kodów na telefon, unieważnienie poprzednich kodów dla PESEL.
 9. [x] Aktywować SMS po `phone + token + disabled=false` zgodnie z legacy.
 10. [x] Unieważnić aktywny token SMS po skutecznym oddaniu głosu.
+11. [x] Rejestrować papierowe karty głosowania z tą samą walidacją projektów i wyborcy.
 
 ## Świadome braki na tym etapie
 

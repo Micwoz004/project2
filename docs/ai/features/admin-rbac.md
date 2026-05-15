@@ -39,6 +39,7 @@ Nowy system zachowuje nazwy legacy jako role/uprawnienia Spatie, ale decyzje dom
 - `SystemPermission` opisuje docelowe uprawnienia i mapę operacji legacy do nowych permission keys.
 - `SyncSystemRolesAndPermissionsAction` tworzy role i uprawnienia Spatie bez kasowania nieznanych historycznych ról.
 - `LegacyRbacImportService` przenosi relacje `authitemchild` oraz przypisania `authassignment` dla użytkowników z `legacy_id`.
+- `LegacyAuditLog` zachowuje historyczną tabelę `logs`: operatora, opcjonalny projekt, treść audytu, kontroler, akcję i czas operacji.
 - `User::canAccessPanel()` dopuszcza tylko aktywnych użytkowników z `admin.access` albo rolą `admin`/`bdo`.
 - Policies dla `BudgetEdition`, `ProjectArea`, `Category` i `VoteCard` blokują operacje użytkownikom bez dedykowanych uprawnień.
 - Bramki `view-results` i `export-reports` używają `results.view` oraz `reports.export`.

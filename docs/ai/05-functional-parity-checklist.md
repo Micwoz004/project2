@@ -86,6 +86,7 @@
 - [x] Akceptacja/odrzucenie propozycji zmian projektu zgodnie z `TaskChangesSuggestion::afterSave`.
 - [x] Import fixture ustawień aplikacji z tabeli `settings` z surowymi wartościami legacy.
 - [x] Import fixture stron procesu głosowania z tabeli `pages`.
+- [x] Import fixture historycznych logów administracyjnych z tabeli `logs`.
 
 ## Do pełnego parytetu
 

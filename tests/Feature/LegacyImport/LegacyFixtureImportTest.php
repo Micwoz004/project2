@@ -22,6 +22,7 @@ use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Models\Department;
+use App\Domain\Users\Models\LegacyAuditLog;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
 use App\Domain\Verification\Models\AdvancedVerification;
@@ -113,6 +114,15 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'costFormatted' => 1000,
             'isSupportList' => true,
             'isPicked' => true,
+        ]],
+        'logs' => [[
+            'id' => 126,
+            'userId' => 600,
+            'taskId' => 40,
+            'content' => 'Użytkownik operator zmodyfikował projekt testowy',
+            'controller' => 'task',
+            'action' => 'update',
+            'time' => '2025-03-13 10:00:00',
         ]],
         'taskcosts' => [[
             'id' => 50,
@@ -564,6 +574,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['settings'])->toBe(1)
         ->and($batch->stats['pages'])->toBe(1)
         ->and($batch->stats['tasks'])->toBe(1)
+        ->and($batch->stats['logs'])->toBe(1)
         ->and($batch->stats['taskscategories'])->toBe(2)
         ->and($batch->stats['files'])->toBe(1)
         ->and($batch->stats['filesprivate'])->toBe(1)
@@ -608,6 +619,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(ContentPage::query()->where('legacy_id', 111)->firstOrFail()->body)->toBe('<p>Witaj w SBO 2025</p>')
         ->and($project->status)->toBe(ProjectStatus::Picked)
         ->and($project->budget_edition_id)->toBe($edition->id)
+        ->and(LegacyAuditLog::query()->where('legacy_id', 126)->firstOrFail()->project_id)->toBe($project->id)
+        ->and(LegacyAuditLog::query()->where('legacy_id', 126)->firstOrFail()->controller)->toBe('task')
         ->and($project->categories()->pluck('categories.id')->sort()->values()->all())
         ->toBe(Category::query()->whereIn('legacy_id', [30, 31])->pluck('id')->sort()->values()->all())
         ->and(ProjectCostItem::query()->where('legacy_id', 50)->firstOrFail()->project_id)->toBe($project->id)

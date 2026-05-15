@@ -24,6 +24,7 @@ use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Models\Department;
+use App\Domain\Users\Models\LegacyAuditLog;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Models\AdvancedVerification;
 use App\Domain\Verification\Models\BoardVoteRejection;
@@ -81,6 +82,7 @@ class LegacyFixtureImportService
                 'tasktypes' => $this->importTaskTypes($payload['tasktypes'] ?? []),
                 'categories' => $this->importCategories($payload['categories'] ?? []),
                 'tasks' => $this->importTasks($payload['tasks'] ?? []),
+                'logs' => $this->importLegacyAuditLogs($payload['logs'] ?? []),
                 'taskscategories' => $this->importTasksCategories($payload['taskscategories'] ?? []),
                 'taskcosts' => $this->importTaskCosts($payload['taskcosts'] ?? []),
                 'files' => $this->importFiles($payload['files'] ?? [], false),
@@ -208,6 +210,31 @@ class LegacyFixtureImportService
                 'budget_edition_id' => $budgetEdition->id,
                 'symbol' => Arr::get($row, 'symbol'),
                 'body' => Arr::get($row, 'body', ''),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importLegacyAuditLogs(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $loggedAt = Arr::get($row, 'time');
+
+            LegacyAuditLog::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'user_id' => $this->optionalUserId(Arr::get($row, 'userId')),
+                'project_id' => $this->optionalProjectId(Arr::get($row, 'taskId')),
+                'content' => Arr::get($row, 'content', ''),
+                'controller' => Arr::get($row, 'controller'),
+                'action' => Arr::get($row, 'action'),
+                'logged_at' => $loggedAt,
+                'created_at' => $loggedAt,
+                'updated_at' => $loggedAt,
             ]);
         }
 
@@ -1226,6 +1253,15 @@ class LegacyFixtureImportService
         }
 
         return Department::query()->where('legacy_id', (int) $legacyId)->value('id');
+    }
+
+    private function optionalProjectId(mixed $legacyId): ?int
+    {
+        if ($legacyId === null || $legacyId === '') {
+            return null;
+        }
+
+        return Project::query()->where('legacy_id', (int) $legacyId)->value('id');
     }
 
     private function optionalUserId(mixed $legacyId): ?int

@@ -34,6 +34,7 @@
 - `VerificationPressureLog` odwzorowuje historyczne monity weryfikacyjne `verificationpressure`.
 - `ProjectAppeal` odwzorowuje odwołania od decyzji rady/komisji.
 - `Department` odwzorowuje `departments`.
+- `LegacyAuditLog` odwzorowuje historyczne logi operacji administracyjnych `logs`.
 - `ApplicationSetting` odwzorowuje `settings` z zachowaniem surowych wartości legacy.
 - `ContentPage` odwzorowuje `pages` per edycja SBO i symbol strony procesu.
 - `CorrespondenceMessage`, `ProjectComment`, `ProjectPublicComment`, `ProjectNotification`, `MailLog` odwzorowują komunikację, komentarze i historię wysyłek.

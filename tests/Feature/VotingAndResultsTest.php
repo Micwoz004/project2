@@ -211,6 +211,55 @@ it('issues six digit sms token and disables previous tokens for pesel', function
         ->and($second->disabled)->toBeFalse();
 });
 
+it('activates sms token by phone and code', function (): void {
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+    );
+    $token = app(VotingTokenService::class)->issueSmsToken($identity, '500600700');
+
+    $activated = app(VotingTokenService::class)->activateSmsToken('500600700', $token->token);
+
+    expect($activated->id)->toBe($token->id)
+        ->and($activated->disabled)->toBeFalse();
+});
+
+it('rejects invalid sms token activation', function (): void {
+    app(VotingTokenService::class)->activateSmsToken('500600700', '000000');
+})->throws(DomainException::class, 'Kod dostępu jest nieprawidłowy.');
+
+it('disables active sms token after successful vote cast', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'status' => ProjectStatus::Picked,
+    ]));
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+    );
+    $token = app(VotingTokenService::class)->issueSmsToken($identity, '500600700');
+    $activated = app(VotingTokenService::class)->activateSmsToken('500600700', $token->token);
+
+    app(CastVoteService::class)->cast(
+        $edition,
+        $identity,
+        [$project->id],
+        [],
+        [
+            'citizen_confirm' => CitizenConfirmation::Living,
+            'confirm_missing_category' => true,
+            'voting_token' => $activated,
+        ],
+    );
+
+    expect($token->refresh()->disabled)->toBeTrue();
+});
+
 it('limits sms tokens to five per phone', function (): void {
     foreach (range(1, 5) as $index) {
         $identity = new VoterIdentityData(

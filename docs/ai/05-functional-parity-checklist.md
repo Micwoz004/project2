@@ -45,7 +45,7 @@
 - [x] Domenowe głosowania ZK/OT/AT z unikalnością głosu.
 - [x] Bazowe rozstrzyganie decyzji rad/komisji i odwołań.
 - [x] Publiczne głosowanie: hash rejestru wyborców, oświadczenie, zgoda rodzica, brak PESEL jako `Verifying`.
-- [x] SMS token: 6 cyfr, limit 5 kodów na telefon, unieważnienie poprzednich tokenów PESEL.
+- [x] SMS token: 6 cyfr, aktywacja po telefonie i kodzie, limit 5 kodów na telefon, unieważnienie poprzednich i zużytych tokenów PESEL.
 - [x] Administracyjna zmiana statusu karty głosowania i wpływ na wyniki.
 - [x] Agregacja wyników po projektach, obszarach i kategoriach z kart zaakceptowanych.
 - [x] Bazowe raporty kart: statusy i demografia zaakceptowanych kart bez PII.

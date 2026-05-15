@@ -13,6 +13,7 @@ use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Models\VoteCard;
 use App\Domain\Voting\Models\Voter;
 use App\Domain\Voting\Models\VoterRegistryHash;
+use App\Domain\Voting\Models\VotingToken;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -27,6 +28,7 @@ class CastVoteService
         private readonly BudgetEditionStateResolver $stateResolver,
         private readonly PeselService $peselService,
         private readonly VoterHashService $voterHashService,
+        private readonly VotingTokenService $votingTokenService,
     ) {}
 
     public function cast(
@@ -45,12 +47,18 @@ class CastVoteService
 
         $this->assertCanCast($edition, $identity, $localProjectIds, $citywideProjectIds, $context);
 
+        $votingToken = $context['voting_token'] ?? null;
+        if ($votingToken instanceof VotingToken) {
+            $this->votingTokenService->assertActiveTokenForIdentity($votingToken, $identity);
+        }
+
         return DB::transaction(function () use (
             $edition,
             $identity,
             $localProjectIds,
             $citywideProjectIds,
             $context,
+            $votingToken,
         ): VoteCard {
             $birthDate = $identity->noPeselNumber ? null : $this->peselService->birthDate($identity->pesel);
             $voter = Voter::query()->create([
@@ -90,6 +98,10 @@ class CastVoteService
                     'project_id' => $projectId,
                     'points' => 1,
                 ]);
+            }
+
+            if ($votingToken instanceof VotingToken) {
+                $this->votingTokenService->disableToken($votingToken);
             }
 
             Log::info('voting.cast.success', [

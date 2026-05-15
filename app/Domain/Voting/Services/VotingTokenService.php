@@ -63,4 +63,72 @@ class VotingTokenService
             return $token;
         });
     }
+
+    public function activateSmsToken(string $phone, string $token): VotingToken
+    {
+        Log::info('voting.token.sms_activate.start', [
+            'phone_hash' => hash('sha256', $phone),
+        ]);
+
+        $votingToken = VotingToken::query()
+            ->where('type', VotingTokenType::Sms->value)
+            ->where('phone', $phone)
+            ->where('token', $token)
+            ->where('disabled', false)
+            ->first();
+
+        if ($votingToken === null) {
+            Log::warning('voting.token.sms_activate.rejected', [
+                'phone_hash' => hash('sha256', $phone),
+            ]);
+
+            throw new DomainException('Kod dostępu jest nieprawidłowy.');
+        }
+
+        Log::info('voting.token.sms_activate.success', [
+            'token_id' => $votingToken->id,
+            'phone_hash' => hash('sha256', $phone),
+        ]);
+
+        return $votingToken;
+    }
+
+    public function assertActiveTokenForIdentity(VotingToken $token, VoterIdentityData $identity): void
+    {
+        Log::info('voting.token.identity_check.start', [
+            'token_id' => $token->id,
+            'pesel_hash' => hash('sha256', $identity->pesel),
+        ]);
+
+        if ($token->disabled || $token->type !== VotingTokenType::Sms || $token->pesel !== $identity->pesel) {
+            Log::warning('voting.token.identity_check.rejected', [
+                'token_id' => $token->id,
+                'pesel_hash' => hash('sha256', $identity->pesel),
+            ]);
+
+            throw new DomainException('Token głosowania nie jest aktywny dla podanego wyborcy.');
+        }
+
+        Log::info('voting.token.identity_check.success', [
+            'token_id' => $token->id,
+            'pesel_hash' => hash('sha256', $identity->pesel),
+        ]);
+    }
+
+    public function disableToken(VotingToken $token): VotingToken
+    {
+        Log::info('voting.token.disable.start', [
+            'token_id' => $token->id,
+        ]);
+
+        $token->forceFill([
+            'disabled' => true,
+        ])->save();
+
+        Log::info('voting.token.disable.success', [
+            'token_id' => $token->id,
+        ]);
+
+        return $token->refresh();
+    }
 }

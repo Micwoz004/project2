@@ -42,7 +42,7 @@ Statusy legacy są zachowane jako `ProjectStatus` z wartościami integer: `1,2,3
 - `BudgetEditionStateResolver` - stan procesu zgodny z `TaskGroup::getState`.
 - `PeselService` - checksum, data urodzenia, wiek, płeć.
 - `VoterHashService` - hash `newverification` zgodny z legacy salt `D0FB5FC74E`.
-- `VotingTokenService` - 6-cyfrowy SMS token, limit 5 kodów na telefon, unieważnianie starych tokenów PESEL.
+- `VotingTokenService` - 6-cyfrowy SMS token, limit 5 kodów na telefon, aktywacja po telefonie i kodzie, unieważnianie starych oraz zużytych tokenów PESEL.
 - `CastVoteService` - okno głosowania, checksum i unikalność PESEL, hash rejestru `newverification`, oświadczenia, zgoda rodzica, brak PESEL jako `Verifying`, limity lokalne/ogólnomiejskie, tylko `STATUS_PICKED`, transakcja zapisu.
 - `UpdateVoteCardStatusAction` - administracyjna zmiana statusu karty z operatorem, czasem obsługi i notatką.
 - `ResultsCalculator` - sumowanie punktów wyłącznie z kart `VoteCardStatus::Accepted`, także po obszarach i kategoriach.

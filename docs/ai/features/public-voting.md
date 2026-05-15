@@ -23,9 +23,11 @@ Status: baseline domenowy rozbudowany.
 6. [x] Obsłużyć brak PESEL: karta trafia do statusu `Verifying`, PESEL nie jest zapisywany.
 7. [x] Obsłużyć zgodę rodzica/opiekuna dla wyborcy niepełnoletniego.
 8. [x] Zachować limit SMS: 6 cyfr, maksymalnie 5 kodów na telefon, unieważnienie poprzednich kodów dla PESEL.
+9. [x] Aktywować SMS po `phone + token + disabled=false` zgodnie z legacy.
+10. [x] Unieważnić aktywny token SMS po skutecznym oddaniu głosu.
 
 ## Świadome braki na tym etapie
 
 - Brak gotowego Livewire flow i ekranów publicznych dla tokenu SMS.
 - Brak integracji z realnym operatorem SMS; `VotingTokenService` przygotowuje rekord domenowy.
-- Brak walidacji aktywacji tokenu przy finalnym zapisie głosu w UI, bo nie ma jeszcze pełnego flow formularza.
+- Walidacja tokenu jest domenowo gotowa, ale nie jest jeszcze podpięta do pełnego UI formularza głosowania.

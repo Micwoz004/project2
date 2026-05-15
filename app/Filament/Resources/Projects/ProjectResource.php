@@ -6,10 +6,14 @@ use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Verification\Actions\CloseBoardVotingAction;
+use App\Domain\Verification\Actions\RestartBoardVotingAction;
+use App\Domain\Verification\Enums\BoardType;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProjects;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
@@ -21,6 +25,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Gate;
 
 class ProjectResource extends Resource
 {
@@ -116,8 +121,44 @@ class ProjectResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
+                self::closeBoardVotingAction(BoardType::Ot),
+                self::restartBoardVotingAction(BoardType::Ot),
+                self::closeBoardVotingAction(BoardType::At),
+                self::restartBoardVotingAction(BoardType::At),
                 DeleteAction::make(),
             ]);
+    }
+
+    public static function canCloseBoardVoting(Project $project, BoardType $boardType): bool
+    {
+        if (! Gate::allows('manage-board-voting')) {
+            return false;
+        }
+
+        return match ($boardType) {
+            BoardType::Ot => $project->status === ProjectStatus::DuringTeamVerification,
+            BoardType::At => $project->status === ProjectStatus::DuringTeamRecallVerification,
+            BoardType::Zk => false,
+        };
+    }
+
+    public static function canRestartBoardVoting(Project $project, BoardType $boardType): bool
+    {
+        if (! Gate::allows('manage-board-voting')) {
+            return false;
+        }
+
+        return match ($boardType) {
+            BoardType::Ot => in_array($project->status, [
+                ProjectStatus::DuringTeamVerification,
+                ProjectStatus::TeamClosedVerification,
+            ], true),
+            BoardType::At => in_array($project->status, [
+                ProjectStatus::DuringTeamRecallVerification,
+                ProjectStatus::TeamRecallClosedVerification,
+            ], true),
+            BoardType::Zk => false,
+        };
     }
 
     public static function getRelations(): array
@@ -143,5 +184,23 @@ class ProjectResource extends Resource
         }
 
         return $options;
+    }
+
+    private static function closeBoardVotingAction(BoardType $boardType): Action
+    {
+        return Action::make('close_'.strtolower($boardType->value).'_board_voting')
+            ->label('Zamknij '.$boardType->value)
+            ->requiresConfirmation()
+            ->visible(fn (Project $record): bool => self::canCloseBoardVoting($record, $boardType))
+            ->action(fn (Project $record): Project => app(CloseBoardVotingAction::class)->execute($record, $boardType));
+    }
+
+    private static function restartBoardVotingAction(BoardType $boardType): Action
+    {
+        return Action::make('restart_'.strtolower($boardType->value).'_board_voting')
+            ->label('Restart '.$boardType->value)
+            ->requiresConfirmation()
+            ->visible(fn (Project $record): bool => self::canRestartBoardVoting($record, $boardType))
+            ->action(fn (Project $record): Project => app(RestartBoardVotingAction::class)->execute($record, $boardType));
     }
 }

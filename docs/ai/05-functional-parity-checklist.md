@@ -115,6 +115,7 @@
 - [x] Gate dla ról rad/komisji (`cast-board-vote`) oraz zarządzania głosowaniem (`manage-board-voting`).
 - [x] Bazowy publiczny formularz głosowania z wygenerowaniem i aktywacją tokenu SMS.
 - [x] Filament Resource dla administracyjnego podglądu i edycji statusu kart głosowania.
+- [x] Akcje Filament dla restartu i zamknięcia głosowań OT/AT z bramką `manage-board-voting`.
 
 ## Do pełnego parytetu
 
@@ -124,7 +125,7 @@
 - [ ] Weryfikacja formalna z pełną listą pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje departamentów.
 - [ ] UI historii wersji kart weryfikacji i administracyjny podgląd agregacji wielu departamentów.
-- [ ] UI restartu/zamknięcia głosowań i podpięcie bramek w Filament.
+- [ ] UI oddawania głosów rad/komisji w Filament.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
 - [ ] Filament akcja tworzenia ręcznych kart papierowych i edycja głosów na karcie.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.

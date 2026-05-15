@@ -1,6 +1,8 @@
 <?php
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Communications\Models\CorrespondenceMessage;
+use App\Domain\Communications\Models\ProjectComment;
 use App\Domain\Files\Models\ProjectFile;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
 use App\Domain\LegacyImport\Services\LegacyFixtureImportService;
@@ -184,6 +186,20 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'boardType' => BoardType::At->value,
             'comment' => 'Powód odrzucenia',
         ]],
+        'correspondence' => [[
+            'id' => 102,
+            'taskId' => 40,
+            'userId' => 600,
+            'messageText' => 'Treść korespondencji',
+            'isRead' => true,
+            'readAt' => '2025-03-12 12:00:00',
+        ]],
+        'taskcomments' => [[
+            'id' => 103,
+            'taskId' => 40,
+            'userId' => 600,
+            'content' => 'Komentarz wewnętrzny',
+        ]],
         'voters' => [[
             'id' => 60,
             'pesel' => '44051401458',
@@ -232,6 +248,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['atvotes'])->toBe(1)
         ->and($batch->stats['otvotes'])->toBe(1)
         ->and($batch->stats['atotvotesrejection'])->toBe(1)
+        ->and($batch->stats['correspondence'])->toBe(1)
+        ->and($batch->stats['taskcomments'])->toBe(1)
         ->and($edition->legacy_id)->toBe(10)
         ->and(ProjectArea::query()->where('legacy_id', 20)->firstOrFail()->is_local)->toBeTrue()
         ->and($project->status)->toBe(ProjectStatus::Picked)
@@ -251,6 +269,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(ProjectBoardVote::query()->where('legacy_id', 99)->firstOrFail()->board_type)->toBe(BoardType::At)
         ->and(ProjectBoardVote::query()->where('legacy_id', 100)->firstOrFail()->board_type)->toBe(BoardType::Ot)
         ->and(BoardVoteRejection::query()->where('legacy_id', 101)->firstOrFail()->comment)->toBe('Powód odrzucenia')
+        ->and(CorrespondenceMessage::query()->where('legacy_id', 102)->firstOrFail()->is_read)->toBeTrue()
+        ->and(ProjectComment::query()->where('legacy_id', 103)->firstOrFail()->content)->toBe('Komentarz wewnętrzny')
         ->and($voteCard->status)->toBe(VoteCardStatus::Accepted)
         ->and(Vote::query()->where('legacy_id', 80)->firstOrFail()->project_id)->toBe($project->id)
         ->and((int) $totals->first()->points)->toBe(1);

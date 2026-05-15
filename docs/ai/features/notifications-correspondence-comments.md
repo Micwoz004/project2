@@ -20,12 +20,14 @@ Status: baseline domenowy rozpoczęty.
 3. [x] Dodać korespondencję projektu z widocznością per rola.
 4. [x] Dodać komentarze wewnętrzne.
 5. [x] Pokryć testami uprawnienia i odczyt.
+6. [x] Dodać import fixture dla `correspondence` i `taskcomments`.
 
 ## Implementacja Laravel
 
 - `AddProjectCommentAction` dodaje wewnętrzny komentarz projektu tylko dla `projects.manage`, `projects.verify`, `admin` lub `bdo`.
 - `SendProjectCorrespondenceMessageAction` zapisuje wiadomość dla autora projektu albo użytkownika z uprawnieniami administracyjnymi/weryfikacyjnymi.
 - `MarkCorrespondenceMessageReadAction` oznacza wiadomość jako przeczytaną przez adresata albo uprawnionego operatora.
+- `LegacyFixtureImportService` przenosi historyczną korespondencję i komentarze projektu po `legacy_id`, wiążąc je z projektem oraz opcjonalnym użytkownikiem legacy.
 - Logi zapisują identyfikatory projektu/użytkownika/wiadomości, ale nie zapisują treści wiadomości ani komentarzy.
 
 ## Świadome braki na tym etapie

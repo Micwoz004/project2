@@ -67,6 +67,7 @@
 - [x] Import fixture weryfikacji formalnej, merytorycznej i przydziałów departamentów.
 - [x] Import fixture konsultacji oraz głosowań ZK/OT/AT i odrzuceń.
 - [x] Baseline korespondencji i komentarzy projektu z uprawnieniami i odczytem.
+- [x] Import fixture korespondencji i komentarzy projektu.
 
 ## Do pełnego parytetu
 

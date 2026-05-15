@@ -3,6 +3,8 @@
 namespace App\Domain\LegacyImport\Services;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Communications\Models\CorrespondenceMessage;
+use App\Domain\Communications\Models\ProjectComment;
 use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Files\Models\ProjectFile;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
@@ -68,6 +70,8 @@ class LegacyFixtureImportService
                 'otvotes' => $this->importBoardVotes($payload['otvotes'] ?? [], BoardType::Ot),
                 'atvotes' => $this->importBoardVotes($payload['atvotes'] ?? [], BoardType::At),
                 'atotvotesrejection' => $this->importBoardVoteRejections($payload['atotvotesrejection'] ?? []),
+                'correspondence' => $this->importCorrespondence($payload['correspondence'] ?? []),
+                'taskcomments' => $this->importProjectComments($payload['taskcomments'] ?? []),
                 'voters' => $this->importVoters($payload['voters'] ?? []),
                 'votecards' => $this->importVoteCards($payload['votecards'] ?? []),
                 'votes' => $this->importVotes($payload['votes'] ?? []),
@@ -372,6 +376,48 @@ class LegacyFixtureImportService
                 'board_type' => BoardType::from((string) Arr::get($row, 'boardType', BoardType::At->value)),
                 'comment' => Arr::get($row, 'comment'),
                 'created_by_id' => $user->id,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importCorrespondence(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+
+            CorrespondenceMessage::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'user_id' => $this->optionalUserId(Arr::get($row, 'userId')),
+                'message_text' => Arr::get($row, 'messageText', Arr::get($row, 'content')),
+                'is_read' => (bool) Arr::get($row, 'isRead', false),
+                'read_at' => Arr::get($row, 'readAt'),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importProjectComments(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+
+            ProjectComment::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'user_id' => $this->optionalUserId(Arr::get($row, 'userId')),
+                'content' => Arr::get($row, 'content', Arr::get($row, 'messageText')),
             ]);
         }
 

@@ -107,6 +107,7 @@
 - [x] Publiczny formularz zgłoszenia zapisuje kategorię główną i pivot kategorii projektu.
 - [x] Przekazanie po weryfikacji formalnej do weryfikacji wstępnej z `need_pre_verification` i przydziałami jednostek.
 - [x] Korekta formalna uruchamia wspólne okno korekty i utrzymuje projekt w weryfikacji formalnej.
+- [x] Wersjonowanie karty formalnej przy zapisie przez `verification_versions`.
 
 ## Do pełnego parytetu
 

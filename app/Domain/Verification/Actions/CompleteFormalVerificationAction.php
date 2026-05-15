@@ -4,6 +4,7 @@ namespace App\Domain\Verification\Actions;
 
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Verification\Enums\VerificationAssignmentType;
 use App\Domain\Verification\Models\FormalVerification;
 use App\Models\User;
 use DomainException;
@@ -12,6 +13,10 @@ use Illuminate\Support\Facades\Log;
 
 class CompleteFormalVerificationAction
 {
+    public function __construct(
+        private readonly RecordVerificationVersionAction $recordVerificationVersion,
+    ) {}
+
     /**
      * @param  array<string, mixed>  $answers
      */
@@ -39,6 +44,19 @@ class CompleteFormalVerificationAction
                 [
                     'created_by_id' => $actor->id,
                     'modified_by_id' => $actor->id,
+                    'status' => $nextStatus->value,
+                    'result' => $result,
+                    'result_comments' => $resultComments,
+                    'answers' => $answers,
+                ],
+            );
+
+            $this->recordVerificationVersion->execute(
+                $verification,
+                VerificationAssignmentType::FormalVerification,
+                $actor,
+                [
+                    'project_id' => $project->id,
                     'status' => $nextStatus->value,
                     'result' => $result,
                     'result_comments' => $resultComments,

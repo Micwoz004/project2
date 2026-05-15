@@ -10,6 +10,7 @@ use App\Domain\Verification\Actions\CompleteFormalVerificationAction;
 use App\Domain\Verification\Actions\ForwardFormalVerificationToInitialVerificationAction;
 use App\Domain\Verification\Actions\RequestFormalCorrectionAction;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
+use App\Domain\Verification\Models\VerificationVersion;
 use App\Models\User;
 
 function submittedProjectForFormalVerification(array $overrides = []): Project
@@ -46,7 +47,8 @@ it('completes positive formal verification and updates project status', function
 
     expect($verification->result)->toBeTrue()
         ->and($verification->status)->toBe(ProjectStatus::FormallyVerified->value)
-        ->and($project->refresh()->status)->toBe(ProjectStatus::FormallyVerified);
+        ->and($project->refresh()->status)->toBe(ProjectStatus::FormallyVerified)
+        ->and(VerificationVersion::query()->where('verification_legacy_id', $verification->id)->count())->toBe(1);
 });
 
 it('rejects positive formal verification without support list confirmation', function (): void {

@@ -39,6 +39,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `CompleteFormalVerificationAction` zapisuje/aktualizuje kartę formalną i ustawia status projektu na `FormallyVerified` albo `RejectedFormally`.
 - `RequestFormalCorrectionAction` uruchamia korektę formalną dla projektu złożonego albo będącego w weryfikacji formalnej, przełącza projekt do `DuringFormalVerification` i używa wspólnego mechanizmu `StartCorrectionAction`.
 - `ForwardFormalVerificationToInitialVerificationAction` przekazuje projekt ze statusu `FormallyVerified` do `DuringInitialVerification`, ustawia `need_pre_verification=true` i tworzy przydziały `MeritInitial` dla wskazanych jednostek.
+- `RecordVerificationVersionAction` zapisuje snapshot bieżącej karty formalnej do `verification_versions` z typem `FormalVerification=4`, zgodnie z mechanizmem `VerificationVersion::beforeSave()` w Yii.
 - Pozytywny wynik wymaga `projects.is_support_list=true`.
 - Negatywny wynik wymaga `result_comments`.
 - `LegacyFixtureImportService` importuje historyczne `taskverification`, mapuje wspólne pola i zachowuje pełny rekord w `raw_legacy_payload`.
@@ -47,5 +48,5 @@ Status: częściowo zaimplementowane w etapie 3.
 ## Zgodność do sprawdzenia
 
 - Uzupełnić pełną listę pytań formularza formalnego w Filament na podstawie `TaskVerification::attributeLabels()`.
-- `needCorrection`, `needPreVerification` i `initialDepartments` są obsługiwane w domenie; UI zostaje do podpięcia.
+- `needCorrection`, `needPreVerification`, `initialDepartments` i wersjonowanie kart formalnych są obsługiwane w domenie; UI zostaje do podpięcia.
 - Podpiąć `VerificationVersion` do bieżących akcji zapisu kart, żeby nowe zmiany w Laravel tworzyły snapshoty tak jak `beforeSave()` w Yii.

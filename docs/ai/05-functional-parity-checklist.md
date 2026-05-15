@@ -70,6 +70,7 @@
 - [x] Import fixture korespondencji i komentarzy projektu.
 - [x] Import fixture historycznych wersji projektu z tabeli `versions`.
 - [x] Import fixture hashy rejestru wyborców, tokenów SMS i logów SMS.
+- [x] Import fixture korekt projektu z tabeli `taskcorrection`.
 
 ## Do pełnego parytetu
 

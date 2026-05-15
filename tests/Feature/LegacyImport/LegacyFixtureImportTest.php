@@ -11,6 +11,7 @@ use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCoauthor;
+use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Results\Services\ResultsCalculator;
@@ -205,6 +206,32 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'userId' => 600,
             'content' => 'Komentarz wewnętrzny',
         ]],
+        'taskcorrection' => [[
+            'id' => 108,
+            'taskId' => 40,
+            'title' => 0,
+            'taskTypeId' => 0,
+            'localization' => 1,
+            'mapData' => 1,
+            'goal' => 0,
+            'description' => 0,
+            'argumentation' => 0,
+            'recipients' => 0,
+            'freeOfCharge' => 0,
+            'cost' => 0,
+            'supportAttachment' => 1,
+            'agreementAttachment' => 0,
+            'mapAttachment' => 0,
+            'parentAgreementAttachment' => 0,
+            'attachments' => 1,
+            'availability' => 0,
+            'categoryId' => 0,
+            'notes' => 'Uzupełnić lokalizację i listę poparcia',
+            'correctionDeadline' => '2025-03-20',
+            'creatorId' => 600,
+            'correctionDone' => 1,
+            'createdAt' => '2025-03-12 14:00:00',
+        ]],
         'versions' => [[
             'id' => 104,
             'taskId' => 40,
@@ -303,6 +330,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['atotvotesrejection'])->toBe(1)
         ->and($batch->stats['correspondence'])->toBe(1)
         ->and($batch->stats['taskcomments'])->toBe(1)
+        ->and($batch->stats['taskcorrection'])->toBe(1)
         ->and($batch->stats['versions'])->toBe(1)
         ->and($batch->stats['newverification'])->toBe(1)
         ->and($batch->stats['votingtokens'])->toBe(1)
@@ -328,6 +356,13 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(BoardVoteRejection::query()->where('legacy_id', 101)->firstOrFail()->comment)->toBe('Powód odrzucenia')
         ->and(CorrespondenceMessage::query()->where('legacy_id', 102)->firstOrFail()->is_read)->toBeTrue()
         ->and(ProjectComment::query()->where('legacy_id', 103)->firstOrFail()->content)->toBe('Komentarz wewnętrzny')
+        ->and(ProjectCorrection::query()->where('legacy_id', 108)->firstOrFail()->allowed_fields)->toBe([
+            'localization',
+            'map_data',
+            'support_attachment',
+            'attachments',
+        ])
+        ->and(ProjectCorrection::query()->where('legacy_id', 108)->firstOrFail()->correction_done)->toBeTrue()
         ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->data['title'])->toBe('Park kieszonkowy')
         ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->files[0]['originalName'])->toBe('Lista poparcia.pdf')
         ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->costs[0]['sum'])->toBe('1000')

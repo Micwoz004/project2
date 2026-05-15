@@ -8,11 +8,13 @@ use App\Domain\Communications\Models\ProjectComment;
 use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Files\Models\ProjectFile;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
+use App\Domain\Projects\Enums\ProjectCorrectionField;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCoauthor;
+use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Users\Models\Department;
@@ -78,6 +80,7 @@ class LegacyFixtureImportService
                 'atotvotesrejection' => $this->importBoardVoteRejections($payload['atotvotesrejection'] ?? []),
                 'correspondence' => $this->importCorrespondence($payload['correspondence'] ?? []),
                 'taskcomments' => $this->importProjectComments($payload['taskcomments'] ?? []),
+                'taskcorrection' => $this->importProjectCorrections($payload['taskcorrection'] ?? []),
                 'versions' => $this->importProjectVersions($payload['versions'] ?? []),
                 'newverification' => $this->importVoterRegistryHashes($payload['newverification'] ?? []),
                 'votingtokens' => $this->importVotingTokens($payload['votingtokens'] ?? []),
@@ -437,6 +440,32 @@ class LegacyFixtureImportService
     /**
      * @param  list<array<string, mixed>>  $rows
      */
+    private function importProjectCorrections(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $createdAt = Arr::get($row, 'createdAt');
+
+            ProjectCorrection::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'creator_id' => $this->optionalUserId(Arr::get($row, 'creatorId')),
+                'allowed_fields' => $this->allowedCorrectionFields($row),
+                'notes' => Arr::get($row, 'notes'),
+                'correction_deadline' => Arr::get($row, 'correctionDeadline'),
+                'correction_done' => (bool) Arr::get($row, 'correctionDone', false),
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
     private function importProjectVersions(array $rows): int
     {
         foreach ($rows as $row) {
@@ -686,6 +715,42 @@ class LegacyFixtureImportService
         }
 
         return Voter::query()->where('legacy_id', (int) $legacyId)->value('id');
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return list<string>
+     */
+    private function allowedCorrectionFields(array $row): array
+    {
+        $fields = [
+            'title' => ProjectCorrectionField::Title,
+            'taskTypeId' => ProjectCorrectionField::ProjectArea,
+            'localization' => ProjectCorrectionField::Localization,
+            'mapData' => ProjectCorrectionField::MapData,
+            'goal' => ProjectCorrectionField::Goal,
+            'description' => ProjectCorrectionField::Description,
+            'argumentation' => ProjectCorrectionField::Argumentation,
+            'recipients' => ProjectCorrectionField::Recipients,
+            'freeOfCharge' => ProjectCorrectionField::FreeOfCharge,
+            'cost' => ProjectCorrectionField::Cost,
+            'supportAttachment' => ProjectCorrectionField::SupportAttachment,
+            'agreementAttachment' => ProjectCorrectionField::AgreementAttachment,
+            'mapAttachment' => ProjectCorrectionField::MapAttachment,
+            'parentAgreementAttachment' => ProjectCorrectionField::ParentAgreementAttachment,
+            'attachments' => ProjectCorrectionField::Attachments,
+            'availability' => ProjectCorrectionField::Availability,
+            'categoryId' => ProjectCorrectionField::Category,
+        ];
+
+        return array_values(array_map(
+            static fn (ProjectCorrectionField $field): string => $field->value,
+            array_filter(
+                $fields,
+                static fn (ProjectCorrectionField $field, string $legacyColumn): bool => (bool) Arr::get($row, $legacyColumn, false),
+                ARRAY_FILTER_USE_BOTH
+            )
+        ));
     }
 
     /**

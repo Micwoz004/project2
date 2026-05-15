@@ -34,6 +34,7 @@ use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Verification\Models\LocationVerification;
 use App\Domain\Verification\Models\ProjectAppeal;
 use App\Domain\Verification\Models\ProjectBoardVote;
+use App\Domain\Verification\Models\ProjectDepartmentRecommendation;
 use App\Domain\Verification\Models\ProjectUserAssignment;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Verification\Models\VerificationVersion;
@@ -246,6 +247,29 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'presidentOfficeQuestion1' => 1,
             'presidentOfficeQuestion1Remarks' => 'Zgodny ze strategią',
             'helperOther' => 'Opinia jednostki',
+        ]],
+        'prerecommendations' => [[
+            'id' => 123,
+            'taskId' => 40,
+            'departmentId' => 500,
+            'taskOpinion' => 1,
+            'notes' => 'Pozytywna prerekomendacja',
+            'creatorId' => 600,
+            'sentTime' => '2025-03-12 10:00:00',
+        ]],
+        'recommendationswjo' => [[
+            'id' => 124,
+            'taskId' => 40,
+            'departmentId' => 500,
+            'obligatory1' => 1,
+            'obligatoryNotes1' => '',
+            'facultative1' => 2,
+            'facultative1CostVerified' => '1500',
+            'facultativeNotes1' => 'Koszt do zmiany',
+            'notes' => 'Opinia WJO',
+            'cost' => 'Koszt utrzymania',
+            'creatorId' => 600,
+            'sentTime' => '2025-03-12 11:00:00',
         ]],
         'coordinatorassignment' => [[
             'id' => 119,
@@ -531,6 +555,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['locationverification'])->toBe(1)
         ->and($batch->stats['verificationversion'])->toBe(1)
         ->and($batch->stats['taskadvancedverification'])->toBe(1)
+        ->and($batch->stats['prerecommendations'])->toBe(1)
+        ->and($batch->stats['recommendationswjo'])->toBe(1)
         ->and($batch->stats['coordinatorassignment'])->toBe(1)
         ->and($batch->stats['verifierassignment'])->toBe(1)
         ->and($batch->stats['taskdepartmentassignment'])->toBe(1)
@@ -576,6 +602,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->toBe('{"verificationResult":"1","resultReason":"Pozytywnie"}')
         ->and(AdvancedVerification::query()->where('legacy_id', 121)->firstOrFail()->department_id)->toBe($department->id)
         ->and(AdvancedVerification::query()->where('legacy_id', 121)->firstOrFail()->raw_legacy_payload['helperOther'])->toBe('Opinia jednostki')
+        ->and(ProjectDepartmentRecommendation::query()->where('legacy_table', 'prerecommendations')->where('legacy_id', 123)->firstOrFail()->task_opinion)->toBe(1)
+        ->and(ProjectDepartmentRecommendation::query()->where('legacy_table', 'recommendationswjo')->where('legacy_id', 124)->firstOrFail()->answers['facultative1CostVerified'])->toBe('1500')
         ->and(ProjectUserAssignment::query()->where('legacy_table', 'coordinatorassignment')->where('legacy_id', 119)->firstOrFail()->role)
         ->toBe(ProjectUserAssignment::ROLE_COORDINATOR)
         ->and(ProjectUserAssignment::query()->where('legacy_table', 'verifierassignment')->where('legacy_id', 120)->firstOrFail()->role)

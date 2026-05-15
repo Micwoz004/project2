@@ -67,6 +67,7 @@
 - [x] Import fixture weryfikacji formalnej, merytorycznej i przydziałów departamentów.
 - [x] Import fixture dodatkowych kart `detailedverification`, `locationverification` i wersji `verificationversion`.
 - [x] Import fixture zaawansowanych kart jednostek z `taskadvancedverification`.
+- [x] Import fixture prerekomendacji i rekomendacji WJO.
 - [x] Import fixture przypisań koordynatorów i weryfikatorów projektów.
 - [x] Import fixture konsultacji oraz głosowań ZK/OT/AT i odrzuceń.
 - [x] Import fixture odwołań od decyzji z `taskappealagainstdecision`.

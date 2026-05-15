@@ -35,6 +35,7 @@ use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Verification\Models\LocationVerification;
 use App\Domain\Verification\Models\ProjectAppeal;
 use App\Domain\Verification\Models\ProjectBoardVote;
+use App\Domain\Verification\Models\ProjectDepartmentRecommendation;
 use App\Domain\Verification\Models\ProjectUserAssignment;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Verification\Models\VerificationVersion;
@@ -91,6 +92,8 @@ class LegacyFixtureImportService
                 'locationverification' => $this->importLocationVerifications($payload['locationverification'] ?? []),
                 'verificationversion' => $this->importVerificationVersions($payload['verificationversion'] ?? []),
                 'taskadvancedverification' => $this->importAdvancedVerifications($payload['taskadvancedverification'] ?? []),
+                'prerecommendations' => $this->importPreRecommendations($payload['prerecommendations'] ?? []),
+                'recommendationswjo' => $this->importWjoRecommendations($payload['recommendationswjo'] ?? []),
                 'coordinatorassignment' => $this->importProjectUserAssignments(
                     $payload['coordinatorassignment'] ?? [],
                     'coordinatorassignment',
@@ -522,6 +525,63 @@ class LegacyFixtureImportService
                 'status' => (int) Arr::get($row, 'status', 0),
                 'sent_at' => $sentAt,
                 'raw_legacy_payload' => $row,
+                'created_at' => $sentAt,
+                'updated_at' => $sentAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importPreRecommendations(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $sentAt = $this->nullableLegacyDate(Arr::get($row, 'sentTime'));
+
+            ProjectDepartmentRecommendation::query()->updateOrCreate([
+                'legacy_table' => 'prerecommendations',
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'department_id' => $this->optionalDepartmentId(Arr::get($row, 'departmentId')),
+                'created_by_id' => $this->optionalUserId(Arr::get($row, 'creatorId')),
+                'type' => ProjectDepartmentRecommendation::TYPE_PRE,
+                'task_opinion' => Arr::get($row, 'taskOpinion'),
+                'notes' => Arr::get($row, 'notes'),
+                'sent_at' => $sentAt,
+                'created_at' => $sentAt,
+                'updated_at' => $sentAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importWjoRecommendations(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $sentAt = $this->nullableLegacyDate(Arr::get($row, 'sentTime'));
+
+            ProjectDepartmentRecommendation::query()->updateOrCreate([
+                'legacy_table' => 'recommendationswjo',
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'department_id' => $this->optionalDepartmentId(Arr::get($row, 'departmentId')),
+                'created_by_id' => $this->optionalUserId(Arr::get($row, 'creatorId')),
+                'type' => ProjectDepartmentRecommendation::TYPE_WJO,
+                'answers' => Arr::except($row, ['id', 'taskId', 'departmentId', 'creatorId', 'sentTime', 'notes', 'cost']),
+                'notes' => Arr::get($row, 'notes'),
+                'cost' => Arr::get($row, 'cost'),
+                'sent_at' => $sentAt,
                 'created_at' => $sentAt,
                 'updated_at' => $sentAt,
             ]);

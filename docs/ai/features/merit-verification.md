@@ -25,6 +25,7 @@ Status: częściowo zaimplementowane w etapie 3.
 8. [x] Dodać import fixture dla `detailedverification`, `locationverification` i `verificationversion`.
 9. [x] Dodać import fixture dla `coordinatorassignment` i `verifierassignment`.
 10. [x] Dodać import fixture dla `taskadvancedverification`.
+11. [x] Dodać import fixture dla `prerecommendations` i `recommendationswjo`.
 
 ## Rozpoznane reguły legacy
 
@@ -48,6 +49,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `DetailedVerification` i `LocationVerification` zachowują specyficzne formularze legacy w `answers` JSON oraz osobne pola wyniku, rekomendacji, publiczności i dat.
 - `ProjectUserAssignment` konsoliduje legacy `coordinatorassignment` i `verifierassignment` w jedną tabelę z rolą przypisania.
 - `AdvancedVerification` zachowuje historyczny formularz `taskadvancedverification` w pełnym payloadzie JSON oraz pola procesu: projekt, jednostkę, operatora, status i datę wysłania.
+- `ProjectDepartmentRecommendation` konsoliduje legacy `prerecommendations` i `recommendationswjo`, zachowując opinię, notatki, koszt, datę wysłania i odpowiedzi formularza WJO.
 
 ## Świadome uproszczenia na tym etapie
 

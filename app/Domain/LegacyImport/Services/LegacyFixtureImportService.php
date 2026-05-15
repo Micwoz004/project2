@@ -3,11 +3,14 @@
 namespace App\Domain\LegacyImport\Services;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Files\Enums\ProjectFileType;
+use App\Domain\Files\Models\ProjectFile;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Models\Vote;
@@ -43,6 +46,9 @@ class LegacyFixtureImportService
                 'tasks' => $this->importTasks($payload['tasks'] ?? []),
                 'taskscategories' => $this->importTasksCategories($payload['taskscategories'] ?? []),
                 'taskcosts' => $this->importTaskCosts($payload['taskcosts'] ?? []),
+                'files' => $this->importFiles($payload['files'] ?? [], false),
+                'filesprivate' => $this->importFiles($payload['filesprivate'] ?? [], true),
+                'cocreators' => $this->importCoauthors($payload['cocreators'] ?? []),
                 'voters' => $this->importVoters($payload['voters'] ?? []),
                 'votecards' => $this->importVoteCards($payload['votecards'] ?? []),
                 'votes' => $this->importVotes($payload['votes'] ?? []),
@@ -190,6 +196,63 @@ class LegacyFixtureImportService
             $category = $this->category((int) Arr::get($row, 'categoryId'));
 
             $project->categories()->syncWithoutDetaching([$category->id]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importFiles(array $rows, bool $private): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+
+            ProjectFile::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'stored_name' => Arr::get($row, 'filename', Arr::get($row, 'storedName')),
+                'original_name' => Arr::get($row, 'originalName', Arr::get($row, 'filename')),
+                'description' => Arr::get($row, 'description'),
+                'type' => ProjectFileType::tryFrom((int) Arr::get($row, 'type', ProjectFileType::Other->value)) ?? ProjectFileType::Other,
+                'is_private' => $private,
+                'is_task_form_attachment' => (bool) Arr::get($row, 'isTaskFormAttachment', false),
+                'is_pre_verification_attachment' => (bool) Arr::get($row, 'isPreVerificationAttachment', false),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importCoauthors(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+
+            ProjectCoauthor::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'first_name' => Arr::get($row, 'firstName'),
+                'last_name' => Arr::get($row, 'lastName'),
+                'email' => Arr::get($row, 'email'),
+                'phone' => Arr::get($row, 'phone'),
+                'post_code' => Arr::get($row, 'postCode'),
+                'city' => Arr::get($row, 'city'),
+                'personal_data_agree' => (bool) Arr::get($row, 'personalDataAgree', false),
+                'name_agree' => (bool) Arr::get($row, 'nameAgree', false),
+                'data_evaluation_agree' => (bool) Arr::get($row, 'dataEvaluationAgree', false),
+                'read_confirm' => (bool) Arr::get($row, 'readConfirm', false),
+                'confirm' => (bool) Arr::get($row, 'confirm', false),
+                'email_agree' => (bool) Arr::get($row, 'emailAgree', false),
+                'phone_agree' => (bool) Arr::get($row, 'phoneAgree', false),
+                'hash' => Arr::get($row, 'hash'),
+            ]);
         }
 
         return count($rows);

@@ -1,12 +1,14 @@
 <?php
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Files\Models\ProjectFile;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
 use App\Domain\LegacyImport\Services\LegacyFixtureImportService;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Voting\Enums\VoteCardStatus;
@@ -71,6 +73,30 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'taskId' => 40,
             'categoryId' => 31,
         ]],
+        'files' => [[
+            'id' => 90,
+            'taskId' => 40,
+            'filename' => 'support.pdf',
+            'originalName' => 'Lista poparcia.pdf',
+            'type' => 1,
+            'isTaskFormAttachment' => true,
+        ]],
+        'filesprivate' => [[
+            'id' => 91,
+            'taskId' => 40,
+            'filename' => 'private.pdf',
+            'originalName' => 'Prywatny.pdf',
+            'type' => 3,
+        ]],
+        'cocreators' => [[
+            'id' => 92,
+            'taskId' => 40,
+            'firstName' => 'Anna',
+            'lastName' => 'Nowak',
+            'email' => 'anna@example.test',
+            'personalDataAgree' => true,
+            'confirm' => true,
+        ]],
         'voters' => [[
             'id' => 60,
             'pesel' => '44051401458',
@@ -107,6 +133,9 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->finished_at)->not->toBeNull()
         ->and($batch->stats['tasks'])->toBe(1)
         ->and($batch->stats['taskscategories'])->toBe(2)
+        ->and($batch->stats['files'])->toBe(1)
+        ->and($batch->stats['filesprivate'])->toBe(1)
+        ->and($batch->stats['cocreators'])->toBe(1)
         ->and($edition->legacy_id)->toBe(10)
         ->and(ProjectArea::query()->where('legacy_id', 20)->firstOrFail()->is_local)->toBeTrue()
         ->and($project->status)->toBe(ProjectStatus::Picked)
@@ -114,6 +143,9 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($project->categories()->pluck('categories.id')->sort()->values()->all())
         ->toBe(Category::query()->whereIn('legacy_id', [30, 31])->pluck('id')->sort()->values()->all())
         ->and(ProjectCostItem::query()->where('legacy_id', 50)->firstOrFail()->project_id)->toBe($project->id)
+        ->and(ProjectFile::query()->where('legacy_id', 90)->firstOrFail()->is_private)->toBeFalse()
+        ->and(ProjectFile::query()->where('legacy_id', 91)->firstOrFail()->is_private)->toBeTrue()
+        ->and(ProjectCoauthor::query()->where('legacy_id', 92)->firstOrFail()->confirm)->toBeTrue()
         ->and($voteCard->status)->toBe(VoteCardStatus::Accepted)
         ->and(Vote::query()->where('legacy_id', 80)->firstOrFail()->project_id)->toBe($project->id)
         ->and((int) $totals->first()->points)->toBe(1);

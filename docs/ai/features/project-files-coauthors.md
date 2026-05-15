@@ -20,6 +20,7 @@ Status: częściowo zaimplementowane w etapie 1.
 3. [x] Dodać domenową synchronizację współautorów i zgód.
 4. [ ] Ustalić reguły anonimizacji załączników.
 5. [x] Pokryć testami metadane plików, typy, limity i wymagane zgody.
+6. [x] Dodać import fixture dla `files`, `filesprivate` i `cocreators`.
 
 ## Rozpoznane reguły legacy
 
@@ -37,6 +38,7 @@ Status: częściowo zaimplementowane w etapie 1.
 - `RegisterProjectFileAction` rejestruje metadane pliku i loguje operację bez treści pliku oraz bez PII.
 - `ProjectCoauthorValidator` waliduje limit dwóch współautorów, wymagane dane kontaktowe, potwierdzenie przeczytania i zgodę na co najmniej jedną formę kontaktu.
 - `SyncProjectCoauthorsAction` wymienia listę współautorów projektu transakcyjnie.
+- `LegacyFixtureImportService` rozdziela `files` i `filesprivate` flagą `is_private` oraz przenosi współautorów z `cocreators`.
 
 ## Zgodność do sprawdzenia
 

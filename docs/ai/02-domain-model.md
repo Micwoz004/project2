@@ -49,7 +49,7 @@ Statusy legacy są zachowane jako `ProjectStatus` z wartościami integer: `1,2,3
 - `UpdateVoteCardStatusAction` - administracyjna zmiana statusu karty z operatorem, czasem obsługi i notatką.
 - `ResultsCalculator` - sumowanie punktów wyłącznie z kart `VoteCardStatus::Accepted`, deterministyczny ranking projektów i agregacje po obszarach/kategoriach.
 - `ResultsPublicationService` - publiczna widoczność wyników wyłącznie w etapie ogłaszania wyników.
-- `VoteCardReportService` - zagregowane statusy kart, demografia oraz raporty wieku i płci per projekt z zaakceptowanych kart bez PII.
+- `VoteCardReportService` - zagregowane statusy kart, demografia oraz raporty wieku, płci i typu karty per projekt z zaakceptowanych kart bez PII.
 - `PublicResultsCsvExporter` - publiczny eksport wyników bez danych wyborców.
 - `LegacyFixtureImportService` - transakcyjny, idempotentny import baseline danych legacy po `legacy_id`.
 - `LegacyDictionaryImportService` - import słowników legacy po `source_table + legacy_id`.

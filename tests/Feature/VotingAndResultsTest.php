@@ -695,3 +695,38 @@ it('builds legacy sex totals per project from accepted cards', function (): void
         ->and((int) $row->unknown)->toBe(1)
         ->and((int) $row->total)->toBe(4);
 });
+
+it('builds legacy card type totals per project from accepted cards', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'status' => ProjectStatus::Picked,
+    ]));
+
+    foreach ([true, false, false] as $index => $digital) {
+        $voter = Voter::query()->create([
+            'pesel' => '4405140145'.$index,
+            'first_name' => 'Jan',
+            'last_name' => 'Kowalski',
+        ]);
+        $voteCard = VoteCard::query()->create([
+            'budget_edition_id' => $edition->id,
+            'voter_id' => $voter->id,
+            'status' => VoteCardStatus::Accepted,
+            'digital' => $digital,
+        ]);
+        $voteCard->votes()->create([
+            'voter_id' => $voter->id,
+            'project_id' => $project->id,
+            'points' => 1,
+        ]);
+    }
+
+    $rows = app(VoteCardReportService::class)->projectCardTypeTotals($edition);
+    $row = $rows->first();
+
+    expect($rows)->toHaveCount(1)
+        ->and((int) $row->digital)->toBe(1)
+        ->and((int) $row->paper)->toBe(2)
+        ->and((int) $row->total)->toBe(3);
+});

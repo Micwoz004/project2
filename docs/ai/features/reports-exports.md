@@ -27,6 +27,7 @@ Status: baseline domenowy rozpoczęty.
 - `VoteCardReportService::acceptedVoterDemographics()` zwraca zagregowane płcie i przedziały wieku wyłącznie dla zaakceptowanych kart, bez PESEL, telefonu ani danych osobowych.
 - `VoteCardReportService::projectAgeGroupTotals()` odtwarza administracyjny raport wieku z legacy dla grup `16-30`, `31-45`, `46-60`, `61+` per projekt.
 - `VoteCardReportService::projectSexTotals()` odtwarza administracyjny raport punktów według płci per projekt.
+- `VoteCardReportService::projectCardTypeTotals()` odtwarza administracyjny raport punktów według typu karty: elektroniczna/papierowa.
 - `PublicResultsCsvExporter` eksportuje publiczne wyniki CSV z kolumnami `project_id`, `project_number`, `title`, `area`, `points`.
 - `/wyniki/export.csv` jest dostępne tylko w oknie publikacji wyników.
 

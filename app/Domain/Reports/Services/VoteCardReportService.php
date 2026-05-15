@@ -136,4 +136,33 @@ class VoteCardReportService
 
         return $rows;
     }
+
+    public function projectCardTypeTotals(BudgetEdition $edition): Collection
+    {
+        Log::info('vote_card_report.project_card_type_totals.start', [
+            'budget_edition_id' => $edition->id,
+        ]);
+
+        $rows = Vote::query()
+            ->join('vote_cards', 'votes.vote_card_id', '=', 'vote_cards.id')
+            ->where('vote_cards.budget_edition_id', $edition->id)
+            ->where('vote_cards.status', VoteCardStatus::Accepted->value)
+            ->select([
+                'votes.project_id',
+                DB::raw('SUM(CASE WHEN vote_cards.digital = 1 THEN votes.points ELSE 0 END) as digital'),
+                DB::raw('SUM(CASE WHEN vote_cards.digital = 0 THEN votes.points ELSE 0 END) as paper'),
+                DB::raw('SUM(votes.points) as total'),
+            ])
+            ->groupBy('votes.project_id')
+            ->orderByDesc('total')
+            ->orderBy('votes.project_id')
+            ->get();
+
+        Log::info('vote_card_report.project_card_type_totals.success', [
+            'budget_edition_id' => $edition->id,
+            'projects_count' => $rows->count(),
+        ]);
+
+        return $rows;
+    }
 }

@@ -21,12 +21,14 @@ Status: baseline domenowy rozbudowany.
 4. Zbudować publiczny i administracyjny widok wyników.
 5. [x] Pokryć testami accepted/rejected/verifying i agregacje.
 6. [x] Dodać jawne wykrywanie remisów wymagających decyzji manualnej.
+7. [x] Dodać porównanie wyników liczonych po kategorii głównej projektu i po wielu kategoriach.
 
 ## Implementacja Laravel
 
 - `ResultsCalculator::projectTotals()` sumuje punkty projektów wyłącznie z kart `Accepted` i sortuje ranking po punktach malejąco, następnie po `number_drawn` oraz `project_id`.
 - `ResultsCalculator::areaTotals()` sumuje punkty po `project_areas` dla tej samej edycji.
 - `ResultsCalculator::categoryTotals()` sumuje punkty po kategoriach z pivotu `category_project`, a dla rekordów bez pivotu używa `projects.category_id`.
+- `ResultsCalculator::categoryComparisonTotals()` zwraca raport różnic między legacy kategorią główną `projects.category_id` i nowym przypisaniem wielu kategorii z pivotu.
 - `ResultsPublicationService` pozwala publicznie pokazać wyniki tylko w stanie edycji `ResultAnnouncement`.
 - `ResultTieBreakerService` wykrywa grupy projektów z tą samą liczbą punktów i oznacza je jako wymagające decyzji manualnej; nie wybiera zwycięzcy automatycznie, bo w legacy nie znaleziono takiej reguły.
 - `/wyniki` nie liczy ani nie pokazuje punktów przed oknem publikacji wyników.
@@ -34,4 +36,4 @@ Status: baseline domenowy rozbudowany.
 ## Świadome braki na tym etapie
 
 - Nie znaleziono w legacy automatycznej procedury wyboru zwycięzcy przy remisie. Nowy system wykrywa remisy i wymaga decyzji manualnej, zachowując deterministyczną kolejność rankingu/raportu.
-- Brak osobnego raportu porównującego kategorie główne i wielokrotne kategorie; obecna agregacja zachowuje punkty w każdej kategorii przypisanej do projektu.
+- Brak UI administracyjnego dla raportu porównującego kategorie główne i wielokrotne kategorie; logika domenowa i test parytetu są już gotowe.

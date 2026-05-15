@@ -50,6 +50,7 @@
 - [x] Domenowa rejestracja papierowych kart głosowania z numeracją i operatorem.
 - [x] Agregacja wyników po projektach, obszarach i kategoriach z kart zaakceptowanych.
 - [x] Agregacja wyników po wielu kategoriach projektu z pivotu `category_project`.
+- [x] Porównanie wyników kategorii głównej projektu z wynikami po wielu kategoriach.
 - [x] Deterministyczny ranking projektów przy remisie punktów.
 - [x] Wykrywanie remisów wyników jako decyzji manualnej bez zgadywania zwycięzcy.
 - [x] Publiczna publikacja wyników zależna od etapu edycji.

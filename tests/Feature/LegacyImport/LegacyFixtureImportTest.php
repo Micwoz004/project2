@@ -17,6 +17,7 @@ use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Settings\Models\ApplicationSetting;
+use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
@@ -62,6 +63,12 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'category' => 'owner',
             'key' => 'websiteName',
             'value' => 's:37:"Szczeciński Budżet Obywatelski 2025";',
+        ]],
+        'pages' => [[
+            'id' => 111,
+            'taskGroupId' => 10,
+            'symbol' => ContentPage::SYMBOL_WELCOME,
+            'body' => '<p>Witaj w SBO 2025</p>',
         ]],
         'tasktypes' => [[
             'id' => 20,
@@ -374,6 +381,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
     expect($batch->source_path)->toBe('unit-fixture')
         ->and($batch->finished_at)->not->toBeNull()
         ->and($batch->stats['settings'])->toBe(1)
+        ->and($batch->stats['pages'])->toBe(1)
         ->and($batch->stats['tasks'])->toBe(1)
         ->and($batch->stats['taskscategories'])->toBe(2)
         ->and($batch->stats['files'])->toBe(1)
@@ -400,6 +408,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(ProjectArea::query()->where('legacy_id', 20)->firstOrFail()->is_local)->toBeTrue()
         ->and(ApplicationSetting::query()->where('legacy_id', 110)->firstOrFail()->value)
         ->toBe('s:37:"Szczeciński Budżet Obywatelski 2025";')
+        ->and(ContentPage::query()->where('legacy_id', 111)->firstOrFail()->budget_edition_id)->toBe($edition->id)
+        ->and(ContentPage::query()->where('legacy_id', 111)->firstOrFail()->body)->toBe('<p>Witaj w SBO 2025</p>')
         ->and($project->status)->toBe(ProjectStatus::Picked)
         ->and($project->budget_edition_id)->toBe($edition->id)
         ->and($project->categories()->pluck('categories.id')->sort()->values()->all())

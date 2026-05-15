@@ -19,6 +19,7 @@ use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Settings\Models\ApplicationSetting;
+use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Models\BoardVoteRejection;
@@ -64,6 +65,7 @@ class LegacyFixtureImportService
             $stats = [
                 'taskgroups' => $this->importTaskGroups($payload['taskgroups'] ?? []),
                 'settings' => $this->importSettings($payload['settings'] ?? []),
+                'pages' => $this->importPages($payload['pages'] ?? []),
                 'tasktypes' => $this->importTaskTypes($payload['tasktypes'] ?? []),
                 'categories' => $this->importCategories($payload['categories'] ?? []),
                 'tasks' => $this->importTasks($payload['tasks'] ?? []),
@@ -145,6 +147,26 @@ class LegacyFixtureImportService
                 'category' => Arr::get($row, 'category', 'system'),
                 'key' => Arr::get($row, 'key'),
                 'value' => Arr::get($row, 'value'),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importPages(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $budgetEdition = $this->budgetEdition((int) Arr::get($row, 'taskGroupId'));
+
+            ContentPage::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'budget_edition_id' => $budgetEdition->id,
+                'symbol' => Arr::get($row, 'symbol'),
+                'body' => Arr::get($row, 'body', ''),
             ]);
         }
 

@@ -18,7 +18,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `categories`, `taskscategories` | `categories`, `category_project` | Pivot zamiast tabeli legacy o nazwie Yii. |
 | `firstnamedictionary`, `lastnamedictionary`, `motherlastnamedictionary` | `dictionary_entries` | Konsolidacja przez `kind`; unikalność `source_table + legacy_id`. |
 | `departments` | `departments` | Używane przez projekty, pliki i weryfikacje. |
-| `pages` | `content_pages` | Strony publiczne per edycja. |
+| `pages` | `content_pages` | Strony publiczne per edycja; `body` zachowuje HTML legacy. |
 | `settings` | `application_settings` | Klucz/kategoria/wartość; `value` zachowane surowo, także dla serializacji Yii/PHP. |
 
 ## Weryfikacje

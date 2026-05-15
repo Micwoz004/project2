@@ -15,7 +15,7 @@
 
 Status: baseline domenowy rozpoczęty.
 
-1. Dodać Filament Resource dla kart i głosów.
+1. [x] Dodać Filament Resource dla kart głosowania.
 2. [x] Dodać akcje zmiany statusu z logowaniem.
 3. [x] Dodać obsługę kart papierowych w domenie.
 4. Zablokować niedozwolone kombinacje projektów i głosów.
@@ -26,11 +26,11 @@ Status: baseline domenowy rozpoczęty.
 - `VoteCardPolicy` dopuszcza podgląd i zmianę kart tylko dla `vote_cards.manage` albo ról `admin`/`bdo`.
 - `RegisterPaperVoteCardAction` rejestruje papierową kartę przez operatora z `vote_cards.manage`/`voting.manage`, nadaje kolejny `current_paper_card_no`, ustawia `digital=false` i zapisuje `created_by_id`.
 - `UpdateVoteCardStatusAction` zmienia status karty na `Accepted`, `Rejected` albo `Verifying`, zapisuje operatora w `checkout_user_id`, czas w `checkout_date_time` i notatkę administracyjną.
+- `VoteCardResource` daje administracyjny podgląd kart w Filament oraz edycję statusu i notatek z dostępem przez `VoteCardPolicy`.
 - `LegacyFixtureImportService` przenosi pełniejsze pola `votecards`: zgody, operatorów, konsultanta, checkout, adresy oświadczeń, rodzica/opiekuna, IP oraz timestamps.
 - `ResultsCalculator` liczy tylko karty `Accepted`, więc akceptacja/odrzucenie po ręcznej weryfikacji natychmiast zmienia wynik zgodnie z legacy.
 
 ## Świadome braki na tym etapie
 
-- Brak Filament Resource dla ręcznej obsługi kart.
 - Brak pełnego formularza Filament dla kart papierowych; domenowa akcja jest gotowa do podpięcia.
-- Brak podpięcia policy do konkretnych Filament Actions, bo Resource kart nie jest jeszcze gotowy.
+- Pełna edycja głosów na karcie i tworzenie papierowych kart w UI zostają osobnymi akcjami Filament.

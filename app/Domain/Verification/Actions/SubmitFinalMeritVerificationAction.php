@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Log;
 
 class SubmitFinalMeritVerificationAction
 {
+    public function __construct(
+        private readonly RecordVerificationVersionAction $recordVerificationVersion,
+    ) {}
+
     /**
      * @param  array<string, mixed>  $answers
      * @param  list<array{description: string, sum: int|float|string}>  $correctedCosts
@@ -62,6 +66,27 @@ class SubmitFinalMeritVerificationAction
                         'futureCost' => $this->normalizeCosts($futureCosts),
                     ],
                     'sent_at' => $sent ? now() : null,
+                ],
+            );
+
+            $snapshotAnswers = [
+                ...$answers,
+                'correctedCost' => $this->normalizeCosts($correctedCosts),
+                'futureCost' => $this->normalizeCosts($futureCosts),
+            ];
+
+            $this->recordVerificationVersion->execute(
+                $verification,
+                VerificationAssignmentType::MeritFinish,
+                $actor,
+                [
+                    'project_id' => $project->id,
+                    'department_id' => $department->id,
+                    'status' => $cardStatus->value,
+                    'result' => $result,
+                    'result_comments' => $resultComments,
+                    'answers' => $snapshotAnswers,
+                    'sent_at' => $sent ? $verification->sent_at?->toDateTimeString() : null,
                 ],
             );
 

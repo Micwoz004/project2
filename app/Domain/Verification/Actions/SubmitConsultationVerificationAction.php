@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Log;
 
 class SubmitConsultationVerificationAction
 {
+    public function __construct(
+        private readonly RecordVerificationVersionAction $recordVerificationVersion,
+    ) {}
+
     /**
      * @param  array<string, mixed>  $answers
      */
@@ -53,6 +57,21 @@ class SubmitConsultationVerificationAction
                     'result_comments' => $resultComments,
                     'answers' => $answers,
                     'sent_at' => $sent ? now() : null,
+                ],
+            );
+
+            $this->recordVerificationVersion->execute(
+                $verification,
+                VerificationAssignmentType::Consultation,
+                $actor,
+                [
+                    'project_id' => $project->id,
+                    'department_id' => $department->id,
+                    'status' => $cardStatus->value,
+                    'result' => $result,
+                    'result_comments' => $resultComments,
+                    'answers' => $answers,
+                    'sent_at' => $sent ? $verification->sent_at?->toDateTimeString() : null,
                 ],
             );
 

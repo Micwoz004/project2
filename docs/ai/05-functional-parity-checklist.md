@@ -108,6 +108,7 @@
 - [x] Przekazanie po weryfikacji formalnej do weryfikacji wstępnej z `need_pre_verification` i przydziałami jednostek.
 - [x] Korekta formalna uruchamia wspólne okno korekty i utrzymuje projekt w weryfikacji formalnej.
 - [x] Wersjonowanie karty formalnej przy zapisie przez `verification_versions`.
+- [x] Wersjonowanie kart weryfikacji merytorycznej i konsultacyjnej przy zapisie przez `verification_versions`.
 
 ## Do pełnego parytetu
 
@@ -116,7 +117,7 @@
 - [ ] Korekty projektu w UI autora/admina oraz korekty załączników/kosztów.
 - [ ] Weryfikacja formalna z pełną listą pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje departamentów.
-- [ ] Wersjonowanie kart weryfikacji merytorycznej i pełna agregacja wielu departamentów.
+- [ ] UI historii wersji kart weryfikacji i pełna agregacja wielu departamentów.
 - [ ] Głos przewodniczącego ZK, restart/zamknięcie głosowań i policy dla ról rad/komisji.
 - [ ] Pełny publiczny formularz głosowania z aktywacją tokenu SMS w UI.
 - [ ] Filament Resource dla kart głosowania i ręcznych kart papierowych.

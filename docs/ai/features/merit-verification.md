@@ -43,6 +43,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `VerificationAssignment` odwzorowuje `taskdepartmentassignment`.
 - `VerificationCardStatus` odwzorowuje statusy kart legacy.
 - `InitialMeritVerification`, `FinalMeritVerification`, `ConsultationVerification` zapisują karty w istniejących tabelach domenowych.
+- `RecordVerificationVersionAction` zapisuje snapshot każdej nowej karty wstępnej, końcowej i konsultacyjnej do `verification_versions` z typem zgodnym z `TaskDepartmentAssignment`.
 - `AssignVerificationDepartmentAction` tworzy lub aktualizuje przydział departamentu dla konkretnego typu weryfikacji.
 - `SubmitInitialMeritVerificationAction` wymaga przydziału przy wysyłce, zapisuje kartę i przenosi projekt do `SentForMeritVerification` albo `InitialVerificationRejected`.
 - `SubmitFinalMeritVerificationAction` wymaga przydziału przy wysyłce, waliduje koszty i przenosi projekt do `MeritVerificationAccepted` albo `MeritVerificationRejected`.
@@ -58,7 +59,7 @@ Status: częściowo zaimplementowane w etapie 3.
 ## Świadome uproszczenia na tym etapie
 
 - Pełne listy pól pytań z formularzy legacy są przechowywane w `answers` JSON. Logika statusów i wymaganych danych jest w domenie; kompletne formularze UI zostaną odwzorowane później.
-- `VerificationVersion` jest zaimportowany dla danych historycznych, ale akcje Laravel nie tworzą jeszcze nowych wersji przy każdej zmianie karty.
+- UI historii wersji kart merytorycznych nie jest jeszcze zbudowane, ale domena zapisuje nowe snapshoty kart.
 - Nie rozstrzygamy jeszcze automatycznie agregacji wielu departamentów. Każda karta i przydział działa per departament; końcowe reguły agregacji zostaną doprecyzowane przy module administracyjnej obsługi weryfikacji.
 
 ## Zgodność do sprawdzenia

@@ -10,6 +10,7 @@ use App\Domain\Verification\Actions\SubmitFinalMeritVerificationAction;
 use App\Domain\Verification\Actions\SubmitInitialMeritVerificationAction;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
 use App\Domain\Verification\Enums\VerificationCardStatus;
+use App\Domain\Verification\Models\VerificationVersion;
 use App\Models\User;
 
 function meritProject(ProjectStatus $status): Project
@@ -65,7 +66,11 @@ it('submits positive initial merit verification and moves project forward', func
     expect($verification->status)->toBe(VerificationCardStatus::Sent)
         ->and($verification->result)->toBeTrue()
         ->and($project->refresh()->status)->toBe(ProjectStatus::SentForMeritVerification)
-        ->and($project->verificationAssignments()->first()->sent_at)->not->toBeNull();
+        ->and($project->verificationAssignments()->first()->sent_at)->not->toBeNull()
+        ->and(VerificationVersion::query()
+            ->where('verification_legacy_id', $verification->id)
+            ->where('type', VerificationAssignmentType::MeritInitial->value)
+            ->count())->toBe(1);
 });
 
 it('requires assignment before sending initial merit verification', function (): void {
@@ -132,7 +137,11 @@ it('stores final merit corrected and future costs like legacy json fields', func
         ->and($verification->answers['futureCost'])->toBe([
             ['description' => 'Utrzymanie', 'sum' => 250],
         ])
-        ->and($project->refresh()->status)->toBe(ProjectStatus::MeritVerificationAccepted);
+        ->and($project->refresh()->status)->toBe(ProjectStatus::MeritVerificationAccepted)
+        ->and(VerificationVersion::query()
+            ->where('verification_legacy_id', $verification->id)
+            ->where('type', VerificationAssignmentType::MeritFinish->value)
+            ->count())->toBe(1);
 });
 
 it('requires complete costs when final merit card is sent', function (): void {
@@ -170,5 +179,9 @@ it('submits consultation without changing project status', function (): void {
 
     expect($verification->status)->toBe(VerificationCardStatus::Sent)
         ->and($verification->result)->toBeTrue()
-        ->and($project->refresh()->status)->toBe(ProjectStatus::DuringMeritVerification);
+        ->and($project->refresh()->status)->toBe(ProjectStatus::DuringMeritVerification)
+        ->and(VerificationVersion::query()
+            ->where('verification_legacy_id', $verification->id)
+            ->where('type', VerificationAssignmentType::Consultation->value)
+            ->count())->toBe(1);
 });

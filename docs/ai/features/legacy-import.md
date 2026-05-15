@@ -8,15 +8,28 @@
 6. Walidacje: kompletność relacji, brak PII w logach, powtarzalność importu.
 7. Role: operator migracji/administrator.
 8. Edge case: brakujące FK w danych historycznych, rekordy osierocone, kodowanie znaków, duże pliki.
-9. Laravel: `legacy_import_batches`, komendy Artisan i transakcje per moduł.
+9. Laravel: `legacy_import_batches`, `LegacyFixtureImportService`, komendy Artisan i transakcje per moduł.
 10. Zgodność: fixture z wycinkiem dumpa, liczność rekordów, mapowanie `legacy_id`.
 
 ## Plan wdrożenia
 
-Status: zaplanowane w etapie 6, fixture wcześniej.
+Status: baseline fixture zaimplementowany.
 
 1. Przygotować staging MySQL z profilem `legacy-import`.
 2. Dodać komendy Artisan importujące moduły w kolejności zależności.
-3. Zapisywać statystyki w `legacy_import_batches`.
-4. Dodać fixture z małym wycinkiem dumpa do testów.
-5. Porównać liczność, `legacy_id`, statusy i relacje.
+3. [x] Zapisywać statystyki w `legacy_import_batches`.
+4. [x] Dodać fixture z małym wycinkiem dumpa do testów.
+5. [x] Porównać liczność, `legacy_id`, statusy i relacje dla baseline modułów.
+
+## Implementacja Laravel
+
+- `LegacyFixtureImportService` importuje podstawowy wycinek danych w transakcji: `taskgroups`, `tasktypes`, `categories`, `tasks`, `taskcosts`, `voters`, `votecards`, `votes`.
+- Import jest idempotentny po `legacy_id` przez `updateOrCreate`.
+- `legacy_import_batches` zapisuje `source_path`, statystyki per tabela oraz czas startu i zakończenia.
+- Brakujące relacje są logowane jako `WARN` bez PII i kończą import wyjątkiem domenowym.
+
+## Świadome braki na tym etapie
+
+- To jeszcze nie jest parser pełnego dumpa MySQL; serwis przyjmuje znormalizowany fixture.
+- Brak komendy Artisan do importu z pliku/staging MySQL.
+- Import nie obejmuje jeszcze plików, korespondencji, weryfikacji, ról i pełnej historii głosowania.

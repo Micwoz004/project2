@@ -50,6 +50,7 @@
 - [x] Agregacja wyników po projektach, obszarach i kategoriach z kart zaakceptowanych.
 - [x] Bazowe raporty kart: statusy i demografia zaakceptowanych kart bez PII.
 - [x] Policy/bramki dla kart głosowania, wyników i eksportów raportów.
+- [x] Baseline importu fixture legacy: `legacy_id`, relacje, statusy, głosy i statystyki partii.
 
 ## Do pełnego parytetu
 
@@ -62,7 +63,7 @@
 - [ ] Głos przewodniczącego ZK, restart/zamknięcie głosowań i policy dla ról rad/komisji.
 - [ ] Pełny publiczny formularz głosowania z aktywacją tokenu SMS w UI.
 - [ ] Filament Resource dla kart głosowania i ręcznych kart papierowych.
-- [ ] Import danych z dumpa MySQL do PostgreSQL.
+- [ ] Pełny import danych z dumpa MySQL do PostgreSQL.
 - [ ] Raporty i eksporty administracyjne.
 - [ ] Reguły remisów i publikacji wyników po pełnym potwierdzeniu legacy.
 - [ ] Pełny import przypisań ról/uprawnień z `authitemchild` i `authassignment`.

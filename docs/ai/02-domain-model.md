@@ -9,6 +9,7 @@
 - `Voting` - wyborcy, tokeny, karty głosowania, głosy, hashe uprawnionych, SMS.
 - `Results` - liczenie wyników z ważnych kart.
 - `Reports` - eksporty i raporty publiczne/administracyjne.
+- `LegacyImport` - kontrolowany import fixture i przyszły import dumpa ze statystykami.
 - `Users` - użytkownicy, departamenty, role/uprawnienia.
 - `Settings` - ustawienia, strony treści i słowniki.
 - `Communications` - korespondencja i komentarze.
@@ -46,3 +47,4 @@ Statusy legacy są zachowane jako `ProjectStatus` z wartościami integer: `1,2,3
 - `UpdateVoteCardStatusAction` - administracyjna zmiana statusu karty z operatorem, czasem obsługi i notatką.
 - `ResultsCalculator` - sumowanie punktów wyłącznie z kart `VoteCardStatus::Accepted`, także po obszarach i kategoriach.
 - `VoteCardReportService` - zagregowane statusy kart i demografia zaakceptowanych kart bez PII.
+- `LegacyFixtureImportService` - transakcyjny, idempotentny import baseline danych legacy po `legacy_id`.

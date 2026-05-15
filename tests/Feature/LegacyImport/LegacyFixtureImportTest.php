@@ -38,6 +38,7 @@ use App\Domain\Verification\Models\ProjectDepartmentRecommendation;
 use App\Domain\Verification\Models\ProjectDepartmentScope;
 use App\Domain\Verification\Models\ProjectUserAssignment;
 use App\Domain\Verification\Models\VerificationAssignment;
+use App\Domain\Verification\Models\VerificationPressureLog;
 use App\Domain\Verification\Models\VerificationVersion;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Enums\VotingTokenType;
@@ -297,6 +298,16 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'departmentId' => 500,
             'type' => VerificationAssignmentType::MeritInitial->value,
             'deadline' => '2025-03-10 12:00:00',
+        ]],
+        'verificationpressure' => [[
+            'id' => 125,
+            'taskId' => 40,
+            'content' => '{"title":"Monit","body":"Treść monitu"}',
+            'sentTo' => '[{"id":"600","name":"operator","email":"operator@example.test"}]',
+            'sendDate' => '2025-03-12 12:00:00',
+            'type' => 3,
+            'departmentId' => 500,
+            'departmentAssignmentId' => 96,
         ]],
         'zkvotes' => [[
             'id' => 98,
@@ -572,6 +583,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['coordinatorassignment'])->toBe(1)
         ->and($batch->stats['verifierassignment'])->toBe(1)
         ->and($batch->stats['taskdepartmentassignment'])->toBe(1)
+        ->and($batch->stats['verificationpressure'])->toBe(1)
         ->and($batch->stats['zkvotes'])->toBe(1)
         ->and($batch->stats['atvotes'])->toBe(1)
         ->and($batch->stats['otvotes'])->toBe(1)
@@ -623,6 +635,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(ProjectUserAssignment::query()->where('legacy_table', 'verifierassignment')->where('legacy_id', 120)->firstOrFail()->role)
         ->toBe(ProjectUserAssignment::ROLE_VERIFIER)
         ->and(VerificationAssignment::query()->where('legacy_id', 96)->firstOrFail()->type)->toBe(VerificationAssignmentType::MeritInitial)
+        ->and(VerificationPressureLog::query()->where('legacy_id', 125)->firstOrFail()->content['title'])->toBe('Monit')
+        ->and(VerificationPressureLog::query()->where('legacy_id', 125)->firstOrFail()->sent_to[0]['email'])->toBe('operator@example.test')
         ->and(ProjectBoardVote::query()->where('legacy_id', 98)->firstOrFail()->user_id)->toBe($boardUser->id)
         ->and(ProjectBoardVote::query()->where('legacy_id', 99)->firstOrFail()->board_type)->toBe(BoardType::At)
         ->and(ProjectBoardVote::query()->where('legacy_id', 100)->firstOrFail()->board_type)->toBe(BoardType::Ot)

@@ -27,6 +27,7 @@ Status: częściowo zaimplementowane w etapie 3.
 10. [x] Dodać import fixture dla `taskadvancedverification`.
 11. [x] Dodać import fixture dla `prerecommendations` i `recommendationswjo`.
 12. [x] Dodać import fixture dla `tasksinitialverification` i `tasksdepartments`.
+13. [x] Dodać import fixture dla monitów `verificationpressure`.
 
 ## Rozpoznane reguły legacy
 
@@ -52,6 +53,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `AdvancedVerification` zachowuje historyczny formularz `taskadvancedverification` w pełnym payloadzie JSON oraz pola procesu: projekt, jednostkę, operatora, status i datę wysłania.
 - `ProjectDepartmentRecommendation` konsoliduje legacy `prerecommendations` i `recommendationswjo`, zachowując opinię, notatki, koszt, datę wysłania i odpowiedzi formularza WJO.
 - `ProjectDepartmentScope` konsoliduje legacy `tasksinitialverification` i `tasksdepartments`, odtwarzając listę jednostek uprawnionych do opiniowania projektu.
+- `VerificationPressureLog` zachowuje legacy `verificationpressure`: tytuł/treść monitu, odbiorców, typ (`2` dyrektor, `3` ręczny), jednostkę i legacy ID przydziału.
 
 ## Świadome uproszczenia na tym etapie
 

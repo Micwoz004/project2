@@ -40,6 +40,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `prerecommendations`, `recommendationswjo` | `project_department_recommendations` | Konsolidacja przez `type`; odpowiedzi WJO w JSON. |
 | `tasksinitialverification`, `tasksdepartments` | `project_department_scopes` | Jednostki uprawnione do opiniowania; `scope` rozróżnia etap, deadline zachowany dla `tasksdepartments`. |
 | `coordinatorassignment`, `verifierassignment` | `project_user_assignments` | Konsolidacja przez `role`: `coordinator` lub `verifier`. |
+| `verificationpressure` | `verification_pressure_logs` | Monity ręczne i dyrektorskie z JSON treści/odbiorców oraz legacy ID przydziału departamentu. |
 
 ## Głosowanie
 

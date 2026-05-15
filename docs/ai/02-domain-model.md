@@ -31,6 +31,7 @@
 - `ProjectUserAssignment` odwzorowuje przypisania koordynatorów i weryfikatorów do projektu.
 - `ProjectDepartmentRecommendation` odwzorowuje prerekomendacje i rekomendacje WJO.
 - `ProjectDepartmentScope` odwzorowuje zakresy opiniowania jednostek z `tasksinitialverification` i `tasksdepartments`.
+- `VerificationPressureLog` odwzorowuje historyczne monity weryfikacyjne `verificationpressure`.
 - `ProjectAppeal` odwzorowuje odwołania od decyzji rady/komisji.
 - `Department` odwzorowuje `departments`.
 - `ApplicationSetting` odwzorowuje `settings` z zachowaniem surowych wartości legacy.

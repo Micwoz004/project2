@@ -70,6 +70,7 @@
 - [x] Import fixture prerekomendacji i rekomendacji WJO.
 - [x] Import fixture zakresów opiniowania jednostek z `tasksinitialverification` i `tasksdepartments`.
 - [x] Import fixture przypisań koordynatorów i weryfikatorów projektów.
+- [x] Import fixture monitów weryfikacyjnych z `verificationpressure`.
 - [x] Import fixture konsultacji oraz głosowań ZK/OT/AT i odrzuceń.
 - [x] Import fixture odwołań od decyzji z `taskappealagainstdecision`.
 - [x] Baseline korespondencji i komentarzy projektu z uprawnieniami i odczytem.

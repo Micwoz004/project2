@@ -39,6 +39,7 @@ use App\Domain\Verification\Models\ProjectDepartmentRecommendation;
 use App\Domain\Verification\Models\ProjectDepartmentScope;
 use App\Domain\Verification\Models\ProjectUserAssignment;
 use App\Domain\Verification\Models\VerificationAssignment;
+use App\Domain\Verification\Models\VerificationPressureLog;
 use App\Domain\Verification\Models\VerificationVersion;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Enums\VotingTokenType;
@@ -114,6 +115,7 @@ class LegacyFixtureImportService
                     ProjectUserAssignment::ROLE_VERIFIER,
                 ),
                 'taskdepartmentassignment' => $this->importVerificationAssignments($payload['taskdepartmentassignment'] ?? []),
+                'verificationpressure' => $this->importVerificationPressures($payload['verificationpressure'] ?? []),
                 'zkvotes' => $this->importBoardVotes($payload['zkvotes'] ?? [], BoardType::Zk),
                 'otvotes' => $this->importBoardVotes($payload['otvotes'] ?? [], BoardType::Ot),
                 'atvotes' => $this->importBoardVotes($payload['atvotes'] ?? [], BoardType::At),
@@ -661,6 +663,34 @@ class LegacyFixtureImportService
                 'sent_at' => Arr::get($row, 'sentAt'),
                 'is_returned' => (bool) Arr::get($row, 'isReturned', false),
                 'type' => (int) Arr::get($row, 'type', 1),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importVerificationPressures(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $legacyId = $this->legacyId($row);
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $sentAt = Arr::get($row, 'sendDate');
+
+            VerificationPressureLog::query()->updateOrCreate([
+                'legacy_id' => $legacyId,
+            ], [
+                'project_id' => $project->id,
+                'department_id' => $this->optionalDepartmentId(Arr::get($row, 'departmentId')),
+                'department_assignment_legacy_id' => Arr::get($row, 'departmentAssignmentId'),
+                'type' => (int) Arr::get($row, 'type'),
+                'content' => $this->decodeLegacyJson(Arr::get($row, 'content'), 'verificationpressure.content', $legacyId),
+                'sent_to' => $this->decodeLegacyJson(Arr::get($row, 'sentTo'), 'verificationpressure.sentTo', $legacyId),
+                'sent_at' => $sentAt,
+                'created_at' => $sentAt,
+                'updated_at' => $sentAt,
             ]);
         }
 

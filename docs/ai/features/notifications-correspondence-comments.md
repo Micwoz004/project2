@@ -1,7 +1,7 @@
 # Powiadomienia, korespondencja i komentarze
 
 1. Legacy: `Notification`, `VerificationNotification`, `Correspondence`, `Comments`, `TaskComments`, kontrolery korespondencji.
-2. Tabele: `notification`, `correspondence`, `comments`, `taskcomments`, `maillogs`.
+2. Tabele: `notification`, `correspondence`, `comments`, `taskcomments`, `maillogs`, `verificationpressure`.
 3. Dane wejściowe: treść wiadomości, adresat, projekt, status odczytu.
 4. Dane zapisywane: wiadomości, komentarze, logi maili.
 5. Statusy: odczytane/nieodczytane; status projektu może wymuszać powiadomienia.
@@ -23,6 +23,7 @@ Status: baseline domenowy rozpoczęty.
 6. [x] Dodać import fixture dla `correspondence` i `taskcomments`.
 7. [x] Dodać import fixture dla `notification` i `maillogs`.
 8. [x] Dodać import fixture dla publicznych `comments` z moderacją i relacją `parentId`.
+9. [x] Dodać import fixture dla monitów weryfikacyjnych `verificationpressure`.
 
 ## Implementacja Laravel
 
@@ -33,6 +34,7 @@ Status: baseline domenowy rozpoczęty.
 - `ProjectNotification` przenosi legacy `notification`: projekt, twórcę, adresata, email autora, temat, treść i datę wysyłki.
 - `MailLog` przenosi legacy `maillogs`: adres email, temat, treść, kontroler, akcję, operatora i czas wysyłki.
 - `ProjectPublicComment` przenosi legacy `comments`: komentarze publiczne przy projekcie, autora, rodzica, flagi `hidden`, `adminHidden`, `moderated` i czas utworzenia.
+- `VerificationPressureLog` przenosi legacy monity weryfikacyjne bez wysyłki wiadomości: treść JSON, listę odbiorców JSON, typ monitu i datę wysłania.
 - Logi zapisują identyfikatory projektu/użytkownika/wiadomości, ale nie zapisują treści wiadomości ani komentarzy.
 
 ## Świadome braki na tym etapie

@@ -37,6 +37,7 @@ Statusy legacy są zachowane jako `ProjectStatus` z wartościami integer: `1,2,3
 
 - `SubmitProjectAction` - składanie projektu, lista poparcia, kosztorys, blokada statusu, zakaz URL, wersjonowanie.
 - `StartCorrectionAction` i `ApplyCorrectionAction` - okno korekty, whitelist pól z `taskcorrection`, blokada po terminie i snapshot wersji.
+- `DecideProjectChangeSuggestionAction` - akceptacja/odrzucenie propozycji zmian z `taskchangessuggestion`.
 - `BeginFormalVerificationAction` i `CompleteFormalVerificationAction` - bazowe przejścia oceny formalnej, wymóg listy poparcia przy wyniku pozytywnym i uzasadnienie przy negatywnym.
 - `AssignVerificationDepartmentAction` - przydział departamentu do typu weryfikacji.
 - `SubmitInitialMeritVerificationAction`, `SubmitFinalMeritVerificationAction`, `SubmitConsultationVerificationAction` - statusy kart, oznaczenie przydziału jako wysłanego, wynik wstępny/końcowy i walidacja kosztów.

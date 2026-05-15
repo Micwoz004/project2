@@ -2,6 +2,7 @@
 
 namespace App\Domain\Projects\Models;
 
+use App\Domain\Projects\Enums\ProjectChangeSuggestionDecision;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ class ProjectChangeSuggestion extends Model
             'new_files' => 'array',
             'is_accepted_by_admin' => 'boolean',
             'deadline' => 'datetime',
+            'decision' => ProjectChangeSuggestionDecision::class,
             'decision_at' => 'datetime',
         ];
     }

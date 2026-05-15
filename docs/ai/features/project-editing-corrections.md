@@ -39,6 +39,7 @@ Status: częściowo zaimplementowane w etapie 1.
 - `LegacyFixtureImportService` przenosi `taskcorrection`, mapując flagi kolumn legacy na `ProjectCorrectionField`, zachowując notatkę, deadline, autora i flagę wykonania.
 - `project_change_suggestions` odwzorowuje `taskchangessuggestion`, przechowując stare i nowe dane projektu, kosztów i plików jako JSON oraz decyzję autora/admina.
 - `LegacyFixtureImportService` przenosi `taskchangessuggestion` do `project_change_suggestions`, zachowując deadline, konsultację, komentarz autora i decyzję.
+- `DecideProjectChangeSuggestionAction` odtwarza `TaskChangesSuggestion::afterSave`: akceptacja aktualizuje pola projektu, podmienia kosztorys i opisy plików oraz ustawia `ChangesSuggestionAccepted`; odrzucenie wraca do `DuringMeritVerification`.
 - `LegacyFixtureImportService` przenosi historyczne rekordy `versions` do `project_versions`, zachowując `legacy_id`, JSON pól projektu, plików i kosztów oraz czas utworzenia wersji.
 - Po poprawnym zastosowaniu korekty aktywne okno jest zamykane przez `correction_done=true` i wyczyszczenie flagi `need_correction`.
 

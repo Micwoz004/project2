@@ -3,6 +3,8 @@
 
     @if (! $edition)
         <p class="panel">Brak skonfigurowanej edycji.</p>
+    @elseif (! $resultsPublished)
+        <p class="panel">Wyniki nie zostały jeszcze opublikowane.</p>
     @else
         <table>
             <thead>

@@ -46,6 +46,7 @@ Statusy legacy są zachowane jako `ProjectStatus` z wartościami integer: `1,2,3
 - `CastVoteService` - okno głosowania, checksum i unikalność PESEL, hash rejestru `newverification`, oświadczenia, zgoda rodzica, brak PESEL jako `Verifying`, limity lokalne/ogólnomiejskie, tylko `STATUS_PICKED`, transakcja zapisu.
 - `UpdateVoteCardStatusAction` - administracyjna zmiana statusu karty z operatorem, czasem obsługi i notatką.
 - `ResultsCalculator` - sumowanie punktów wyłącznie z kart `VoteCardStatus::Accepted`, także po obszarach i kategoriach.
+- `ResultsPublicationService` - publiczna widoczność wyników wyłącznie w etapie ogłaszania wyników.
 - `VoteCardReportService` - zagregowane statusy kart i demografia zaakceptowanych kart bez PII.
 - `LegacyFixtureImportService` - transakcyjny, idempotentny import baseline danych legacy po `legacy_id`.
 - `AddProjectCommentAction`, `SendProjectCorrespondenceMessageAction`, `MarkCorrespondenceMessageReadAction` - bazowa komunikacja projektu bez logowania treści.

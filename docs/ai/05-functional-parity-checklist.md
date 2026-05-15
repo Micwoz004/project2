@@ -48,6 +48,7 @@
 - [x] SMS token: 6 cyfr, aktywacja po telefonie i kodzie, limit 5 kodów na telefon, unieważnienie poprzednich i zużytych tokenów PESEL.
 - [x] Administracyjna zmiana statusu karty głosowania i wpływ na wyniki.
 - [x] Agregacja wyników po projektach, obszarach i kategoriach z kart zaakceptowanych.
+- [x] Publiczna publikacja wyników zależna od etapu edycji.
 - [x] Bazowe raporty kart: statusy i demografia zaakceptowanych kart bez PII.
 - [x] Policy/bramki dla kart głosowania, wyników i eksportów raportów.
 - [x] Baseline importu fixture legacy: `legacy_id`, relacje, statusy, głosy i statystyki partii.
@@ -66,7 +67,7 @@
 - [ ] Filament Resource dla kart głosowania i ręcznych kart papierowych.
 - [ ] Pełny import danych z dumpa MySQL do PostgreSQL.
 - [ ] Raporty i eksporty administracyjne.
-- [ ] Reguły remisów i publikacji wyników po pełnym potwierdzeniu legacy.
+- [ ] Reguły remisów po pełnym potwierdzeniu legacy.
 - [ ] Kolejki i szablony powiadomień mail/SMS z pełną mapą typów legacy.
 - [ ] Pełny import przypisań ról/uprawnień z `authitemchild` i `authassignment`.
 - [ ] Polityki Laravel dla każdej roli i operacji modułów weryfikacji/głosowania/raportów.

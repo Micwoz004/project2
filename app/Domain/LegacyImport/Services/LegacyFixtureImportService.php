@@ -25,9 +25,13 @@ use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Voting\Enums\VoteCardStatus;
+use App\Domain\Voting\Enums\VotingTokenType;
+use App\Domain\Voting\Models\SmsLog;
 use App\Domain\Voting\Models\Vote;
 use App\Domain\Voting\Models\VoteCard;
 use App\Domain\Voting\Models\Voter;
+use App\Domain\Voting\Models\VoterRegistryHash;
+use App\Domain\Voting\Models\VotingToken;
 use App\Models\User;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
@@ -75,7 +79,10 @@ class LegacyFixtureImportService
                 'correspondence' => $this->importCorrespondence($payload['correspondence'] ?? []),
                 'taskcomments' => $this->importProjectComments($payload['taskcomments'] ?? []),
                 'versions' => $this->importProjectVersions($payload['versions'] ?? []),
+                'newverification' => $this->importVoterRegistryHashes($payload['newverification'] ?? []),
+                'votingtokens' => $this->importVotingTokens($payload['votingtokens'] ?? []),
                 'voters' => $this->importVoters($payload['voters'] ?? []),
+                'smslogs' => $this->importSmsLogs($payload['smslogs'] ?? []),
                 'votecards' => $this->importVoteCards($payload['votecards'] ?? []),
                 'votes' => $this->importVotes($payload['votes'] ?? []),
             ];
@@ -458,6 +465,67 @@ class LegacyFixtureImportService
     /**
      * @param  list<array<string, mixed>>  $rows
      */
+    private function importVoterRegistryHashes(array $rows): int
+    {
+        foreach ($rows as $row) {
+            VoterRegistryHash::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'hash' => mb_strtoupper((string) Arr::get($row, 'hash')),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importVotingTokens(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $createdAt = Arr::get($row, 'createTime');
+            $type = VotingTokenType::tryFrom((int) Arr::get($row, 'type', VotingTokenType::Sms->value)) ?? VotingTokenType::Sms;
+
+            VotingToken::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'token' => Arr::get($row, 'token'),
+                'pesel' => Arr::get($row, 'pesel'),
+                'first_name' => Arr::get($row, 'firstName'),
+                'second_name' => Arr::get($row, 'secondName'),
+                'mother_last_name' => Arr::get($row, 'motherLastName'),
+                'last_name' => Arr::get($row, 'lastName'),
+                'email' => Arr::get($row, 'email'),
+                'phone' => Arr::get($row, 'phone'),
+                'disabled' => (bool) Arr::get($row, 'disabled', false),
+                'type' => $type,
+                'ip' => Arr::get($row, 'ip'),
+                'user_agent' => Arr::get($row, 'userAgent'),
+                'extra_data' => [
+                    'citizen_confirm' => Arr::get($row, 'citizenConfirm'),
+                    'living_address' => Arr::get($row, 'livingAddress'),
+                    'school_address' => Arr::get($row, 'schoolAddress'),
+                    'study_address' => Arr::get($row, 'studyAddress'),
+                    'work_address' => Arr::get($row, 'workAddress'),
+                    'parent_name' => Arr::get($row, 'parentName'),
+                    'parent_confirm' => (bool) Arr::get($row, 'parentConfirm', false),
+                    'statement' => (bool) Arr::get($row, 'statement', false),
+                    'city_statement' => (bool) Arr::get($row, 'cityStatement', false),
+                    'no_pesel_number' => (bool) Arr::get($row, 'noPeselNumber', false),
+                    'father_name' => Arr::get($row, 'fatherName'),
+                ],
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
     private function importVoters(array $rows): int
     {
         foreach ($rows as $row) {
@@ -470,6 +538,28 @@ class LegacyFixtureImportService
                 'birth_date' => Arr::get($row, 'birthDate'),
                 'sex' => Arr::get($row, 'sex'),
                 'age' => Arr::get($row, 'age'),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importSmsLogs(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $createdAt = Arr::get($row, 'created');
+
+            SmsLog::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'phone' => Arr::get($row, 'phone'),
+                'ip' => Arr::get($row, 'ip'),
+                'voter_id' => $this->optionalVoterId(Arr::get($row, 'voterId')),
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
             ]);
         }
 
@@ -587,6 +677,15 @@ class LegacyFixtureImportService
         }
 
         return User::query()->where('legacy_id', (int) $legacyId)->value('id');
+    }
+
+    private function optionalVoterId(mixed $legacyId): ?int
+    {
+        if ($legacyId === null || $legacyId === '') {
+            return null;
+        }
+
+        return Voter::query()->where('legacy_id', (int) $legacyId)->value('id');
     }
 
     /**

@@ -25,8 +25,12 @@ use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Voting\Enums\VoteCardStatus;
+use App\Domain\Voting\Enums\VotingTokenType;
+use App\Domain\Voting\Models\SmsLog;
 use App\Domain\Voting\Models\Vote;
 use App\Domain\Voting\Models\VoteCard;
+use App\Domain\Voting\Models\VoterRegistryHash;
+use App\Domain\Voting\Models\VotingToken;
 use App\Models\User;
 
 it('imports a legacy fixture with ids statuses relations and result totals', function (): void {
@@ -211,6 +215,37 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'costs' => '[{"id":"50","description":"Nasadzenia","sum":"1000"}]',
             'createTime' => '2025-03-12 13:00:00',
         ]],
+        'newverification' => [[
+            'id' => 105,
+            'hash' => 'abcdef1234567890abcdef1234567890',
+        ]],
+        'votingtokens' => [[
+            'id' => 106,
+            'token' => '123456',
+            'pesel' => '44051401458',
+            'firstName' => 'Jan',
+            'secondName' => '',
+            'motherLastName' => 'Nowak',
+            'lastName' => 'Kowalski',
+            'fatherName' => '',
+            'email' => '',
+            'phone' => '500600700',
+            'citizenConfirm' => 1,
+            'livingAddress' => 'Szczecin',
+            'schoolAddress' => '',
+            'studyAddress' => '',
+            'workAddress' => '',
+            'parentName' => '',
+            'parentConfirm' => 0,
+            'statement' => 1,
+            'cityStatement' => 1,
+            'noPeselNumber' => 0,
+            'disabled' => 0,
+            'ip' => '127.0.0.1',
+            'userAgent' => 'Feature test',
+            'createTime' => '2025-04-01 10:00:00',
+            'type' => VotingTokenType::Sms->value,
+        ]],
         'voters' => [[
             'id' => 60,
             'pesel' => '44051401458',
@@ -219,6 +254,13 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'birthDate' => '1944-05-14',
             'sex' => 'M',
             'age' => 80,
+        ]],
+        'smslogs' => [[
+            'id' => 107,
+            'phone' => '500600700',
+            'ip' => '127.0.0.1',
+            'voterId' => 60,
+            'created' => '2025-04-01 10:00:05',
         ]],
         'votecards' => [[
             'id' => 70,
@@ -262,6 +304,9 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['correspondence'])->toBe(1)
         ->and($batch->stats['taskcomments'])->toBe(1)
         ->and($batch->stats['versions'])->toBe(1)
+        ->and($batch->stats['newverification'])->toBe(1)
+        ->and($batch->stats['votingtokens'])->toBe(1)
+        ->and($batch->stats['smslogs'])->toBe(1)
         ->and($edition->legacy_id)->toBe(10)
         ->and(ProjectArea::query()->where('legacy_id', 20)->firstOrFail()->is_local)->toBeTrue()
         ->and($project->status)->toBe(ProjectStatus::Picked)
@@ -286,6 +331,10 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->data['title'])->toBe('Park kieszonkowy')
         ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->files[0]['originalName'])->toBe('Lista poparcia.pdf')
         ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->costs[0]['sum'])->toBe('1000')
+        ->and(VoterRegistryHash::query()->where('legacy_id', 105)->firstOrFail()->hash)->toBe('ABCDEF1234567890ABCDEF1234567890')
+        ->and(VotingToken::query()->where('legacy_id', 106)->firstOrFail()->type)->toBe(VotingTokenType::Sms)
+        ->and(VotingToken::query()->where('legacy_id', 106)->firstOrFail()->extra_data['city_statement'])->toBeTrue()
+        ->and(SmsLog::query()->where('legacy_id', 107)->firstOrFail()->voter_id)->toBe($voteCard->voter_id)
         ->and($voteCard->status)->toBe(VoteCardStatus::Accepted)
         ->and(Vote::query()->where('legacy_id', 80)->firstOrFail()->project_id)->toBe($project->id)
         ->and((int) $totals->first()->points)->toBe(1);

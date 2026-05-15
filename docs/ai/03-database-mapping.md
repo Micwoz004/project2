@@ -38,7 +38,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `voters` | `voters` | Dane wyborcy, PESEL, wiek, płeć, IP. |
 | `votecards` | `vote_cards` | Status jako enum `VoteCardStatus`. |
 | `votes` | `votes` | Jeden rekord projektu i punktów na karcie. |
-| `votingtokens` | `voting_tokens` | Typ tokenu, PESEL, telefon, disabled. |
+| `votingtokens` | `voting_tokens` | Typ tokenu, PESEL, telefon, disabled; zgody i adresy legacy w `extra_data`. |
 | `newverification` | `voter_registry_hashes` | Hashy nie rozwijamy do PII. |
 | `smslogs` | `sms_logs` | Log wysyłek bez treści SMS. |
 | `zkvotes`, `atvotes`, `otvotes` | `project_board_votes` | Konsolidacja przez `board_type`. |

@@ -26,6 +26,12 @@ Status: baseline domenowy rozbudowany.
 9. [x] Aktywować SMS po `phone + token + disabled=false` zgodnie z legacy.
 10. [x] Unieważnić aktywny token SMS po skutecznym oddaniu głosu.
 11. [x] Rejestrować papierowe karty głosowania z tą samą walidacją projektów i wyborcy.
+12. [x] Importować fixture `newverification`, `votingtokens` i `smslogs`.
+
+## Implementacja Laravel
+
+- `LegacyFixtureImportService` przenosi `newverification`, `votingtokens` i `smslogs`, zachowując hash rejestru, tokeny SMS, flagę `disabled`, typ tokenu, dane zgód w `extra_data` oraz relację logu SMS do wyborcy.
+- Jeżeli historyczny `votingtokens.type` jest pusty albo spoza enumu, importer traktuje rekord jako SMS, bo dump 2025 używa tej tabeli dla tokenów SMS.
 
 ## Świadome braki na tym etapie
 

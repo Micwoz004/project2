@@ -117,6 +117,7 @@
 - [x] Filament Resource dla administracyjnego podglądu i edycji statusu kart głosowania.
 - [x] Akcje Filament dla restartu i zamknięcia głosowań OT/AT z bramką `manage-board-voting`.
 - [x] Akcje Filament dla oddawania głosów ZK/OT/AT z bramką `cast-board-vote` i blokadą duplikatu użytkownika.
+- [x] Akcja Filament do rejestracji papierowych kart głosowania przez domenową logikę głosowania.
 
 ## Do pełnego parytetu
 
@@ -127,7 +128,7 @@
 - [ ] Weryfikacje merytoryczne i konsultacje departamentów.
 - [ ] UI historii wersji kart weryfikacji i administracyjny podgląd agregacji wielu departamentów.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
-- [ ] Filament akcja tworzenia ręcznych kart papierowych i edycja głosów na karcie.
+- [ ] Filament akcja edycji głosów na istniejącej karcie.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
 - [ ] Raporty i eksporty administracyjne.
 - [ ] Kolejki i szablony powiadomień mail/SMS z pełną mapą typów legacy.

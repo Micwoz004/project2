@@ -2,20 +2,32 @@
 
 namespace App\Filament\Resources\VoteCards;
 
+use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Projects\Enums\ProjectStatus;
+use App\Domain\Projects\Models\Project;
+use App\Domain\Voting\Actions\RegisterPaperVoteCardAction;
+use App\Domain\Voting\Data\VoterIdentityData;
+use App\Domain\Voting\Enums\CitizenConfirmation;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Models\VoteCard;
 use App\Filament\Resources\VoteCards\Pages\EditVoteCard;
 use App\Filament\Resources\VoteCards\Pages\ListVoteCards;
+use App\Models\User;
 use BackedEnum;
+use DomainException;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class VoteCardResource extends Resource
 {
@@ -99,6 +111,91 @@ class VoteCardResource extends Resource
         ];
     }
 
+    /**
+     * @return array<int, mixed>
+     */
+    public static function paperVoteCardFormSchema(): array
+    {
+        return [
+            Select::make('budget_edition_id')
+                ->label('Edycja')
+                ->options(fn (): array => BudgetEdition::query()
+                    ->orderByDesc('voting_start')
+                    ->pluck('id', 'id')
+                    ->all())
+                ->required(),
+            TextInput::make('pesel')
+                ->label('PESEL')
+                ->required()
+                ->length(11),
+            TextInput::make('first_name')
+                ->label('Imię')
+                ->required()
+                ->maxLength(64),
+            TextInput::make('last_name')
+                ->label('Nazwisko')
+                ->required()
+                ->maxLength(64),
+            TextInput::make('mother_last_name')
+                ->label('Nazwisko panieńskie matki')
+                ->required()
+                ->maxLength(64),
+            Select::make('local_project_id')
+                ->label('Projekt lokalny')
+                ->options(fn (): array => self::paperVoteProjectOptions(true)),
+            Select::make('citywide_project_id')
+                ->label('Projekt ogólnomiejski')
+                ->options(fn (): array => self::paperVoteProjectOptions(false)),
+            Select::make('citizen_confirm')
+                ->label('Oświadczenie wyborcy')
+                ->options([
+                    CitizenConfirmation::Living->value => 'Mieszkaniec Szczecina',
+                    CitizenConfirmation::Commuting->value => 'Uczy się / studiuje / pracuje w Szczecinie',
+                ])
+                ->required(),
+            Toggle::make('confirm_missing_category')
+                ->label('Potwierdzono brak głosu w jednej kategorii'),
+            TextInput::make('parent_name')
+                ->label('Imię i nazwisko rodzica/opiekuna')
+                ->maxLength(200),
+            Toggle::make('parent_confirm')
+                ->label('Zgoda rodzica/opiekuna'),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function registerPaperVoteCardFromAdminForm(array $data): VoteCard
+    {
+        $operator = Auth::user();
+
+        if (! $operator instanceof User) {
+            Log::warning('paper_vote_card.register.rejected_guest');
+
+            throw new DomainException('Użytkownik musi być zalogowany.');
+        }
+
+        return app(RegisterPaperVoteCardAction::class)->execute(
+            BudgetEdition::query()->findOrFail((int) $data['budget_edition_id']),
+            new VoterIdentityData(
+                pesel: (string) $data['pesel'],
+                firstName: (string) $data['first_name'],
+                lastName: (string) $data['last_name'],
+                motherLastName: (string) $data['mother_last_name'],
+            ),
+            self::selectedProjectIds($data, 'local_project_id'),
+            self::selectedProjectIds($data, 'citywide_project_id'),
+            $operator,
+            [
+                'citizen_confirm' => CitizenConfirmation::from((int) $data['citizen_confirm']),
+                'confirm_missing_category' => (bool) ($data['confirm_missing_category'] ?? false),
+                'parent_name' => $data['parent_name'] ?? null,
+                'parent_confirm' => (bool) ($data['parent_confirm'] ?? false),
+            ],
+        );
+    }
+
     private static function statusOptions(): array
     {
         $options = [];
@@ -108,5 +205,35 @@ class VoteCardResource extends Resource
         }
 
         return $options;
+    }
+
+    private static function paperVoteProjectOptions(bool $local): array
+    {
+        return Project::query()
+            ->with('area')
+            ->where('status', ProjectStatus::Picked->value)
+            ->whereHas('area', fn ($query) => $query->where('is_local', $local))
+            ->orderBy('number_drawn')
+            ->orderBy('id')
+            ->get()
+            ->mapWithKeys(fn (Project $project): array => [
+                $project->id => trim(($project->number_drawn ?? $project->id).' - '.$project->title),
+            ])
+            ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<int, int>
+     */
+    private static function selectedProjectIds(array $data, string $key): array
+    {
+        $projectId = (int) ($data[$key] ?? 0);
+
+        if ($projectId === 0) {
+            return [];
+        }
+
+        return [$projectId];
     }
 }

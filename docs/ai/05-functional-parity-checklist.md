@@ -51,6 +51,7 @@
 - [x] Agregacja wyników po projektach, obszarach i kategoriach z kart zaakceptowanych.
 - [x] Agregacja wyników po wielu kategoriach projektu z pivotu `category_project`.
 - [x] Deterministyczny ranking projektów przy remisie punktów.
+- [x] Wykrywanie remisów wyników jako decyzji manualnej bez zgadywania zwycięzcy.
 - [x] Publiczna publikacja wyników zależna od etapu edycji.
 - [x] Bazowe raporty kart: statusy i demografia zaakceptowanych kart bez PII.
 - [x] Raport wieku per projekt w grupach legacy `16-30`, `31-45`, `46-60`, `61+`.
@@ -112,7 +113,6 @@
 - [ ] Filament Resource dla kart głosowania i ręcznych kart papierowych.
 - [ ] Pełny import danych z dumpa MySQL do PostgreSQL.
 - [ ] Raporty i eksporty administracyjne.
-- [ ] Procedura wyboru projektów do realizacji przy remisie, jeśli legacy miało dodatkową regułę poza rankingiem.
 - [ ] Kolejki i szablony powiadomień mail/SMS z pełną mapą typów legacy.
 - [ ] Pełny import przypisań ról/uprawnień z dumpa legacy.
 - [ ] Pełny import użytkowników, departamentów i RBAC bezpośrednio z dumpa legacy.

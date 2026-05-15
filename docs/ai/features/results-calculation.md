@@ -20,6 +20,7 @@ Status: baseline domenowy rozbudowany.
 3. [x] Dodać publikację wyników zależną od etapu edycji.
 4. Zbudować publiczny i administracyjny widok wyników.
 5. [x] Pokryć testami accepted/rejected/verifying i agregacje.
+6. [x] Dodać jawne wykrywanie remisów wymagających decyzji manualnej.
 
 ## Implementacja Laravel
 
@@ -27,9 +28,10 @@ Status: baseline domenowy rozbudowany.
 - `ResultsCalculator::areaTotals()` sumuje punkty po `project_areas` dla tej samej edycji.
 - `ResultsCalculator::categoryTotals()` sumuje punkty po kategoriach z pivotu `category_project`, a dla rekordów bez pivotu używa `projects.category_id`.
 - `ResultsPublicationService` pozwala publicznie pokazać wyniki tylko w stanie edycji `ResultAnnouncement`.
+- `ResultTieBreakerService` wykrywa grupy projektów z tą samą liczbą punktów i oznacza je jako wymagające decyzji manualnej; nie wybiera zwycięzcy automatycznie, bo w legacy nie znaleziono takiej reguły.
 - `/wyniki` nie liczy ani nie pokazuje punktów przed oknem publikacji wyników.
 
 ## Świadome braki na tym etapie
 
-- Brak osobnej procedury rozstrzygania remisów do wyboru projektów do realizacji; zaimplementowana jest deterministyczna kolejność rankingu/raportu.
+- Nie znaleziono w legacy automatycznej procedury wyboru zwycięzcy przy remisie. Nowy system wykrywa remisy i wymaga decyzji manualnej, zachowując deterministyczną kolejność rankingu/raportu.
 - Brak osobnego raportu porównującego kategorie główne i wielokrotne kategorie; obecna agregacja zachowuje punkty w każdej kategorii przypisanej do projektu.

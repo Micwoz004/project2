@@ -16,6 +16,7 @@ use App\Domain\Reports\Exports\VerificationResultManifestCsvExporter;
 use App\Domain\Reports\Services\ProjectReportService;
 use App\Domain\Reports\Services\VoteCardReportService;
 use App\Domain\Results\Services\ResultsCalculator;
+use App\Domain\Results\Services\ResultTieBreakerService;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\VerificationCardStatus;
@@ -1043,4 +1044,49 @@ it('builds and exports verification result manifest like legacy pdf batch select
         ->and($csv)->toContain('1332,P1/0007,"Projekt z weryfikacją",1,1,0,0,P1_0007_1332/karta_weryfikacji.pdf')
         ->and($csv)->not->toContain('Projekt bez wysłanych kart')
         ->and($csv)->not->toContain('Kopia robocza');
+});
+
+it('detects tied result groups without guessing a winner', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $firstProject = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'number_drawn' => 2,
+        'status' => ProjectStatus::Picked,
+    ]));
+    $secondProject = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'number_drawn' => 1,
+        'status' => ProjectStatus::Picked,
+    ]));
+
+    foreach ([$firstProject, $secondProject] as $index => $project) {
+        $voter = Voter::query()->create([
+            'pesel' => '4405140145'.$index,
+            'first_name' => 'Jan',
+            'last_name' => 'Kowalski',
+        ]);
+        $voteCard = VoteCard::query()->create([
+            'budget_edition_id' => $edition->id,
+            'voter_id' => $voter->id,
+            'status' => VoteCardStatus::Accepted,
+        ]);
+        $voteCard->votes()->create([
+            'voter_id' => $voter->id,
+            'project_id' => $project->id,
+            'points' => 1,
+        ]);
+    }
+
+    $groups = app(ResultTieBreakerService::class)->tiedProjectGroups($edition);
+
+    expect($groups)->toHaveCount(1)
+        ->and($groups->first()['points'])->toBe(1)
+        ->and($groups->first()['requires_manual_decision'])->toBeTrue()
+        ->and($groups->first()['project_ids'])->toBe([
+            $secondProject->id,
+            $firstProject->id,
+        ])
+        ->and($groups->first()['ranking_order'])->toBe([
+            ['project_id' => $secondProject->id, 'number_drawn' => 1],
+            ['project_id' => $firstProject->id, 'number_drawn' => 2],
+        ]);
 });

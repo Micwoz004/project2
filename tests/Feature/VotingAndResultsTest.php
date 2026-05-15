@@ -730,3 +730,40 @@ it('builds legacy card type totals per project from accepted cards', function ()
         ->and((int) $row->paper)->toBe(2)
         ->and((int) $row->total)->toBe(3);
 });
+
+it('builds legacy admin vote card rows with pii columns', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $voter = Voter::query()->create([
+        'pesel' => '44051401458',
+        'first_name' => 'Jan',
+        'last_name' => 'Kowalski',
+    ]);
+
+    VoteCard::query()->create([
+        'budget_edition_id' => $edition->id,
+        'voter_id' => $voter->id,
+        'card_no' => 12,
+        'digital' => false,
+        'status' => VoteCardStatus::Verifying,
+        'citizen_confirm' => CitizenConfirmation::Living,
+        'notes' => 'Do sprawdzenia',
+        'ip' => '127.0.0.1',
+        'created_at' => '2025-04-10 12:00:00',
+        'updated_at' => '2025-04-10 13:00:00',
+    ]);
+
+    $rows = app(VoteCardReportService::class)->adminVoteCardRows($edition);
+
+    expect($rows)->toHaveCount(1)
+        ->and($rows->first())->toMatchArray([
+            'card_id' => '000012',
+            'card_type' => 'papierowa',
+            'pesel' => '44051401458',
+            'first_name' => 'Jan',
+            'last_name' => 'Kowalski',
+            'city_statement' => 'Tak',
+            'status' => 'rozpatrywana',
+            'notes' => 'Do sprawdzenia',
+            'ip' => '127.0.0.1',
+        ]);
+});

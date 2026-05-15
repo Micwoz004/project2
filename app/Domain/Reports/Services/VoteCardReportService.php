@@ -3,6 +3,7 @@
 namespace App\Domain\Reports\Services;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Voting\Enums\CitizenConfirmation;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Models\Vote;
 use App\Domain\Voting\Models\VoteCard;
@@ -164,5 +165,47 @@ class VoteCardReportService
         ]);
 
         return $rows;
+    }
+
+    public function adminVoteCardRows(BudgetEdition $edition): Collection
+    {
+        Log::info('vote_card_report.admin_vote_cards.start', [
+            'budget_edition_id' => $edition->id,
+        ]);
+
+        $rows = VoteCard::query()
+            ->with('voter')
+            ->where('budget_edition_id', $edition->id)
+            ->orderBy('id')
+            ->get()
+            ->map(fn (VoteCard $voteCard) => [
+                'card_id' => $this->legacyFullCardId($voteCard),
+                'card_type' => $voteCard->digital ? 'interaktywna' : 'papierowa',
+                'pesel' => $voteCard->voter->pesel,
+                'first_name' => $voteCard->voter->first_name,
+                'last_name' => $voteCard->voter->last_name,
+                'city_statement' => $voteCard->citizen_confirm === CitizenConfirmation::Living ? 'Tak' : 'Nie',
+                'status' => $voteCard->status->label(),
+                'notes' => $voteCard->notes,
+                'created_at' => $voteCard->created_at?->toDateTimeString(),
+                'updated_at' => $voteCard->updated_at?->toDateTimeString(),
+                'ip' => $voteCard->ip,
+            ]);
+
+        Log::info('vote_card_report.admin_vote_cards.success', [
+            'budget_edition_id' => $edition->id,
+            'cards_count' => $rows->count(),
+        ]);
+
+        return $rows;
+    }
+
+    private function legacyFullCardId(VoteCard $voteCard): ?string
+    {
+        if ($voteCard->card_no === null) {
+            return null;
+        }
+
+        return str_pad((string) $voteCard->card_no, 6, '0', STR_PAD_LEFT);
     }
 }

@@ -22,7 +22,8 @@ Status: częściowo zaimplementowane w etapie 4.
 5. [x] Pokryć testami remisy, odrzucenia i ponowną weryfikację.
 6. [x] Dodać import fixture dla `zkvotes`, `atvotes`, `otvotes` i `atotvotesrejection`.
 7. [x] Dodać import fixture dla `taskappealagainstdecision`.
-8. [ ] Uzupełnić UI/Filament dla oddawania i zamykania głosowań.
+8. [x] Dodać szczególny głos przewodniczącego ZK dla wyniku granicznego 4:4.
+9. [ ] Uzupełnić UI/Filament dla oddawania i zamykania głosowań.
 
 ## Rozpoznane reguły legacy
 
@@ -47,16 +48,15 @@ Status: częściowo zaimplementowane w etapie 4.
 - `RecordBoardVoteRejectionAction` wymaga komentarza i dopuszcza uzasadnienia tylko dla `AT`/`OT`.
 - `StartBoardVotingAction` ustawia status projektu na `DuringTeamVerification` albo `DuringTeamRecallVerification` i zachowuje flagę historycznego odrzucenia.
 - `BoardDecisionResolver` liczy decyzje zgodnie z akcjami `actionProcessZKVote`, `actionProcessOTVote`, `actionProcessATVote`.
+- Dla ZK resolver zachowuje szczególną regułę `Task::zkAccepted()`: przy wyniku 4:4 głos użytkownika z rolą `president ZK` rozstrzyga akceptację albo odrzucenie.
 - `LegacyFixtureImportService` konsoliduje historyczne głosy rad/komisji w `project_board_votes` i uzasadnienia odrzuceń w `board_vote_rejections`.
 - `ProjectAppeal` odwzorowuje `taskappealagainstdecision`: treść odwołania, odpowiedź komisji, daty oraz pierwszą decyzję.
 
 ## Świadome uproszczenia na tym etapie
 
-- Nie zaimplementowano jeszcze szczególnego głosu przewodniczącego ZK z `Task::zkAccepted()`. Obecny resolver odwzorowuje prostą ścieżkę `actionProcessZKVote()`.
 - Nie ma jeszcze komend restartu/zamknięcia głosowania usuwających głosy jak `actionForceRestartOTVoting()` i `actionForceRestartATVoting()`.
 - Role członków rady/komisji będą spięte policy po zakończeniu pełnej domeny głosowań.
 
 ## Zgodność do sprawdzenia
 
-- Dodać test głosu przewodniczącego ZK po zaimportowaniu przypisania roli `president ZK`.
 - Dopisać akcje restartu i zamknięcia głosowań z zachowaniem skutków legacy.

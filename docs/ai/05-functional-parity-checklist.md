@@ -110,6 +110,7 @@
 - [x] Wersjonowanie karty formalnej przy zapisie przez `verification_versions`.
 - [x] Wersjonowanie kart weryfikacji merytorycznej i konsultacyjnej przy zapisie przez `verification_versions`.
 - [x] Agregacja statusu weryfikacji merytorycznej po wielu departamentach przed zmianą statusu projektu.
+- [x] Głos przewodniczącego ZK rozstrzyga graniczny wynik 4:4 zgodnie z `Task::zkAccepted()`.
 
 ## Do pełnego parytetu
 
@@ -119,7 +120,7 @@
 - [ ] Weryfikacja formalna z pełną listą pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje departamentów.
 - [ ] UI historii wersji kart weryfikacji i administracyjny podgląd agregacji wielu departamentów.
-- [ ] Głos przewodniczącego ZK, restart/zamknięcie głosowań i policy dla ról rad/komisji.
+- [ ] Restart/zamknięcie głosowań i policy dla ról rad/komisji.
 - [ ] Pełny publiczny formularz głosowania z aktywacją tokenu SMS w UI.
 - [ ] Filament Resource dla kart głosowania i ręcznych kart papierowych.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.

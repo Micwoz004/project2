@@ -3,6 +3,8 @@
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
 use App\Domain\Verification\Actions\RecordBoardVoteRejectionAction;
 use App\Domain\Verification\Actions\StartBoardVotingAction;
@@ -67,6 +69,27 @@ it('resolves ZK positive vote into picked project and tie into unresolved decisi
 
     app(BoardDecisionResolver::class)->apply($tie, BoardType::Zk);
 })->throws(DomainException::class, 'Głosowanie nie daje jednoznacznego rozstrzygnięcia.');
+
+it('uses president ZK vote to resolve legacy four to four boundary', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+    $project = boardProject(ProjectStatus::DuringTeamVerification);
+    $president = User::factory()->create();
+    $president->assignRole(SystemRole::PresidentZk->value);
+
+    app(CastProjectBoardVoteAction::class)->execute($project, $president, BoardType::Zk, ZkVoteChoice::Up->value);
+
+    foreach (range(1, 3) as $index) {
+        app(CastProjectBoardVoteAction::class)->execute($project, User::factory()->create(), BoardType::Zk, ZkVoteChoice::Up->value);
+        app(CastProjectBoardVoteAction::class)->execute($project, User::factory()->create(), BoardType::Zk, ZkVoteChoice::Down->value);
+    }
+
+    app(CastProjectBoardVoteAction::class)->execute($project, User::factory()->create(), BoardType::Zk, ZkVoteChoice::Down->value);
+
+    $decision = app(BoardDecisionResolver::class)->apply($project, BoardType::Zk);
+
+    expect($decision)->toBe(BoardDecision::Accepted)
+        ->and($project->refresh()->status)->toBe(ProjectStatus::Picked);
+});
 
 it('resolves OT rejected and reverify outcomes like legacy process action', function (): void {
     $rejected = boardProject(ProjectStatus::DuringTeamVerification);

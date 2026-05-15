@@ -4,6 +4,7 @@ namespace App\Domain\Verification\Services;
 
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Verification\Enums\AtVoteChoice;
 use App\Domain\Verification\Enums\BoardDecision;
 use App\Domain\Verification\Enums\BoardType;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Log;
 
 class BoardDecisionResolver
 {
+    private const ZK_MIN_SUCCESS = 4;
+
     public function resolve(Project $project, BoardType $boardType): BoardDecision
     {
         return match ($boardType) {
@@ -69,6 +72,10 @@ class BoardDecisionResolver
         $rejected = $this->countChoice($project, BoardType::Zk, ZkVoteChoice::Down->value);
 
         if ($accepted === $rejected) {
+            if ($accepted === self::ZK_MIN_SUCCESS) {
+                return $this->resolveZkPresidentVote($project);
+            }
+
             return BoardDecision::ClosedWithoutDecision;
         }
 
@@ -111,6 +118,20 @@ class BoardDecisionResolver
             ->where('board_type', $boardType->value)
             ->where('choice', $choice)
             ->count();
+    }
+
+    private function resolveZkPresidentVote(Project $project): BoardDecision
+    {
+        $presidentVote = $project->boardVotes()
+            ->where('board_type', BoardType::Zk->value)
+            ->whereHas('user.roles', fn ($query) => $query->where('name', SystemRole::PresidentZk->value))
+            ->first();
+
+        return match ($presidentVote?->choice) {
+            ZkVoteChoice::Up->value => BoardDecision::Accepted,
+            ZkVoteChoice::Down->value => BoardDecision::Rejected,
+            default => BoardDecision::ClosedWithoutDecision,
+        };
     }
 
     private function rejectUnresolvedDecision(Project $project, BoardType $boardType): never

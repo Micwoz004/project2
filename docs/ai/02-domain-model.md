@@ -29,6 +29,7 @@
 - `VoteCard`, `Vote`, `Voter`, `VotingToken`, `VoterRegistryHash`, `SmsLog` odwzorowują głosowanie.
 - `DetailedVerification`, `LocationVerification`, `AdvancedVerification`, `VerificationVersion` odwzorowują dodatkowe karty i snapshoty weryfikacji.
 - `ProjectUserAssignment` odwzorowuje przypisania koordynatorów i weryfikatorów do projektu.
+- `ProjectAppeal` odwzorowuje odwołania od decyzji rady/komisji.
 - `Department` odwzorowuje `departments`.
 - `ApplicationSetting` odwzorowuje `settings` z zachowaniem surowych wartości legacy.
 - `ContentPage` odwzorowuje `pages` per edycja SBO i symbol strony procesu.

@@ -51,6 +51,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `smslogs` | `sms_logs` | Log wysyłek bez treści SMS. |
 | `zkvotes`, `atvotes`, `otvotes` | `project_board_votes` | Konsolidacja przez `board_type`. |
 | `atotvotesrejection` | `board_vote_rejections` | Powody odrzuceń rad/komisji. |
+| `taskappealagainstdecision` | `project_appeals` | Odwołanie autora, odpowiedź komisji, pierwsza decyzja i daty. |
 
 ## RBAC i użytkownicy
 

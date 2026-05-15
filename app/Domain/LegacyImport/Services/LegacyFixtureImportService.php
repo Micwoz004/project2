@@ -33,6 +33,7 @@ use App\Domain\Verification\Models\FinalMeritVerification;
 use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Verification\Models\LocationVerification;
+use App\Domain\Verification\Models\ProjectAppeal;
 use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\ProjectUserAssignment;
 use App\Domain\Verification\Models\VerificationAssignment;
@@ -105,6 +106,7 @@ class LegacyFixtureImportService
                 'otvotes' => $this->importBoardVotes($payload['otvotes'] ?? [], BoardType::Ot),
                 'atvotes' => $this->importBoardVotes($payload['atvotes'] ?? [], BoardType::At),
                 'atotvotesrejection' => $this->importBoardVoteRejections($payload['atotvotesrejection'] ?? []),
+                'taskappealagainstdecision' => $this->importProjectAppeals($payload['taskappealagainstdecision'] ?? []),
                 'correspondence' => $this->importCorrespondence($payload['correspondence'] ?? []),
                 'taskcomments' => $this->importProjectComments($payload['taskcomments'] ?? []),
                 'comments' => $this->importProjectPublicComments($payload['comments'] ?? []),
@@ -614,6 +616,32 @@ class LegacyFixtureImportService
                 'board_type' => BoardType::from((string) Arr::get($row, 'boardType', BoardType::At->value)),
                 'comment' => Arr::get($row, 'comment'),
                 'created_by_id' => $user->id,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importProjectAppeals(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $createdAt = Arr::get($row, 'createdAt');
+
+            ProjectAppeal::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'appeal_message' => Arr::get($row, 'appealMessage'),
+                'response_to_appeal' => Arr::get($row, 'responseToAppeal'),
+                'response_created_at' => $this->nullableLegacyDate(Arr::get($row, 'responseCreatedAt')),
+                'first_decision' => (int) Arr::get($row, 'firstDecision', 0),
+                'first_decision_created_at' => $this->nullableLegacyDate(Arr::get($row, 'firstDecisionCreatedAt')),
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
             ]);
         }
 

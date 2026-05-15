@@ -1,9 +1,9 @@
 # Głosowania rad i odwołania
 
-1. Legacy: `ZkVote`, `AtVote`, `OtVote`, `AtOtVotesRejection`, kontrolery weryfikacji.
-2. Tabele: `zkvotes`, `atvotes`, `otvotes`, `atotvotesrejection`, `tasks`.
-3. Dane wejściowe: wybór członka rady/komisji, głos, komentarz, odrzucenie.
-4. Dane zapisywane: głos członka, typ rady/komisji, powód odrzucenia.
+1. Legacy: `ZkVote`, `AtVote`, `OtVote`, `AtOtVotesRejection`, `TaskAppealAgainstDecision`, kontrolery weryfikacji.
+2. Tabele: `zkvotes`, `atvotes`, `otvotes`, `atotvotesrejection`, `taskappealagainstdecision`, `tasks`.
+3. Dane wejściowe: wybór członka rady/komisji, głos, komentarz, odrzucenie, treść odwołania.
+4. Dane zapisywane: głos członka, typ rady/komisji, powód odrzucenia, odwołanie i odpowiedź komisji.
 5. Statusy: `DuringTeamVerification=15`, `TeamAccepted=16`, `TeamRejected=17`, `TeamForReverification=19`, odwołania `20..22`, negatywne `-13`, `-14`.
 6. Walidacje: jeden głos użytkownika na projekt i typ, wymagany komentarz przy odrzuceniu.
 7. Role: członkowie Rady SBO, komisje odwoławcze, administratorzy.
@@ -21,7 +21,8 @@ Status: częściowo zaimplementowane w etapie 4.
 4. [x] Dodać kalkulator decyzji i odwołań.
 5. [x] Pokryć testami remisy, odrzucenia i ponowną weryfikację.
 6. [x] Dodać import fixture dla `zkvotes`, `atvotes`, `otvotes` i `atotvotesrejection`.
-7. [ ] Uzupełnić UI/Filament dla oddawania i zamykania głosowań.
+7. [x] Dodać import fixture dla `taskappealagainstdecision`.
+8. [ ] Uzupełnić UI/Filament dla oddawania i zamykania głosowań.
 
 ## Rozpoznane reguły legacy
 
@@ -33,6 +34,8 @@ Status: częściowo zaimplementowane w etapie 4.
 - `AtVote` ma wybory: `1=wstrzymuje się`, `2=zatwierdzony na listę`, `3=odrzucony ostatecznie`.
 - `ProcessingController::actionProcessATVote()` przy remisie nie rozstrzyga; przewaga odrzucenia ustawia `TeamRejectedFinally`, przewaga akceptacji `Picked`.
 - `AtOtVotesRejection` wymaga `taskId`, `votesType` i `comment`; dotyczy typów `AT` i `OT`.
+- `TaskAppealAgainstDecision` wymaga `appealMessage` w scenariuszu składania odwołania, `responseToAppeal` w scenariuszu odpowiedzi, pilnuje limitu 5000 znaków treści i maksymalnie 5 załączników typu prywatnego.
+- `firstDecision=1` oznacza wstępną akceptację rozpatrzenia odwołania, a `firstDecision=2` odrzucenie na etapie wstępnym.
 
 ## Zaimplementowany odpowiednik Laravel
 
@@ -45,6 +48,7 @@ Status: częściowo zaimplementowane w etapie 4.
 - `StartBoardVotingAction` ustawia status projektu na `DuringTeamVerification` albo `DuringTeamRecallVerification` i zachowuje flagę historycznego odrzucenia.
 - `BoardDecisionResolver` liczy decyzje zgodnie z akcjami `actionProcessZKVote`, `actionProcessOTVote`, `actionProcessATVote`.
 - `LegacyFixtureImportService` konsoliduje historyczne głosy rad/komisji w `project_board_votes` i uzasadnienia odrzuceń w `board_vote_rejections`.
+- `ProjectAppeal` odwzorowuje `taskappealagainstdecision`: treść odwołania, odpowiedź komisji, daty oraz pierwszą decyzję.
 
 ## Świadome uproszczenia na tym etapie
 

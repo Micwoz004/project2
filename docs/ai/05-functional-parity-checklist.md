@@ -69,6 +69,7 @@
 - [x] Import fixture zaawansowanych kart jednostek z `taskadvancedverification`.
 - [x] Import fixture przypisań koordynatorów i weryfikatorów projektów.
 - [x] Import fixture konsultacji oraz głosowań ZK/OT/AT i odrzuceń.
+- [x] Import fixture odwołań od decyzji z `taskappealagainstdecision`.
 - [x] Baseline korespondencji i komentarzy projektu z uprawnieniami i odczytem.
 - [x] Import fixture korespondencji i komentarzy projektu.
 - [x] Import fixture powiadomień projektu i logów mailowych z `notification` oraz `maillogs`.

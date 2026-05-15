@@ -32,6 +32,7 @@ use App\Domain\Verification\Models\FinalMeritVerification;
 use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Verification\Models\LocationVerification;
+use App\Domain\Verification\Models\ProjectAppeal;
 use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\ProjectUserAssignment;
 use App\Domain\Verification\Models\VerificationAssignment;
@@ -291,6 +292,16 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'boardType' => BoardType::At->value,
             'comment' => 'Powód odrzucenia',
         ]],
+        'taskappealagainstdecision' => [[
+            'id' => 122,
+            'taskId' => 40,
+            'appealMessage' => 'Treść odwołania od decyzji',
+            'responseToAppeal' => 'Odpowiedź komisji',
+            'createdAt' => '2025-07-01 12:00:00',
+            'responseCreatedAt' => '2025-07-02 12:00:00',
+            'firstDecision' => 1,
+            'firstDecisionCreatedAt' => '2025-07-01 15:00:00',
+        ]],
         'correspondence' => [[
             'id' => 102,
             'taskId' => 40,
@@ -527,6 +538,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['atvotes'])->toBe(1)
         ->and($batch->stats['otvotes'])->toBe(1)
         ->and($batch->stats['atotvotesrejection'])->toBe(1)
+        ->and($batch->stats['taskappealagainstdecision'])->toBe(1)
         ->and($batch->stats['correspondence'])->toBe(1)
         ->and($batch->stats['taskcomments'])->toBe(1)
         ->and($batch->stats['comments'])->toBe(2)
@@ -573,6 +585,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(ProjectBoardVote::query()->where('legacy_id', 99)->firstOrFail()->board_type)->toBe(BoardType::At)
         ->and(ProjectBoardVote::query()->where('legacy_id', 100)->firstOrFail()->board_type)->toBe(BoardType::Ot)
         ->and(BoardVoteRejection::query()->where('legacy_id', 101)->firstOrFail()->comment)->toBe('Powód odrzucenia')
+        ->and(ProjectAppeal::query()->where('legacy_id', 122)->firstOrFail()->first_decision)->toBe(1)
+        ->and(ProjectAppeal::query()->where('legacy_id', 122)->firstOrFail()->response_to_appeal)->toBe('Odpowiedź komisji')
         ->and(CorrespondenceMessage::query()->where('legacy_id', 102)->firstOrFail()->is_read)->toBeTrue()
         ->and(ProjectComment::query()->where('legacy_id', 103)->firstOrFail()->content)->toBe('Komentarz wewnętrzny')
         ->and(ProjectPublicComment::query()->where('legacy_id', 114)->firstOrFail()->moderated)->toBeTrue()

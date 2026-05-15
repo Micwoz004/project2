@@ -83,10 +83,11 @@ class ResultsCalculator
             'scope' => 'categories',
         ]);
 
-        $totals = Vote::query()
+        $pivotTotals = Vote::query()
             ->join('vote_cards', 'votes.vote_card_id', '=', 'vote_cards.id')
             ->join('projects', 'votes.project_id', '=', 'projects.id')
-            ->leftJoin('categories', 'projects.category_id', '=', 'categories.id')
+            ->join('category_project', 'projects.id', '=', 'category_project.project_id')
+            ->join('categories', 'category_project.category_id', '=', 'categories.id')
             ->where('vote_cards.budget_edition_id', $edition->id)
             ->where('vote_cards.status', VoteCardStatus::Accepted->value)
             ->select([
@@ -95,8 +96,32 @@ class ResultsCalculator
                 DB::raw('SUM(votes.points) as points'),
             ])
             ->groupBy('categories.id', 'categories.name')
-            ->orderBy('categories.name')
             ->get();
+
+        $fallbackTotals = Vote::query()
+            ->join('vote_cards', 'votes.vote_card_id', '=', 'vote_cards.id')
+            ->join('projects', 'votes.project_id', '=', 'projects.id')
+            ->join('categories', 'projects.category_id', '=', 'categories.id')
+            ->where('vote_cards.budget_edition_id', $edition->id)
+            ->where('vote_cards.status', VoteCardStatus::Accepted->value)
+            ->whereNotExists(function ($query): void {
+                $query
+                    ->selectRaw('1')
+                    ->from('category_project')
+                    ->whereColumn('category_project.project_id', 'projects.id');
+            })
+            ->select([
+                'categories.id as category_id',
+                'categories.name',
+                DB::raw('SUM(votes.points) as points'),
+            ])
+            ->groupBy('categories.id', 'categories.name')
+            ->get();
+
+        $totals = $pivotTotals
+            ->concat($fallbackTotals)
+            ->sortBy('name')
+            ->values();
 
         Log::info('results.calculate.success', [
             'budget_edition_id' => $edition->id,

@@ -25,11 +25,11 @@ Status: baseline domenowy rozbudowany.
 
 - `ResultsCalculator::projectTotals()` sumuje punkty projektów wyłącznie z kart `Accepted` i sortuje ranking po punktach malejąco, następnie po `number_drawn` oraz `project_id`.
 - `ResultsCalculator::areaTotals()` sumuje punkty po `project_areas` dla tej samej edycji.
-- `ResultsCalculator::categoryTotals()` sumuje punkty po podstawowej kategorii projektu.
+- `ResultsCalculator::categoryTotals()` sumuje punkty po kategoriach z pivotu `category_project`, a dla rekordów bez pivotu używa `projects.category_id`.
 - `ResultsPublicationService` pozwala publicznie pokazać wyniki tylko w stanie edycji `ResultAnnouncement`.
 - `/wyniki` nie liczy ani nie pokazuje punktów przed oknem publikacji wyników.
 
 ## Świadome braki na tym etapie
 
 - Brak osobnej procedury rozstrzygania remisów do wyboru projektów do realizacji; zaimplementowana jest deterministyczna kolejność rankingu/raportu.
-- Agregacja po wielu kategoriach z pivotu `category_project` nie jest jeszcze odtworzona, jeśli raport legacy używał wielu kategorii projektu.
+- Brak osobnego raportu porównującego kategorie główne i wielokrotne kategorie; obecna agregacja zachowuje punkty w każdej kategorii przypisanej do projektu.

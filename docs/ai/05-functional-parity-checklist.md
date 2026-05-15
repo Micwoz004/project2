@@ -49,6 +49,7 @@
 - [x] Administracyjna zmiana statusu karty głosowania i wpływ na wyniki.
 - [x] Domenowa rejestracja papierowych kart głosowania z numeracją i operatorem.
 - [x] Agregacja wyników po projektach, obszarach i kategoriach z kart zaakceptowanych.
+- [x] Agregacja wyników po wielu kategoriach projektu z pivotu `category_project`.
 - [x] Deterministyczny ranking projektów przy remisie punktów.
 - [x] Publiczna publikacja wyników zależna od etapu edycji.
 - [x] Bazowe raporty kart: statusy i demografia zaakceptowanych kart bez PII.

@@ -536,6 +536,38 @@ it('aggregates accepted results by area and category', function (): void {
         ->toBe(['Sport' => 1, 'Zieleń' => 1]);
 });
 
+it('aggregates category totals through category pivot when project has many categories', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $greenCategory = Category::query()->create(['name' => 'Zieleń']);
+    $sportCategory = Category::query()->create(['name' => 'Sport']);
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'category_id' => $greenCategory->id,
+        'status' => ProjectStatus::Picked,
+    ]));
+    $project->categories()->sync([$greenCategory->id, $sportCategory->id]);
+    $voter = Voter::query()->create([
+        'pesel' => '44051401458',
+        'first_name' => 'Jan',
+        'last_name' => 'Kowalski',
+    ]);
+    $voteCard = VoteCard::query()->create([
+        'budget_edition_id' => $edition->id,
+        'voter_id' => $voter->id,
+        'status' => VoteCardStatus::Accepted,
+    ]);
+    $voteCard->votes()->create([
+        'voter_id' => $voter->id,
+        'project_id' => $project->id,
+        'points' => 1,
+    ]);
+
+    $categoryTotals = app(ResultsCalculator::class)->categoryTotals($edition);
+
+    expect($categoryTotals->pluck('points', 'name')->map(fn ($points) => (int) $points)->all())
+        ->toBe(['Sport' => 1, 'Zieleń' => 1]);
+});
+
 it('builds vote card status and demographic reports without pii', function (): void {
     $edition = BudgetEdition::query()->create(editionAttributes());
     $acceptedVoter = Voter::query()->create([

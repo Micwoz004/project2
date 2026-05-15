@@ -100,6 +100,7 @@
 - [x] Import fixture tokenów aktywacji i resetu hasła z tabeli `activations`.
 - [x] Import fixture rejestrów PESEL z tabel `pesel` i `verification`.
 - [x] Import fixture historycznych logów administracyjnych z tabeli `logs`.
+- [x] Komenda Artisan `sbo:legacy-import` do importu znormalizowanego JSON fixture.
 
 ## Do pełnego parytetu
 
@@ -112,7 +113,7 @@
 - [ ] Głos przewodniczącego ZK, restart/zamknięcie głosowań i policy dla ról rad/komisji.
 - [ ] Pełny publiczny formularz głosowania z aktywacją tokenu SMS w UI.
 - [ ] Filament Resource dla kart głosowania i ręcznych kart papierowych.
-- [ ] Pełny import danych z dumpa MySQL do PostgreSQL.
+- [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
 - [ ] Raporty i eksporty administracyjne.
 - [ ] Kolejki i szablony powiadomień mail/SMS z pełną mapą typów legacy.
 - [ ] Pełny import przypisań ról/uprawnień z dumpa legacy.

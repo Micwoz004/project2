@@ -15,8 +15,8 @@
 
 Status: baseline domenowy rozpoczęty.
 
-1. Zinwentaryzować raporty z `ReportController` i `raporty_sbo`.
-2. Dla każdego raportu opisać kolumny, filtry i PII.
+1. [x] Zinwentaryzować raporty z `ReportController`, `FuckupController`, `DocumentController` i `raporty_sbo`.
+2. [ ] Dla każdego raportu opisać kolumny, filtry i PII.
 3. [x] Wdrożyć pierwszy publiczny eksport CSV wyników bez PII.
 4. [x] Dodać bazowe raporty bez danych wrażliwych: statusy kart i demografia zaakceptowanych kart.
 5. Pokryć testami kolumny i liczności względem fixture legacy.
@@ -31,8 +31,19 @@ Status: baseline domenowy rozpoczęty.
 - `PublicResultsCsvExporter` eksportuje publiczne wyniki CSV z kolumnami `project_id`, `project_number`, `title`, `area`, `points`.
 - `/wyniki/export.csv` jest dostępne tylko w oknie publikacji wyników.
 
+## Inwentaryzacja legacy
+
+- `ReportController::actionVoteCardReport` eksportuje XLS kart głosowania z PII: ID karty, typ, PESEL, imię, nazwisko, oświadczenie zamieszkania, status, uwagi, daty i IP.
+- `ReportController` zawiera raporty wyników per projekt z kolumnami: obszar, numer, tytuł, koszt, płeć, suma, wybrany, pula.
+- `ReportController` zawiera raporty wieku per projekt; kolumny wieku są generowane dynamicznie i w aktualnym baseline są odtworzone przez `VoteCardReportService::projectAgeGroupTotals`.
+- `ReportController` zawiera raport typu karty per projekt: elektroniczne, papierowe i łączna liczba głosów; baseline jest odtworzony przez `VoteCardReportService::projectCardTypeTotals`.
+- `ReportController` ma raporty dzienne/godzinowe głosowania zakomentowane w legacy; traktujemy je jako historyczne, nieaktywne, dopóki nie znajdziemy wywołania w menu.
+- `ReportController::actionCsv` używa `ECSVExport` do ogólnego eksportu `raport.csv` z przekazanego data providera.
+- `DocumentController::actionGenVerificationResultReport` generuje raport wyników weryfikacji z kart formalnych i merytorycznych.
+- `FuckupController` zawiera awaryjne XLS: niewysłane weryfikacje jednostek, lista złożonych projektów, korekty projektu i historia zmian projektu.
+- Katalog `raporty_sbo` zawiera szablony: `_historia_zmian_projektow.xls`, `_koresponcenje_z_autorem.xlsx`, `_ocena_komisji_odwolawczej.xlsx`, `_ocena_rady_ds_bo.xlsx`, `_propozycja-poprawy.xlsx`, `_tresc-odwolania.xlsx`.
+
 ## Świadome braki na tym etapie
 
 - Brak administracyjnych eksportów XLSX i kolejek dla dużych raportów.
-- Brak pełnej inwentaryzacji plików z `raporty_sbo`.
 - Brak raportów administracyjnych z kolumnami 1:1 względem legacy.

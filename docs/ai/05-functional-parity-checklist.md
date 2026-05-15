@@ -56,6 +56,7 @@
 - [x] Raport wieku per projekt w grupach legacy `16-30`, `31-45`, `46-60`, `61+`.
 - [x] Raport płci per projekt z zaakceptowanych kart.
 - [x] Raport typu karty elektroniczna/papierowa per projekt.
+- [x] Inwentaryzacja raportów i szablonów legacy z `ReportController`, `FuckupController`, `DocumentController` i `raporty_sbo`.
 - [x] Publiczny eksport CSV wyników bez PII.
 - [x] Import słowników imion, nazwisk i nazwisk matek z legacy.
 - [x] Import relacji `taskscategories` do pivotu kategorii projektów.

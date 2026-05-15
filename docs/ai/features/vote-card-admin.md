@@ -26,7 +26,7 @@ Status: baseline domenowy rozpoczęty.
 - `VoteCardPolicy` dopuszcza podgląd i zmianę kart tylko dla `vote_cards.manage` albo ról `admin`/`bdo`.
 - `RegisterPaperVoteCardAction` rejestruje papierową kartę przez operatora z `vote_cards.manage`/`voting.manage`, nadaje kolejny `current_paper_card_no`, ustawia `digital=false` i zapisuje `created_by_id`.
 - `UpdateVoteCardStatusAction` zmienia status karty na `Accepted`, `Rejected` albo `Verifying`, zapisuje operatora w `checkout_user_id`, czas w `checkout_date_time` i notatkę administracyjną.
-- `VoteCardResource` daje administracyjny podgląd kart w Filament oraz edycję statusu i notatek z dostępem przez `VoteCardPolicy`.
+- `VoteCardResource` daje administracyjny podgląd kart w Filament oraz edycję statusu i notatek z dostępem przez `VoteCardPolicy`; edycja używa `UpdateVoteCardStatusAction`, więc zapisuje operatora i czas checkoutu.
 - `LegacyFixtureImportService` przenosi pełniejsze pola `votecards`: zgody, operatorów, konsultanta, checkout, adresy oświadczeń, rodzica/opiekuna, IP oraz timestamps.
 - `ResultsCalculator` liczy tylko karty `Accepted`, więc akceptacja/odrzucenie po ręcznej weryfikacji natychmiast zmienia wynik zgodnie z legacy.
 

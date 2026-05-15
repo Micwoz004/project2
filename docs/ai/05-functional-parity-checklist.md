@@ -65,6 +65,7 @@
 - [x] Baseline importu fixture legacy: `legacy_id`, relacje, statusy, głosy i statystyki partii.
 - [x] Import fixture załączników publicznych/prywatnych i współautorów projektu.
 - [x] Import fixture weryfikacji formalnej, merytorycznej i przydziałów departamentów.
+- [x] Import fixture dodatkowych kart `detailedverification`, `locationverification` i wersji `verificationversion`.
 - [x] Import fixture konsultacji oraz głosowań ZK/OT/AT i odrzuceń.
 - [x] Baseline korespondencji i komentarzy projektu z uprawnieniami i odczytem.
 - [x] Import fixture korespondencji i komentarzy projektu.

@@ -27,6 +27,7 @@
 - `ProjectCorrection` odwzorowuje `taskcorrection`.
 - `ProjectChangeSuggestion` odwzorowuje `taskchangessuggestion`.
 - `VoteCard`, `Vote`, `Voter`, `VotingToken`, `VoterRegistryHash`, `SmsLog` odwzorowują głosowanie.
+- `DetailedVerification`, `LocationVerification`, `VerificationVersion` odwzorowują dodatkowe karty i snapshoty weryfikacji.
 - `Department` odwzorowuje `departments`.
 - `ApplicationSetting` odwzorowuje `settings` z zachowaniem surowych wartości legacy.
 - `ContentPage` odwzorowuje `pages` per edycja SBO i symbol strony procesu.

@@ -33,7 +33,9 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `taskfinishmeritverification` | `final_merit_verifications` | Wynik końcowy merytoryczny. |
 | `taskconsultation` | `consultation_verifications` | Konsultacje departamentów. |
 | `taskdepartmentassignment` | `verification_assignments` | Typ przydziału jako enum. |
-| `detailedverification`, `locationverification`, `verificationversion` | pola JSON / kolejne migracje | Do doprecyzowania przy pełnym module weryfikacji. |
+| `detailedverification` | `detailed_verifications` | Szczegółowa karta weryfikacji; odpowiedzi formularza w JSON, wynik i rekomendacje osobno. |
+| `locationverification` | `location_verifications` | Karta lokalizacyjna; odpowiedzi formularza w JSON, wynik i rekomendacje osobno. |
+| `verificationversion` | `verification_versions` | Surowy snapshot JSON karty, typ, użytkownik i legacy ID karty. |
 
 ## Głosowanie
 

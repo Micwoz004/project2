@@ -26,11 +26,14 @@ use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
 use App\Domain\Verification\Models\BoardVoteRejection;
 use App\Domain\Verification\Models\ConsultationVerification;
+use App\Domain\Verification\Models\DetailedVerification;
 use App\Domain\Verification\Models\FinalMeritVerification;
 use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
+use App\Domain\Verification\Models\LocationVerification;
 use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\VerificationAssignment;
+use App\Domain\Verification\Models\VerificationVersion;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Enums\VotingTokenType;
 use App\Domain\Voting\Models\SmsLog;
@@ -174,6 +177,61 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'status' => 2,
             'result' => true,
             'resultComments' => 'Konsultacja pozytywna',
+        ]],
+        'detailedverification' => [[
+            'id' => 116,
+            'taskId' => 40,
+            'isMoreThanDocumentation' => 1,
+            'isCompleteInvestment' => 1,
+            'isCompleteAnalysisNotRequired' => 3,
+            'isNotBuildingProject' => 1,
+            'isCompliantWithOldBudgets' => 1,
+            'isCompliantWithCityPlans' => 1,
+            'isNotPublicHelp' => 1,
+            'isCompliantWithLaw' => 1,
+            'isCompliantWithRules' => 1,
+            'areCostsComplete' => 1,
+            'isInCostLimit' => 1,
+            'isAvailable' => 1,
+            'hasRecommendations' => 1,
+            'recommendations' => 'Zalecenia szczegółowe',
+            'recommendationsDate' => '2025-03-11 10:00:00',
+            'recommendationsForm' => 1,
+            'verificationComments' => 'Uwagi szczegółowe',
+            'verificationResult' => 1,
+            'resultReason' => 'Pozytywnie',
+            'verificationDate' => '2025-03-11 12:00:00',
+            'modifyingUserId' => 600,
+            'creatorId' => 600,
+            'public' => 1,
+        ]],
+        'locationverification' => [[
+            'id' => 117,
+            'taskId' => 40,
+            'isCompliantWithPlan' => 1,
+            'isCompliantWithPlot' => 1,
+            'isInvestmentNotPlanned' => 2,
+            'isLawCompliant' => 1,
+            'isPlotNotForSale' => 1,
+            'hasRecommendations' => 0,
+            'recommendations' => '',
+            'recommendationsDate' => '0000-00-00 00:00:00',
+            'recommendationsForm' => 1,
+            'verificationComments' => 'Uwagi lokalizacyjne',
+            'verificationResult' => 1,
+            'resultReason' => 'Lokalizacja poprawna',
+            'verificationDate' => '2025-03-11 13:00:00',
+            'modifyingUserId' => 600,
+            'creatorId' => 600,
+            'public' => 0,
+        ]],
+        'verificationversion' => [[
+            'id' => 118,
+            'verificationId' => 116,
+            'type' => 3,
+            'userId' => 600,
+            'data' => '{"verificationResult":"1","resultReason":"Pozytywnie"}',
+            'createTime' => '2025-03-11 12:05:00',
         ]],
         'taskdepartmentassignment' => [[
             'id' => 96,
@@ -435,6 +493,9 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['taskinitialmeritverification'])->toBe(1)
         ->and($batch->stats['taskfinishmeritverification'])->toBe(1)
         ->and($batch->stats['taskconsultation'])->toBe(1)
+        ->and($batch->stats['detailedverification'])->toBe(1)
+        ->and($batch->stats['locationverification'])->toBe(1)
+        ->and($batch->stats['verificationversion'])->toBe(1)
         ->and($batch->stats['taskdepartmentassignment'])->toBe(1)
         ->and($batch->stats['zkvotes'])->toBe(1)
         ->and($batch->stats['atvotes'])->toBe(1)
@@ -469,6 +530,12 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(InitialMeritVerification::query()->where('legacy_id', 94)->firstOrFail()->department_id)->toBe($department->id)
         ->and(FinalMeritVerification::query()->where('legacy_id', 95)->firstOrFail()->result_comments)->toBe('Końcowo pozytywny')
         ->and(ConsultationVerification::query()->where('legacy_id', 97)->firstOrFail()->department_id)->toBe($department->id)
+        ->and(DetailedVerification::query()->where('legacy_id', 116)->firstOrFail()->answers['isCompleteInvestment'])->toBe(1)
+        ->and(DetailedVerification::query()->where('legacy_id', 116)->firstOrFail()->has_recommendations)->toBeTrue()
+        ->and(LocationVerification::query()->where('legacy_id', 117)->firstOrFail()->answers['isInvestmentNotPlanned'])->toBe(2)
+        ->and(LocationVerification::query()->where('legacy_id', 117)->firstOrFail()->recommendations_at)->toBeNull()
+        ->and(VerificationVersion::query()->where('legacy_id', 118)->firstOrFail()->raw_data)
+        ->toBe('{"verificationResult":"1","resultReason":"Pozytywnie"}')
         ->and(VerificationAssignment::query()->where('legacy_id', 96)->firstOrFail()->type)->toBe(VerificationAssignmentType::MeritInitial)
         ->and(ProjectBoardVote::query()->where('legacy_id', 98)->firstOrFail()->user_id)->toBe($boardUser->id)
         ->and(ProjectBoardVote::query()->where('legacy_id', 99)->firstOrFail()->board_type)->toBe(BoardType::At)

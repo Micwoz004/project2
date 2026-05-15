@@ -27,11 +27,14 @@ use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Models\BoardVoteRejection;
 use App\Domain\Verification\Models\ConsultationVerification;
+use App\Domain\Verification\Models\DetailedVerification;
 use App\Domain\Verification\Models\FinalMeritVerification;
 use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
+use App\Domain\Verification\Models\LocationVerification;
 use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\VerificationAssignment;
+use App\Domain\Verification\Models\VerificationVersion;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Enums\VotingTokenType;
 use App\Domain\Voting\Models\SmsLog;
@@ -81,6 +84,9 @@ class LegacyFixtureImportService
                 'taskinitialmeritverification' => $this->importVerificationRows($payload['taskinitialmeritverification'] ?? [], InitialMeritVerification::class),
                 'taskfinishmeritverification' => $this->importVerificationRows($payload['taskfinishmeritverification'] ?? [], FinalMeritVerification::class),
                 'taskconsultation' => $this->importVerificationRows($payload['taskconsultation'] ?? [], ConsultationVerification::class),
+                'detailedverification' => $this->importDetailedVerifications($payload['detailedverification'] ?? []),
+                'locationverification' => $this->importLocationVerifications($payload['locationverification'] ?? []),
+                'verificationversion' => $this->importVerificationVersions($payload['verificationversion'] ?? []),
                 'taskdepartmentassignment' => $this->importVerificationAssignments($payload['taskdepartmentassignment'] ?? []),
                 'zkvotes' => $this->importBoardVotes($payload['zkvotes'] ?? [], BoardType::Zk),
                 'otvotes' => $this->importBoardVotes($payload['otvotes'] ?? [], BoardType::Ot),
@@ -369,6 +375,114 @@ class LegacyFixtureImportService
                 'answers' => Arr::get($row, 'answers'),
                 'raw_legacy_payload' => $row,
                 'sent_at' => Arr::get($row, 'sentAt'),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importDetailedVerifications(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $createdAt = Arr::get($row, 'verificationDate');
+
+            DetailedVerification::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'created_by_id' => $this->optionalUserId(Arr::get($row, 'creatorId')),
+                'modified_by_id' => $this->optionalUserId(Arr::get($row, 'modifyingUserId')),
+                'answers' => Arr::only($row, [
+                    'isMoreThanDocumentation',
+                    'isCompleteInvestment',
+                    'isCompleteAnalysisNotRequired',
+                    'isNotBuildingProject',
+                    'isCompliantWithOldBudgets',
+                    'isCompliantWithCityPlans',
+                    'isNotPublicHelp',
+                    'isCompliantWithLaw',
+                    'isCompliantWithRules',
+                    'areCostsComplete',
+                    'isInCostLimit',
+                    'isAvailable',
+                ]),
+                'has_recommendations' => (bool) Arr::get($row, 'hasRecommendations', false),
+                'recommendations' => Arr::get($row, 'recommendations'),
+                'recommendations_at' => $this->nullableLegacyDate(Arr::get($row, 'recommendationsDate')),
+                'recommendations_form' => Arr::get($row, 'recommendationsForm'),
+                'verification_comments' => Arr::get($row, 'verificationComments'),
+                'verification_result' => (int) Arr::get($row, 'verificationResult', 1),
+                'result_reason' => Arr::get($row, 'resultReason'),
+                'verified_at' => $this->nullableLegacyDate(Arr::get($row, 'verificationDate')),
+                'is_public' => (bool) Arr::get($row, 'public', false),
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importLocationVerifications(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $createdAt = Arr::get($row, 'verificationDate');
+
+            LocationVerification::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'created_by_id' => $this->optionalUserId(Arr::get($row, 'creatorId')),
+                'modified_by_id' => $this->optionalUserId(Arr::get($row, 'modifyingUserId')),
+                'answers' => Arr::only($row, [
+                    'isCompliantWithPlan',
+                    'isCompliantWithPlot',
+                    'isInvestmentNotPlanned',
+                    'isLawCompliant',
+                    'isPlotNotForSale',
+                ]),
+                'has_recommendations' => (bool) Arr::get($row, 'hasRecommendations', false),
+                'recommendations' => Arr::get($row, 'recommendations'),
+                'recommendations_at' => $this->nullableLegacyDate(Arr::get($row, 'recommendationsDate')),
+                'recommendations_form' => Arr::get($row, 'recommendationsForm'),
+                'verification_comments' => Arr::get($row, 'verificationComments'),
+                'verification_result' => (int) Arr::get($row, 'verificationResult', 1),
+                'result_reason' => Arr::get($row, 'resultReason'),
+                'verified_at' => $this->nullableLegacyDate(Arr::get($row, 'verificationDate')),
+                'is_public' => (bool) Arr::get($row, 'public', false),
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importVerificationVersions(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $createdAt = Arr::get($row, 'createTime');
+
+            VerificationVersion::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'verification_legacy_id' => (int) Arr::get($row, 'verificationId'),
+                'type' => (int) Arr::get($row, 'type'),
+                'user_id' => $this->optionalUserId(Arr::get($row, 'userId')),
+                'raw_data' => Arr::get($row, 'data'),
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
             ]);
         }
 

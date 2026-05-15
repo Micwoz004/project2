@@ -22,6 +22,7 @@ Status: częściowo zaimplementowane w etapie 3.
 5. [ ] Zbudować Filament Page dla oceny formalnej.
 6. [x] Pokryć testami wymagane odpowiedzi i statusy.
 7. [x] Dodać import fixture dla `taskverification` z zachowaniem `raw_legacy_payload`.
+8. [x] Dodać import fixture dla historycznego `verificationversion`.
 
 ## Rozpoznane reguły legacy
 
@@ -39,9 +40,10 @@ Status: częściowo zaimplementowane w etapie 3.
 - Pozytywny wynik wymaga `projects.is_support_list=true`.
 - Negatywny wynik wymaga `result_comments`.
 - `LegacyFixtureImportService` importuje historyczne `taskverification`, mapuje wspólne pola i zachowuje pełny rekord w `raw_legacy_payload`.
+- `VerificationVersion` zachowuje surowy snapshot JSON legacy, typ karty, użytkownika oraz legacy ID karty weryfikacyjnej.
 
 ## Zgodność do sprawdzenia
 
 - Uzupełnić pełną listę pytań formularza formalnego w Filament na podstawie `TaskVerification::attributeLabels()`.
 - Dopisać obsługę `needCorrection`, `needPreVerification` i `initialDepartments` po module przydziałów departamentów.
-- Dodać wersjonowanie kart weryfikacji odpowiadające `VerificationVersion`.
+- Podpiąć `VerificationVersion` do bieżących akcji zapisu kart, żeby nowe zmiany w Laravel tworzyły snapshoty tak jak `beforeSave()` w Yii.

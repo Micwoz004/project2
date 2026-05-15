@@ -22,13 +22,14 @@ Status: częściowo zaimplementowane w etapie 3.
 5. [x] Pokryć testami przydziały, konsultacje, koszty i negatywne wyniki.
 6. [ ] Uzupełnić pełne formularze pól legacy w UI/DTO.
 7. [x] Dodać import fixture dla `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation` i `taskdepartmentassignment`.
+8. [x] Dodać import fixture dla `detailedverification`, `locationverification` i `verificationversion`.
 
 ## Rozpoznane reguły legacy
 
 - `TaskDepartmentAssignment` ma typy: `TYPE_MERIT_INITIAL=1`, `TYPE_MERIT_FINISH=2`, `TYPE_CONSULTATION=3`, `TYPE_FORMAL_VERIFICATION=4`.
 - `TaskInitialMeritVerification`, `TaskFinishMeritVerification` i `TaskConsultation` mają statusy kart: `STATUS_WORKING_COPY=1` oraz `STATUS_SENT=2`.
 - Wysłanie karty ustawia `sendDate` i oznacza przydział jako zwrócony z wynikiem (`isReturned=0`, `sendDate=NOW()`).
-- Karty weryfikacji są wersjonowane przez `VerificationVersion`; pełny odpowiednik wersjonowania zostaje do dopisania.
+- Karty weryfikacji są wersjonowane przez `VerificationVersion`; importer zachowuje historyczne snapshoty, a tworzenie nowych snapshotów w akcjach Laravel zostaje do dopisania.
 - Końcowa weryfikacja zapisuje `correctedCostJson` i `futureCostJson`; przy wysłaniu każde pole kosztu musi mieć opis i sumę.
 - Konsultacja zapisuje wynik i komentarze, ale nie zmienia bezpośrednio statusu projektu w kontrolerze karty.
 
@@ -42,11 +43,12 @@ Status: częściowo zaimplementowane w etapie 3.
 - `SubmitFinalMeritVerificationAction` wymaga przydziału przy wysyłce, waliduje koszty i przenosi projekt do `MeritVerificationAccepted` albo `MeritVerificationRejected`.
 - `SubmitConsultationVerificationAction` wymaga przydziału przy wysyłce i oznacza konsultację jako wysłaną bez zmiany statusu projektu.
 - `LegacyFixtureImportService` importuje historyczne karty weryfikacji, konsultacje i przydziały, zapisując pełny rekord w `raw_legacy_payload`.
+- `DetailedVerification` i `LocationVerification` zachowują specyficzne formularze legacy w `answers` JSON oraz osobne pola wyniku, rekomendacji, publiczności i dat.
 
 ## Świadome uproszczenia na tym etapie
 
 - Pełne listy pól pytań z formularzy legacy są przechowywane w `answers` JSON. Logika statusów i wymaganych danych jest w domenie; kompletne formularze UI zostaną odwzorowane później.
-- Nie ma jeszcze odpowiednika `VerificationVersion` dla kart merytorycznych.
+- `VerificationVersion` jest zaimportowany dla danych historycznych, ale akcje Laravel nie tworzą jeszcze nowych wersji przy każdej zmianie karty.
 - Nie rozstrzygamy jeszcze automatycznie agregacji wielu departamentów. Każda karta i przydział działa per departament; końcowe reguły agregacji zostaną doprecyzowane przy module administracyjnej obsługi weryfikacji.
 
 ## Zgodność do sprawdzenia

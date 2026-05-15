@@ -20,6 +20,7 @@ use App\Domain\Projects\Models\ProjectChangeSuggestion;
 use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectCostItem;
+use App\Domain\Projects\Models\ProjectStatusLabel;
 use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
@@ -79,6 +80,7 @@ class LegacyFixtureImportService
                 'taskgroups' => $this->importTaskGroups($payload['taskgroups'] ?? []),
                 'settings' => $this->importSettings($payload['settings'] ?? []),
                 'pages' => $this->importPages($payload['pages'] ?? []),
+                'statuses' => $this->importProjectStatusLabels($payload['statuses'] ?? []),
                 'tasktypes' => $this->importTaskTypes($payload['tasktypes'] ?? []),
                 'categories' => $this->importCategories($payload['categories'] ?? []),
                 'tasks' => $this->importTasks($payload['tasks'] ?? []),
@@ -235,6 +237,25 @@ class LegacyFixtureImportService
                 'logged_at' => $loggedAt,
                 'created_at' => $loggedAt,
                 'updated_at' => $loggedAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importProjectStatusLabels(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $legacyId = $this->legacyId($row);
+
+            ProjectStatusLabel::query()->updateOrCreate([
+                'legacy_id' => $legacyId,
+            ], [
+                'status' => $legacyId,
+                'name' => Arr::get($row, 'name'),
             ]);
         }
 

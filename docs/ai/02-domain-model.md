@@ -26,6 +26,7 @@
 - `ProjectVersion` odwzorowuje `versions`.
 - `ProjectCorrection` odwzorowuje `taskcorrection`.
 - `ProjectChangeSuggestion` odwzorowuje `taskchangessuggestion`.
+- `ProjectStatusLabel` odwzorowuje słownik nazw statusów `statuses`.
 - `VoteCard`, `Vote`, `Voter`, `VotingToken`, `VoterRegistryHash`, `SmsLog` odwzorowują głosowanie.
 - `DetailedVerification`, `LocationVerification`, `AdvancedVerification`, `VerificationVersion` odwzorowują dodatkowe karty i snapshoty weryfikacji.
 - `ProjectUserAssignment` odwzorowuje przypisania koordynatorów i weryfikatorów do projektu.

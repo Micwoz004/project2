@@ -10,6 +10,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `tasktypes` | `project_areas` | `is_local` rozróżnia lokalne i ogólnomiejskie. |
 | `tasks` | `projects` | Status jako enum int; część pól legacy zostaje jawnie nazwana snake_case. |
 | `taskcosts` | `project_cost_items` | Kwoty jako decimal. |
+| `statuses` | `project_status_labels` | Edytowalne nazwy statusów legacy; same wartości statusów pozostają w `ProjectStatus`. |
 | `files`, `filesprivate` | `project_files` | Połączone z flagą `is_private` i typem załącznika. |
 | `cocreators` | `project_coauthors` | Zgody i dane kontaktowe zachowane. |
 | `versions` | `project_versions` | Snapshot JSON projektu, plików i kosztów; `status=0` z legacy trafia jako `null`, bo nie jest statusem projektu. |

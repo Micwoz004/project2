@@ -28,3 +28,5 @@ Legacy nie waliduje wszystkich możliwych relacji między końcem weryfikacji pr
 Wartości `settings.value` są na etapie importu zachowywane dosłownie. To pozwala porównać dane 1:1 z dumpem; docelowe czytanie ustawień jako typowanych wartości wymaga najpierw pełnej listy kluczy i miejsc użycia w `SettingsForm`, kontrolerach oraz widokach Yii.
 
 Legacy `PageForm` zapisuje treści stron procesu głosowania bez dodatkowych walidacji biznesowych, a `Page::getPageBySymbol(Page::SYMBOL_VOID)` pobiera treść braku procesu z ustawienia `owner.pageProcessAbsence`. Rekordy `pages` dla konkretnych edycji są importowane do `content_pages`; fallback symbolu `V` z ustawień pozostaje częścią docelowego odczytu ustawień.
+
+Legacy `Statuses` przechowuje edytowalne nazwy statusów projektu niezależnie od kodu statusu. Import zapisuje je w `project_status_labels`, a logika domenowa nadal korzysta z `ProjectStatus`.

@@ -17,6 +17,7 @@ use App\Domain\Projects\Models\ProjectChangeSuggestion;
 use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectCostItem;
+use App\Domain\Projects\Models\ProjectStatusLabel;
 use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Settings\Models\ApplicationSetting;
@@ -82,6 +83,10 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'taskGroupId' => 10,
             'symbol' => ContentPage::SYMBOL_WELCOME,
             'body' => '<p>Witaj w SBO 2025</p>',
+        ]],
+        'statuses' => [[
+            'id' => ProjectStatus::Picked->value,
+            'name' => 'Wybrany do głosowania',
         ]],
         'tasktypes' => [[
             'id' => 20,
@@ -573,6 +578,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->finished_at)->not->toBeNull()
         ->and($batch->stats['settings'])->toBe(1)
         ->and($batch->stats['pages'])->toBe(1)
+        ->and($batch->stats['statuses'])->toBe(1)
         ->and($batch->stats['tasks'])->toBe(1)
         ->and($batch->stats['logs'])->toBe(1)
         ->and($batch->stats['taskscategories'])->toBe(2)
@@ -617,6 +623,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->toBe('s:37:"Szczeciński Budżet Obywatelski 2025";')
         ->and(ContentPage::query()->where('legacy_id', 111)->firstOrFail()->budget_edition_id)->toBe($edition->id)
         ->and(ContentPage::query()->where('legacy_id', 111)->firstOrFail()->body)->toBe('<p>Witaj w SBO 2025</p>')
+        ->and(ProjectStatusLabel::query()->where('legacy_id', ProjectStatus::Picked->value)->firstOrFail()->name)
+        ->toBe('Wybrany do głosowania')
         ->and($project->status)->toBe(ProjectStatus::Picked)
         ->and($project->budget_edition_id)->toBe($edition->id)
         ->and(LegacyAuditLog::query()->where('legacy_id', 126)->firstOrFail()->project_id)->toBe($project->id)

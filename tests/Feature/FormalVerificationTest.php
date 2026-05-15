@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Projects\Enums\ProjectCorrectionField;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
@@ -7,6 +8,7 @@ use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Actions\BeginFormalVerificationAction;
 use App\Domain\Verification\Actions\CompleteFormalVerificationAction;
 use App\Domain\Verification\Actions\ForwardFormalVerificationToInitialVerificationAction;
+use App\Domain\Verification\Actions\RequestFormalCorrectionAction;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
 use App\Models\User;
 
@@ -114,3 +116,32 @@ it('requires department when forwarding formal verification to initial verificat
 
     app(ForwardFormalVerificationToInitialVerificationAction::class)->execute($project, $actor, []);
 })->throws(DomainException::class, 'Przekazanie do weryfikacji wstępnej wymaga co najmniej jednej jednostki.');
+
+it('starts formal correction and keeps project in formal verification', function (): void {
+    $actor = User::factory()->create();
+    $project = submittedProjectForFormalVerification();
+
+    $correction = app(RequestFormalCorrectionAction::class)->execute(
+        $project,
+        $actor,
+        [ProjectCorrectionField::Description, ProjectCorrectionField::SupportAttachment],
+        'Uzupełnić opis i listę poparcia.',
+    );
+
+    expect($correction->allowed_fields)->toBe([
+        ProjectCorrectionField::Description->value,
+        ProjectCorrectionField::SupportAttachment->value,
+    ])
+        ->and($project->refresh()->status)->toBe(ProjectStatus::DuringFormalVerification)
+        ->and($project->need_correction)->toBeTrue()
+        ->and($project->correction_no)->toBe(1);
+});
+
+it('rejects formal correction for projects outside formal flow', function (): void {
+    $actor = User::factory()->create();
+    $project = submittedProjectForFormalVerification([
+        'status' => ProjectStatus::FormallyVerified,
+    ]);
+
+    app(RequestFormalCorrectionAction::class)->execute($project, $actor, [ProjectCorrectionField::Description]);
+})->throws(DomainException::class, 'Korektę formalną można uruchomić tylko dla projektu złożonego albo w weryfikacji formalnej.');

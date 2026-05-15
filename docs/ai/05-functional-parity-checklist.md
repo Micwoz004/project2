@@ -106,13 +106,14 @@
 - [x] Publiczny formularz zgłoszenia zapisuje realny prywatny upload listy poparcia.
 - [x] Publiczny formularz zgłoszenia zapisuje kategorię główną i pivot kategorii projektu.
 - [x] Przekazanie po weryfikacji formalnej do weryfikacji wstępnej z `need_pre_verification` i przydziałami jednostek.
+- [x] Korekta formalna uruchamia wspólne okno korekty i utrzymuje projekt w weryfikacji formalnej.
 
 ## Do pełnego parytetu
 
 - [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
 - [ ] Pełne podpięcie pozostałych uploadów w formularzach UI oraz potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Korekty projektu w UI autora/admina oraz korekty załączników/kosztów.
-- [ ] Weryfikacja formalna z pełną listą pól legacy.
+- [ ] Weryfikacja formalna z pełną listą pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje departamentów.
 - [ ] Wersjonowanie kart weryfikacji merytorycznej i pełna agregacja wielu departamentów.
 - [ ] Głos przewodniczącego ZK, restart/zamknięcie głosowań i policy dla ról rad/komisji.

@@ -25,6 +25,7 @@
 - `ProjectCoauthor` odwzorowuje `cocreators`.
 - `ProjectVersion` odwzorowuje `versions`.
 - `ProjectCorrection` odwzorowuje `taskcorrection`.
+- `ProjectChangeSuggestion` odwzorowuje `taskchangessuggestion`.
 - `VoteCard`, `Vote`, `Voter`, `VotingToken`, `VoterRegistryHash`, `SmsLog` odwzorowują głosowanie.
 - `Department` odwzorowuje `departments`.
 

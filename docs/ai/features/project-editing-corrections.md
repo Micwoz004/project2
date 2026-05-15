@@ -37,6 +37,8 @@ Status: częściowo zaimplementowane w etapie 1.
 - `StartCorrectionAction` tworzy korektę, blokuje korektę kopii roboczej, odrzuca pustą listę pól, podbija `correction_no` i ustawia okno korekty na projekcie.
 - `ApplyCorrectionAction` dopuszcza tylko aktywne okno, filtruje payload do pól wskazanych w korekcie, uruchamia walidator składania projektu i zapisuje snapshot w `project_versions`.
 - `LegacyFixtureImportService` przenosi `taskcorrection`, mapując flagi kolumn legacy na `ProjectCorrectionField`, zachowując notatkę, deadline, autora i flagę wykonania.
+- `project_change_suggestions` odwzorowuje `taskchangessuggestion`, przechowując stare i nowe dane projektu, kosztów i plików jako JSON oraz decyzję autora/admina.
+- `LegacyFixtureImportService` przenosi `taskchangessuggestion` do `project_change_suggestions`, zachowując deadline, konsultację, komentarz autora i decyzję.
 - `LegacyFixtureImportService` przenosi historyczne rekordy `versions` do `project_versions`, zachowując `legacy_id`, JSON pól projektu, plików i kosztów oraz czas utworzenia wersji.
 - Po poprawnym zastosowaniu korekty aktywne okno jest zamykane przez `correction_done=true` i wyczyszczenie flagi `need_correction`.
 

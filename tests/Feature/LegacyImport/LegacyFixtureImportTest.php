@@ -10,6 +10,7 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectChangeSuggestion;
 use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectCostItem;
@@ -232,6 +233,25 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'correctionDone' => 1,
             'createdAt' => '2025-03-12 14:00:00',
         ]],
+        'taskchangessuggestion' => [[
+            'id' => 109,
+            'taskId' => 40,
+            'oldData' => '{"title":"Stary tytuł","mapData":"[]"}',
+            'oldCosts' => '[{"description":"Stary koszt","sum":"500"}]',
+            'oldFiles' => '[{"id":"90","description":"Stary opis"}]',
+            'newData' => '{"title":"Nowy tytuł","mapData":"[]"}',
+            'newCosts' => '[{"description":"Nowy koszt","sum":"1000"}]',
+            'newFiles' => '[{"id":"90","description":"Nowy opis"}]',
+            'consultation' => 'Konsultacja zmian',
+            'authorComment' => 'Akceptuję',
+            'isAcceptedByAdmin' => 1,
+            'createdAt' => '2025-03-12 15:00:00',
+            'createdBy' => 600,
+            'deadline' => '2025-03-20 23:59:59',
+            'decision' => 2,
+            'decisionBy' => 600,
+            'decisionAt' => '2025-03-13 10:00:00',
+        ]],
         'versions' => [[
             'id' => 104,
             'taskId' => 40,
@@ -331,6 +351,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['correspondence'])->toBe(1)
         ->and($batch->stats['taskcomments'])->toBe(1)
         ->and($batch->stats['taskcorrection'])->toBe(1)
+        ->and($batch->stats['taskchangessuggestion'])->toBe(1)
         ->and($batch->stats['versions'])->toBe(1)
         ->and($batch->stats['newverification'])->toBe(1)
         ->and($batch->stats['votingtokens'])->toBe(1)
@@ -363,6 +384,9 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'attachments',
         ])
         ->and(ProjectCorrection::query()->where('legacy_id', 108)->firstOrFail()->correction_done)->toBeTrue()
+        ->and(ProjectChangeSuggestion::query()->where('legacy_id', 109)->firstOrFail()->new_data['title'])->toBe('Nowy tytuł')
+        ->and(ProjectChangeSuggestion::query()->where('legacy_id', 109)->firstOrFail()->new_costs[0]['sum'])->toBe('1000')
+        ->and(ProjectChangeSuggestion::query()->where('legacy_id', 109)->firstOrFail()->is_accepted_by_admin)->toBeTrue()
         ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->data['title'])->toBe('Park kieszonkowy')
         ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->files[0]['originalName'])->toBe('Lista poparcia.pdf')
         ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->costs[0]['sum'])->toBe('1000')

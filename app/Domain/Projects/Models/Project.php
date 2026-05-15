@@ -115,6 +115,11 @@ class Project extends Model
         return $this->hasMany(ProjectCorrection::class);
     }
 
+    public function changeSuggestions(): HasMany
+    {
+        return $this->hasMany(ProjectChangeSuggestion::class);
+    }
+
     public function formalVerifications(): HasMany
     {
         return $this->hasMany(FormalVerification::class);

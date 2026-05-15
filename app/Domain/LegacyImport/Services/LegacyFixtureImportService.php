@@ -13,6 +13,7 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectChangeSuggestion;
 use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectCostItem;
@@ -81,6 +82,7 @@ class LegacyFixtureImportService
                 'correspondence' => $this->importCorrespondence($payload['correspondence'] ?? []),
                 'taskcomments' => $this->importProjectComments($payload['taskcomments'] ?? []),
                 'taskcorrection' => $this->importProjectCorrections($payload['taskcorrection'] ?? []),
+                'taskchangessuggestion' => $this->importProjectChangeSuggestions($payload['taskchangessuggestion'] ?? []),
                 'versions' => $this->importProjectVersions($payload['versions'] ?? []),
                 'newverification' => $this->importVoterRegistryHashes($payload['newverification'] ?? []),
                 'votingtokens' => $this->importVotingTokens($payload['votingtokens'] ?? []),
@@ -466,6 +468,42 @@ class LegacyFixtureImportService
     /**
      * @param  list<array<string, mixed>>  $rows
      */
+    private function importProjectChangeSuggestions(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $legacyId = $this->legacyId($row);
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $createdAt = Arr::get($row, 'createdAt');
+
+            ProjectChangeSuggestion::query()->updateOrCreate([
+                'legacy_id' => $legacyId,
+            ], [
+                'project_id' => $project->id,
+                'created_by_id' => $this->optionalUserId(Arr::get($row, 'createdBy')),
+                'decision_by_id' => $this->optionalUserId(Arr::get($row, 'decisionBy')),
+                'old_data' => $this->decodeLegacyJson(Arr::get($row, 'oldData'), 'taskchangessuggestion', $legacyId),
+                'old_costs' => $this->decodeLegacyJson(Arr::get($row, 'oldCosts'), 'taskchangessuggestion', $legacyId),
+                'old_files' => $this->decodeLegacyJson(Arr::get($row, 'oldFiles'), 'taskchangessuggestion', $legacyId),
+                'new_data' => $this->decodeLegacyJson(Arr::get($row, 'newData'), 'taskchangessuggestion', $legacyId),
+                'new_costs' => $this->decodeLegacyJson(Arr::get($row, 'newCosts'), 'taskchangessuggestion', $legacyId),
+                'new_files' => $this->decodeLegacyJson(Arr::get($row, 'newFiles'), 'taskchangessuggestion', $legacyId),
+                'consultation' => Arr::get($row, 'consultation'),
+                'author_comment' => Arr::get($row, 'authorComment'),
+                'is_accepted_by_admin' => (bool) Arr::get($row, 'isAcceptedByAdmin', false),
+                'deadline' => Arr::get($row, 'deadline'),
+                'decision' => (int) Arr::get($row, 'decision', 0),
+                'decision_at' => $this->nullableLegacyDate(Arr::get($row, 'decisionAt')),
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
     private function importProjectVersions(array $rows): int
     {
         foreach ($rows as $row) {
@@ -751,6 +789,15 @@ class LegacyFixtureImportService
                 ARRAY_FILTER_USE_BOTH
             )
         ));
+    }
+
+    private function nullableLegacyDate(mixed $value): ?string
+    {
+        if ($value === null || $value === '' || $value === '0000-00-00 00:00:00') {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     /**

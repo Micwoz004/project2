@@ -64,6 +64,7 @@
 - [x] Policy/bramki dla kart głosowania, wyników i eksportów raportów.
 - [x] Baseline importu fixture legacy: `legacy_id`, relacje, statusy, głosy i statystyki partii.
 - [x] Import fixture załączników publicznych/prywatnych i współautorów projektu.
+- [x] Import fixture weryfikacji formalnej, merytorycznej i przydziałów departamentów.
 - [x] Baseline korespondencji i komentarzy projektu z uprawnieniami i odczytem.
 
 ## Do pełnego parytetu

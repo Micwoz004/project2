@@ -12,10 +12,17 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCostItem;
+use App\Domain\Users\Models\Department;
+use App\Domain\Verification\Models\ConsultationVerification;
+use App\Domain\Verification\Models\FinalMeritVerification;
+use App\Domain\Verification\Models\FormalVerification;
+use App\Domain\Verification\Models\InitialMeritVerification;
+use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Models\Vote;
 use App\Domain\Voting\Models\VoteCard;
 use App\Domain\Voting\Models\Voter;
+use App\Models\User;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -49,6 +56,11 @@ class LegacyFixtureImportService
                 'files' => $this->importFiles($payload['files'] ?? [], false),
                 'filesprivate' => $this->importFiles($payload['filesprivate'] ?? [], true),
                 'cocreators' => $this->importCoauthors($payload['cocreators'] ?? []),
+                'taskverification' => $this->importVerificationRows($payload['taskverification'] ?? [], FormalVerification::class),
+                'taskinitialmeritverification' => $this->importVerificationRows($payload['taskinitialmeritverification'] ?? [], InitialMeritVerification::class),
+                'taskfinishmeritverification' => $this->importVerificationRows($payload['taskfinishmeritverification'] ?? [], FinalMeritVerification::class),
+                'taskconsultation' => $this->importVerificationRows($payload['taskconsultation'] ?? [], ConsultationVerification::class),
+                'taskdepartmentassignment' => $this->importVerificationAssignments($payload['taskdepartmentassignment'] ?? []),
                 'voters' => $this->importVoters($payload['voters'] ?? []),
                 'votecards' => $this->importVoteCards($payload['votecards'] ?? []),
                 'votes' => $this->importVotes($payload['votes'] ?? []),
@@ -259,6 +271,62 @@ class LegacyFixtureImportService
     }
 
     /**
+     * @template TModel of Model
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @param  class-string<TModel>  $model
+     */
+    private function importVerificationRows(array $rows, string $model): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+
+            $model::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'department_id' => $this->optionalDepartmentId(Arr::get($row, 'departmentId')),
+                'created_by_id' => $this->optionalUserId(Arr::get($row, 'creatorId')),
+                'modified_by_id' => $this->optionalUserId(Arr::get($row, 'modifyingUserId')),
+                'status' => (int) Arr::get($row, 'status', 1),
+                'result' => Arr::has($row, 'result') ? (bool) Arr::get($row, 'result') : null,
+                'result_comments' => Arr::get($row, 'resultComments'),
+                'is_public' => (bool) Arr::get($row, 'isPublic', false),
+                'answers' => Arr::get($row, 'answers'),
+                'raw_legacy_payload' => $row,
+                'sent_at' => Arr::get($row, 'sentAt'),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importVerificationAssignments(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $department = $this->department((int) Arr::get($row, 'departmentId'));
+
+            VerificationAssignment::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'department_id' => $department->id,
+                'deadline' => Arr::get($row, 'deadline'),
+                'notes' => Arr::get($row, 'notes'),
+                'sent_at' => Arr::get($row, 'sentAt'),
+                'is_returned' => (bool) Arr::get($row, 'isReturned', false),
+                'type' => (int) Arr::get($row, 'type', 1),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
      * @param  list<array<string, mixed>>  $rows
      */
     private function importVoters(array $rows): int
@@ -362,6 +430,29 @@ class LegacyFixtureImportService
     private function voteCard(int $legacyId): VoteCard
     {
         return $this->findLegacy(VoteCard::class, $legacyId, 'votecards');
+    }
+
+    private function department(int $legacyId): Department
+    {
+        return $this->findLegacy(Department::class, $legacyId, 'departments');
+    }
+
+    private function optionalDepartmentId(mixed $legacyId): ?int
+    {
+        if ($legacyId === null || $legacyId === '') {
+            return null;
+        }
+
+        return Department::query()->where('legacy_id', (int) $legacyId)->value('id');
+    }
+
+    private function optionalUserId(mixed $legacyId): ?int
+    {
+        if ($legacyId === null || $legacyId === '') {
+            return null;
+        }
+
+        return User::query()->where('legacy_id', (int) $legacyId)->value('id');
     }
 
     /**

@@ -11,11 +11,22 @@ use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCostItem;
 use App\Domain\Results\Services\ResultsCalculator;
+use App\Domain\Users\Models\Department;
+use App\Domain\Verification\Enums\VerificationAssignmentType;
+use App\Domain\Verification\Models\FinalMeritVerification;
+use App\Domain\Verification\Models\FormalVerification;
+use App\Domain\Verification\Models\InitialMeritVerification;
+use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Models\Vote;
 use App\Domain\Voting\Models\VoteCard;
 
 it('imports a legacy fixture with ids statuses relations and result totals', function (): void {
+    $department = Department::query()->create([
+        'legacy_id' => 500,
+        'name' => 'Wydział testowy',
+    ]);
+
     $payload = [
         'taskgroups' => [[
             'id' => 10,
@@ -97,6 +108,38 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'personalDataAgree' => true,
             'confirm' => true,
         ]],
+        'taskverification' => [[
+            'id' => 93,
+            'taskId' => 40,
+            'status' => 2,
+            'result' => true,
+            'resultComments' => 'Formalnie poprawny',
+            'isPublic' => true,
+            'answers' => ['hasSupportAttachment' => true],
+        ]],
+        'taskinitialmeritverification' => [[
+            'id' => 94,
+            'taskId' => 40,
+            'departmentId' => 500,
+            'status' => 2,
+            'result' => true,
+            'resultComments' => 'Wstępnie pozytywny',
+        ]],
+        'taskfinishmeritverification' => [[
+            'id' => 95,
+            'taskId' => 40,
+            'departmentId' => 500,
+            'status' => 2,
+            'result' => true,
+            'resultComments' => 'Końcowo pozytywny',
+        ]],
+        'taskdepartmentassignment' => [[
+            'id' => 96,
+            'taskId' => 40,
+            'departmentId' => 500,
+            'type' => VerificationAssignmentType::MeritInitial->value,
+            'deadline' => '2025-03-10 12:00:00',
+        ]],
         'voters' => [[
             'id' => 60,
             'pesel' => '44051401458',
@@ -136,6 +179,10 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['files'])->toBe(1)
         ->and($batch->stats['filesprivate'])->toBe(1)
         ->and($batch->stats['cocreators'])->toBe(1)
+        ->and($batch->stats['taskverification'])->toBe(1)
+        ->and($batch->stats['taskinitialmeritverification'])->toBe(1)
+        ->and($batch->stats['taskfinishmeritverification'])->toBe(1)
+        ->and($batch->stats['taskdepartmentassignment'])->toBe(1)
         ->and($edition->legacy_id)->toBe(10)
         ->and(ProjectArea::query()->where('legacy_id', 20)->firstOrFail()->is_local)->toBeTrue()
         ->and($project->status)->toBe(ProjectStatus::Picked)
@@ -146,6 +193,10 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(ProjectFile::query()->where('legacy_id', 90)->firstOrFail()->is_private)->toBeFalse()
         ->and(ProjectFile::query()->where('legacy_id', 91)->firstOrFail()->is_private)->toBeTrue()
         ->and(ProjectCoauthor::query()->where('legacy_id', 92)->firstOrFail()->confirm)->toBeTrue()
+        ->and(FormalVerification::query()->where('legacy_id', 93)->firstOrFail()->answers)->toBe(['hasSupportAttachment' => true])
+        ->and(InitialMeritVerification::query()->where('legacy_id', 94)->firstOrFail()->department_id)->toBe($department->id)
+        ->and(FinalMeritVerification::query()->where('legacy_id', 95)->firstOrFail()->result_comments)->toBe('Końcowo pozytywny')
+        ->and(VerificationAssignment::query()->where('legacy_id', 96)->firstOrFail()->type)->toBe(VerificationAssignmentType::MeritInitial)
         ->and($voteCard->status)->toBe(VoteCardStatus::Accepted)
         ->and(Vote::query()->where('legacy_id', 80)->firstOrFail()->project_id)->toBe($project->id)
         ->and((int) $totals->first()->points)->toBe(1);

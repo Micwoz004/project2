@@ -21,6 +21,7 @@ Status: częściowo zaimplementowane w etapie 3.
 4. [ ] Udostępnić formularze w Filament według roli/departamentu.
 5. [x] Pokryć testami przydziały, konsultacje, koszty i negatywne wyniki.
 6. [ ] Uzupełnić pełne formularze pól legacy w UI/DTO.
+7. [x] Dodać import fixture dla `taskinitialmeritverification`, `taskfinishmeritverification` i `taskdepartmentassignment`.
 
 ## Rozpoznane reguły legacy
 
@@ -40,6 +41,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `SubmitInitialMeritVerificationAction` wymaga przydziału przy wysyłce, zapisuje kartę i przenosi projekt do `SentForMeritVerification` albo `InitialVerificationRejected`.
 - `SubmitFinalMeritVerificationAction` wymaga przydziału przy wysyłce, waliduje koszty i przenosi projekt do `MeritVerificationAccepted` albo `MeritVerificationRejected`.
 - `SubmitConsultationVerificationAction` wymaga przydziału przy wysyłce i oznacza konsultację jako wysłaną bez zmiany statusu projektu.
+- `LegacyFixtureImportService` importuje historyczne karty weryfikacji i przydziały, zapisując pełny rekord w `raw_legacy_payload`.
 
 ## Świadome uproszczenia na tym etapie
 

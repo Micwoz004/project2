@@ -21,6 +21,7 @@ Status: częściowo zaimplementowane w etapie 3.
 4. [ ] Dodać reguły korekty i przekazania dalej do weryfikacji wstępnej.
 5. [ ] Zbudować Filament Page dla oceny formalnej.
 6. [x] Pokryć testami wymagane odpowiedzi i statusy.
+7. [x] Dodać import fixture dla `taskverification` z zachowaniem `raw_legacy_payload`.
 
 ## Rozpoznane reguły legacy
 
@@ -37,6 +38,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `CompleteFormalVerificationAction` zapisuje/aktualizuje kartę formalną i ustawia status projektu na `FormallyVerified` albo `RejectedFormally`.
 - Pozytywny wynik wymaga `projects.is_support_list=true`.
 - Negatywny wynik wymaga `result_comments`.
+- `LegacyFixtureImportService` importuje historyczne `taskverification`, mapuje wspólne pola i zachowuje pełny rekord w `raw_legacy_payload`.
 
 ## Zgodność do sprawdzenia
 

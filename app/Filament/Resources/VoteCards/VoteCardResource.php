@@ -6,6 +6,7 @@ use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Voting\Actions\RegisterPaperVoteCardAction;
+use App\Domain\Voting\Actions\ReplaceVoteCardVotesAction;
 use App\Domain\Voting\Data\VoterIdentityData;
 use App\Domain\Voting\Enums\CitizenConfirmation;
 use App\Domain\Voting\Enums\VoteCardStatus;
@@ -164,6 +165,23 @@ class VoteCardResource extends Resource
     }
 
     /**
+     * @return array<int, mixed>
+     */
+    public static function replaceVoteCardVotesFormSchema(): array
+    {
+        return [
+            Select::make('local_project_id')
+                ->label('Projekt lokalny')
+                ->options(fn (): array => self::paperVoteProjectOptions(true)),
+            Select::make('citywide_project_id')
+                ->label('Projekt ogólnomiejski')
+                ->options(fn (): array => self::paperVoteProjectOptions(false)),
+            Toggle::make('confirm_missing_category')
+                ->label('Potwierdzono brak głosu w jednej kategorii'),
+        ];
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      */
     public static function registerPaperVoteCardFromAdminForm(array $data): VoteCard
@@ -193,6 +211,30 @@ class VoteCardResource extends Resource
                 'parent_name' => $data['parent_name'] ?? null,
                 'parent_confirm' => (bool) ($data['parent_confirm'] ?? false),
             ],
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function replaceVoteCardVotesFromAdminForm(VoteCard $voteCard, array $data): VoteCard
+    {
+        $operator = Auth::user();
+
+        if (! $operator instanceof User) {
+            Log::warning('vote_card.votes.replace.rejected_guest', [
+                'vote_card_id' => $voteCard->id,
+            ]);
+
+            throw new DomainException('Użytkownik musi być zalogowany.');
+        }
+
+        return app(ReplaceVoteCardVotesAction::class)->execute(
+            $voteCard,
+            self::selectedProjectIds($data, 'local_project_id'),
+            self::selectedProjectIds($data, 'citywide_project_id'),
+            $operator,
+            (bool) ($data['confirm_missing_category'] ?? false),
         );
     }
 

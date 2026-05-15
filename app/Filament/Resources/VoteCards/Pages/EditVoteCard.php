@@ -7,6 +7,7 @@ use App\Domain\Voting\Enums\VoteCardStatus;
 use App\Domain\Voting\Models\VoteCard;
 use App\Filament\Resources\VoteCards\VoteCardResource;
 use App\Models\User;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,16 @@ use Illuminate\Support\Facades\Auth;
 class EditVoteCard extends EditRecord
 {
     protected static string $resource = VoteCardResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('replaceVoteCardVotes')
+                ->label('Zmień głosy')
+                ->schema(VoteCardResource::replaceVoteCardVotesFormSchema())
+                ->action(fn (array $data) => VoteCardResource::replaceVoteCardVotesFromAdminForm($this->getRecord(), $data)),
+        ];
+    }
 
     /**
      * @param  array<string, mixed>  $data

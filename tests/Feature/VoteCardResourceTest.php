@@ -92,3 +92,46 @@ it('registers paper vote card from filament form through domain action', functio
         ->and($voteCard->votes()->pluck('project_id')->all())->toBe([$project->id])
         ->and($edition->refresh()->current_paper_card_no)->toBe(1);
 });
+
+it('replaces existing vote card votes from filament form through domain action', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $oldProject = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'status' => ProjectStatus::Picked,
+    ]));
+    $newProject = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'title' => 'Nowy plac zabaw',
+        'status' => ProjectStatus::Picked,
+    ]));
+    $voter = Voter::query()->create([
+        'pesel' => '44051401458',
+        'first_name' => 'Jan',
+        'last_name' => 'Kowalski',
+    ]);
+    $voteCard = VoteCard::query()->create([
+        'budget_edition_id' => $edition->id,
+        'voter_id' => $voter->id,
+        'status' => VoteCardStatus::Accepted,
+    ]);
+    $voteCard->votes()->create([
+        'voter_id' => $voter->id,
+        'project_id' => $oldProject->id,
+        'points' => 1,
+    ]);
+    $operator = User::factory()->create();
+    $operator->assignRole(SystemRole::CheckVoter->value);
+
+    $this->actingAs($operator);
+
+    $updated = VoteCardResource::replaceVoteCardVotesFromAdminForm($voteCard, [
+        'local_project_id' => $newProject->id,
+        'citywide_project_id' => null,
+        'confirm_missing_category' => true,
+    ]);
+
+    expect($updated->votes()->pluck('project_id')->all())->toBe([$newProject->id])
+        ->and($updated->checkout_user_id)->toBe($operator->id)
+        ->and($updated->checkout_date_time)->not->toBeNull();
+});

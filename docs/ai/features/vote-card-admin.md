@@ -21,7 +21,7 @@ Status: baseline domenowy i administracyjny UI rozpoczęte.
 4. [x] Zablokować niedozwolone kombinacje projektów i głosów przez domenową walidację `CastVoteService`.
 5. [x] Pokryć testami statusy i wpływ na wyniki.
 6. [x] Dodać akcję Filament do rejestracji papierowej karty głosowania.
-7. [ ] Dodać akcję Filament do edycji głosów istniejącej karty.
+7. [x] Dodać akcję Filament do edycji głosów istniejącej karty.
 
 ## Implementacja Laravel
 
@@ -30,9 +30,10 @@ Status: baseline domenowy i administracyjny UI rozpoczęte.
 - `UpdateVoteCardStatusAction` zmienia status karty na `Accepted`, `Rejected` albo `Verifying`, zapisuje operatora w `checkout_user_id`, czas w `checkout_date_time` i notatkę administracyjną.
 - `VoteCardResource` daje administracyjny podgląd kart w Filament oraz edycję statusu i notatek z dostępem przez `VoteCardPolicy`; edycja używa `UpdateVoteCardStatusAction`, więc zapisuje operatora i czas checkoutu.
 - `ListVoteCards` ma akcję nagłówka rejestrującą papierową kartę przez `RegisterPaperVoteCardAction`; formularz zbiera dane wyborcy, projekt lokalny/ogólnomiejski, oświadczenie i zgody, a walidacja limitów oraz statusów projektów pozostaje w domenie.
+- `EditVoteCard` ma akcję zmiany głosów istniejącej karty. `ReplaceVoteCardVotesAction` usuwa stare głosy, zapisuje nowe, pilnuje limitu po jednej kategorii, statusu `Picked`, typu obszaru oraz wymagania potwierdzenia przy pominiętej kategorii.
 - `LegacyFixtureImportService` przenosi pełniejsze pola `votecards`: zgody, operatorów, konsultanta, checkout, adresy oświadczeń, rodzica/opiekuna, IP oraz timestamps.
 - `ResultsCalculator` liczy tylko karty `Accepted`, więc akceptacja/odrzucenie po ręcznej weryfikacji natychmiast zmienia wynik zgodnie z legacy.
 
 ## Świadome braki na tym etapie
 
-- Pełna edycja głosów na istniejącej karcie zostaje osobną akcją Filament.
+- UI edycji głosów ma obecnie formularz administracyjny dla wskazania nowych projektów; porównanie finalnych komunikatów i etykiet z legacy pozostaje do decyzji wdrożeniowej.

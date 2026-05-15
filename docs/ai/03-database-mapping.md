@@ -20,6 +20,8 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `departments` | `departments` | Używane przez projekty, pliki i weryfikacje. |
 | `pages` | `content_pages` | Strony publiczne per edycja; `body` zachowuje HTML legacy. |
 | `settings` | `application_settings` | Klucz/kategoria/wartość; `value` zachowane surowo, także dla serializacji Yii/PHP. |
+| `notification` | `project_notifications` | Powiadomienia związane z projektem: temat, treść, autor, adresat i data wysyłki. |
+| `maillogs` | `mail_logs` | Historyczne logi wysyłek mailowych z kontrolerem i akcją legacy. |
 
 ## Weryfikacje
 

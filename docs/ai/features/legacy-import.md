@@ -23,11 +23,12 @@ Status: baseline fixture zaimplementowany.
 
 ## Implementacja Laravel
 
-- `LegacyFixtureImportService` importuje podstawowy wycinek danych w transakcji: `taskgroups`, `settings`, `pages`, `tasktypes`, `categories`, `tasks`, `taskscategories`, `taskcosts`, `files`, `filesprivate`, `cocreators`, `taskverification`, `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation`, `taskdepartmentassignment`, `zkvotes`, `atvotes`, `otvotes`, `atotvotesrejection`, `correspondence`, `taskcomments`, `taskcorrection`, `taskchangessuggestion`, `versions`, `newverification`, `votingtokens`, `voters`, `smslogs`, `votecards`, `votes`.
+- `LegacyFixtureImportService` importuje podstawowy wycinek danych w transakcji: `taskgroups`, `settings`, `pages`, `tasktypes`, `categories`, `tasks`, `taskscategories`, `taskcosts`, `files`, `filesprivate`, `cocreators`, `taskverification`, `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation`, `taskdepartmentassignment`, `zkvotes`, `atvotes`, `otvotes`, `atotvotesrejection`, `correspondence`, `taskcomments`, `notification`, `maillogs`, `taskcorrection`, `taskchangessuggestion`, `versions`, `newverification`, `votingtokens`, `voters`, `smslogs`, `votecards`, `votes`.
 - `LegacyUserImportService` importuje `departments` i `users`.
 - Import jest idempotentny po `legacy_id` przez `updateOrCreate`.
 - Ustawienia aplikacji zachowują surową wartość z legacy `settings.value`, także jeśli jest to serializowany format Yii/PHP; typizacja ustawień będzie osobnym etapem po potwierdzeniu wszystkich kluczy z dumpa.
 - Strony procesu głosowania zachowują `pages.symbol` i HTML z `pages.body` per edycja SBO.
+- Powiadomienia projektu i logi mailowe są rozdzielone na `project_notifications` oraz `mail_logs`, zgodnie z różnym znaczeniem legacy `notification` i `maillogs`.
 - Relacje wielu kategorii projektu są przenoszone przez pivot `category_project` z `taskscategories`.
 - `legacy_import_batches` zapisuje `source_path`, statystyki per tabela oraz czas startu i zakończenia.
 - Brakujące relacje są logowane jako `WARN` bez PII i kończą import wyjątkiem domenowym.

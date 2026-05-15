@@ -2,7 +2,9 @@
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Communications\Models\CorrespondenceMessage;
+use App\Domain\Communications\Models\MailLog;
 use App\Domain\Communications\Models\ProjectComment;
+use App\Domain\Communications\Models\ProjectNotification;
 use App\Domain\Files\Models\ProjectFile;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
 use App\Domain\LegacyImport\Services\LegacyFixtureImportService;
@@ -221,6 +223,26 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'userId' => 600,
             'content' => 'Komentarz wewnętrzny',
         ]],
+        'notification' => [[
+            'id' => 112,
+            'creatorId' => 600,
+            'sentToUserId' => 600,
+            'authorEmail' => 'sbo@example.test',
+            'taskId' => 40,
+            'notificationText' => 'Treść powiadomienia projektu',
+            'sendDate' => '2025-03-14 10:00:00',
+            'notificationSubject' => 'Powiadomienie SBO',
+        ]],
+        'maillogs' => [[
+            'id' => 113,
+            'createdByUserId' => 600,
+            'email' => 'autor@example.test',
+            'subject' => 'Mail testowy',
+            'content' => 'Treść maila',
+            'controller' => 'notification',
+            'action' => 'send',
+            'time' => '2025-03-14 10:01:00',
+        ]],
         'taskcorrection' => [[
             'id' => 108,
             'taskId' => 40,
@@ -398,6 +420,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['atotvotesrejection'])->toBe(1)
         ->and($batch->stats['correspondence'])->toBe(1)
         ->and($batch->stats['taskcomments'])->toBe(1)
+        ->and($batch->stats['notification'])->toBe(1)
+        ->and($batch->stats['maillogs'])->toBe(1)
         ->and($batch->stats['taskcorrection'])->toBe(1)
         ->and($batch->stats['taskchangessuggestion'])->toBe(1)
         ->and($batch->stats['versions'])->toBe(1)
@@ -429,6 +453,9 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(BoardVoteRejection::query()->where('legacy_id', 101)->firstOrFail()->comment)->toBe('Powód odrzucenia')
         ->and(CorrespondenceMessage::query()->where('legacy_id', 102)->firstOrFail()->is_read)->toBeTrue()
         ->and(ProjectComment::query()->where('legacy_id', 103)->firstOrFail()->content)->toBe('Komentarz wewnętrzny')
+        ->and(ProjectNotification::query()->where('legacy_id', 112)->firstOrFail()->subject)->toBe('Powiadomienie SBO')
+        ->and(ProjectNotification::query()->where('legacy_id', 112)->firstOrFail()->created_by_id)->toBe($boardUser->id)
+        ->and(MailLog::query()->where('legacy_id', 113)->firstOrFail()->controller)->toBe('notification')
         ->and(ProjectCorrection::query()->where('legacy_id', 108)->firstOrFail()->allowed_fields)->toBe([
             'localization',
             'map_data',

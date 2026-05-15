@@ -4,7 +4,9 @@ namespace App\Domain\LegacyImport\Services;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Communications\Models\CorrespondenceMessage;
+use App\Domain\Communications\Models\MailLog;
 use App\Domain\Communications\Models\ProjectComment;
+use App\Domain\Communications\Models\ProjectNotification;
 use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Files\Models\ProjectFile;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
@@ -85,6 +87,8 @@ class LegacyFixtureImportService
                 'atotvotesrejection' => $this->importBoardVoteRejections($payload['atotvotesrejection'] ?? []),
                 'correspondence' => $this->importCorrespondence($payload['correspondence'] ?? []),
                 'taskcomments' => $this->importProjectComments($payload['taskcomments'] ?? []),
+                'notification' => $this->importProjectNotifications($payload['notification'] ?? []),
+                'maillogs' => $this->importMailLogs($payload['maillogs'] ?? []),
                 'taskcorrection' => $this->importProjectCorrections($payload['taskcorrection'] ?? []),
                 'taskchangessuggestion' => $this->importProjectChangeSuggestions($payload['taskchangessuggestion'] ?? []),
                 'versions' => $this->importProjectVersions($payload['versions'] ?? []),
@@ -475,6 +479,52 @@ class LegacyFixtureImportService
                 'project_id' => $project->id,
                 'user_id' => $this->optionalUserId(Arr::get($row, 'userId')),
                 'content' => Arr::get($row, 'content', Arr::get($row, 'messageText')),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importProjectNotifications(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+
+            ProjectNotification::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'project_id' => $project->id,
+                'created_by_id' => $this->optionalUserId(Arr::get($row, 'creatorId')),
+                'sent_to_user_id' => $this->optionalUserId(Arr::get($row, 'sentToUserId')),
+                'author_email' => Arr::get($row, 'authorEmail'),
+                'subject' => Arr::get($row, 'notificationSubject'),
+                'body' => Arr::get($row, 'notificationText'),
+                'sent_at' => Arr::get($row, 'sendDate'),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importMailLogs(array $rows): int
+    {
+        foreach ($rows as $row) {
+            MailLog::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'created_by_id' => $this->optionalUserId(Arr::get($row, 'createdByUserId')),
+                'email' => Arr::get($row, 'email'),
+                'subject' => Arr::get($row, 'subject'),
+                'content' => Arr::get($row, 'content'),
+                'controller' => Arr::get($row, 'controller'),
+                'action' => Arr::get($row, 'action'),
+                'sent_at' => Arr::get($row, 'time'),
             ]);
         }
 

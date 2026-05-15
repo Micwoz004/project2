@@ -21,6 +21,7 @@ Status: baseline domenowy rozpoczęty.
 4. [x] Dodać komentarze wewnętrzne.
 5. [x] Pokryć testami uprawnienia i odczyt.
 6. [x] Dodać import fixture dla `correspondence` i `taskcomments`.
+7. [x] Dodać import fixture dla `notification` i `maillogs`.
 
 ## Implementacja Laravel
 
@@ -28,10 +29,12 @@ Status: baseline domenowy rozpoczęty.
 - `SendProjectCorrespondenceMessageAction` zapisuje wiadomość dla autora projektu albo użytkownika z uprawnieniami administracyjnymi/weryfikacyjnymi.
 - `MarkCorrespondenceMessageReadAction` oznacza wiadomość jako przeczytaną przez adresata albo uprawnionego operatora.
 - `LegacyFixtureImportService` przenosi historyczną korespondencję i komentarze projektu po `legacy_id`, wiążąc je z projektem oraz opcjonalnym użytkownikiem legacy.
+- `ProjectNotification` przenosi legacy `notification`: projekt, twórcę, adresata, email autora, temat, treść i datę wysyłki.
+- `MailLog` przenosi legacy `maillogs`: adres email, temat, treść, kontroler, akcję, operatora i czas wysyłki.
 - Logi zapisują identyfikatory projektu/użytkownika/wiadomości, ale nie zapisują treści wiadomości ani komentarzy.
 
 ## Świadome braki na tym etapie
 
 - Brak kolejek i realnych wysyłek mail/SMS.
-- Brak pełnej mapy typów `notification` i historycznych szablonów wiadomości.
+- Brak pełnej mapy punktów wywołania historycznych szablonów wiadomości.
 - Brak komentarzy publicznych, jeśli legacy rozróżniało ich widoczność od komentarzy wewnętrznych.

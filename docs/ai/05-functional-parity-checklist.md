@@ -68,6 +68,7 @@
 - [x] Import fixture konsultacji oraz głosowań ZK/OT/AT i odrzuceń.
 - [x] Baseline korespondencji i komentarzy projektu z uprawnieniami i odczytem.
 - [x] Import fixture korespondencji i komentarzy projektu.
+- [x] Import fixture powiadomień projektu i logów mailowych z `notification` oraz `maillogs`.
 - [x] Import fixture historycznych wersji projektu z tabeli `versions`.
 - [x] Import fixture hashy rejestru wyborców, tokenów SMS i logów SMS.
 - [x] Pełniejsze mapowanie fixture `votecards`: zgody, operatorzy, checkout, oświadczenia i dane rodzica.

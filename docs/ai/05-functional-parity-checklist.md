@@ -112,6 +112,7 @@
 - [x] Agregacja statusu weryfikacji merytorycznej po wielu departamentach przed zmianą statusu projektu.
 - [x] Głos przewodniczącego ZK rozstrzyga graniczny wynik 4:4 zgodnie z `Task::zkAccepted()`.
 - [x] Zamknięcie i restart głosowań OT/AT z efektami legacy.
+- [x] Gate dla ról rad/komisji (`cast-board-vote`) oraz zarządzania głosowaniem (`manage-board-voting`).
 
 ## Do pełnego parytetu
 
@@ -121,7 +122,7 @@
 - [ ] Weryfikacja formalna z pełną listą pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje departamentów.
 - [ ] UI historii wersji kart weryfikacji i administracyjny podgląd agregacji wielu departamentów.
-- [ ] Policy dla ról rad/komisji oraz UI restartu/zamknięcia głosowań.
+- [ ] UI restartu/zamknięcia głosowań i podpięcie bramek w Filament.
 - [ ] Pełny publiczny formularz głosowania z aktywacją tokenu SMS w UI.
 - [ ] Filament Resource dla kart głosowania i ręcznych kart papierowych.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.

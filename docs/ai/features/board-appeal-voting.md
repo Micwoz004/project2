@@ -24,7 +24,8 @@ Status: częściowo zaimplementowane w etapie 4.
 7. [x] Dodać import fixture dla `taskappealagainstdecision`.
 8. [x] Dodać szczególny głos przewodniczącego ZK dla wyniku granicznego 4:4.
 9. [x] Dodać restart i zamknięcie głosowania OT/AT zgodne z akcjami `forceClose`/`forceRestart`.
-10. [ ] Uzupełnić UI/Filament dla oddawania i zamykania głosowań.
+10. [x] Dodać bramki uprawnień dla ról rad/komisji i zarządzania głosowaniem.
+11. [ ] Uzupełnić UI/Filament dla oddawania i zamykania głosowań.
 
 ## Rozpoznane reguły legacy
 
@@ -50,6 +51,7 @@ Status: częściowo zaimplementowane w etapie 4.
 - `StartBoardVotingAction` ustawia status projektu na `DuringTeamVerification` albo `DuringTeamRecallVerification` i zachowuje flagę historycznego odrzucenia.
 - `CloseBoardVotingAction` zamyka głosowanie OT jako `TeamClosedVerification` oraz AT jako `TeamRecallClosedVerification`, bez usuwania głosów.
 - `RestartBoardVotingAction` usuwa głosy OT albo AT danego projektu i przywraca status aktywnego głosowania, tak jak legacy `actionForceRestartOTVoting()` i `actionForceRestartATVoting()`.
+- Gate `cast-board-vote` dopuszcza role `president/vicepresident/verifier ZK` do ZK oraz `president/vicepresident/verifier ZOD` do OT/AT; `manage-board-voting` jest dla ról z `projects.manage` oraz admin/BDO.
 - `BoardDecisionResolver` liczy decyzje zgodnie z akcjami `actionProcessZKVote`, `actionProcessOTVote`, `actionProcessATVote`.
 - Dla ZK resolver zachowuje szczególną regułę `Task::zkAccepted()`: przy wyniku 4:4 głos użytkownika z rolą `president ZK` rozstrzyga akceptację albo odrzucenie.
 - `LegacyFixtureImportService` konsoliduje historyczne głosy rad/komisji w `project_board_votes` i uzasadnienia odrzuceń w `board_vote_rejections`.
@@ -57,7 +59,7 @@ Status: częściowo zaimplementowane w etapie 4.
 
 ## Świadome uproszczenia na tym etapie
 
-- Role członków rady/komisji będą spięte policy po zakończeniu pełnej domeny głosowań.
+- UI musi użyć bramek `cast-board-vote` i `manage-board-voting` przy podpinaniu akcji Filament.
 
 ## Zgodność do sprawdzenia
 

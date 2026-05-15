@@ -17,6 +17,7 @@ use App\Domain\Verification\Enums\OtVoteChoice;
 use App\Domain\Verification\Enums\ZkVoteChoice;
 use App\Domain\Verification\Services\BoardDecisionResolver;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 function boardProject(ProjectStatus $status = ProjectStatus::MeritVerificationAccepted): Project
 {
@@ -178,4 +179,33 @@ it('closes and restarts AT voting like legacy force actions', function (): void 
 
     expect($restarted->status)->toBe(ProjectStatus::DuringTeamRecallVerification)
         ->and($project->boardVotes()->where('board_type', BoardType::At->value)->count())->toBe(0);
+});
+
+it('authorizes board voting by legacy council roles', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $zkVerifier = User::factory()->create();
+    $zkVerifier->assignRole(SystemRole::VerifierZk->value);
+    $zodVerifier = User::factory()->create();
+    $zodVerifier->assignRole(SystemRole::VerifierZod->value);
+    $observer = User::factory()->create();
+    $observer->assignRole(SystemRole::ObserverZk->value);
+
+    expect(Gate::forUser($zkVerifier)->allows('cast-board-vote', BoardType::Zk))->toBeTrue()
+        ->and(Gate::forUser($zkVerifier)->allows('cast-board-vote', BoardType::Ot))->toBeFalse()
+        ->and(Gate::forUser($zodVerifier)->allows('cast-board-vote', BoardType::Ot))->toBeTrue()
+        ->and(Gate::forUser($zodVerifier)->allows('cast-board-vote', BoardType::At))->toBeTrue()
+        ->and(Gate::forUser($observer)->allows('cast-board-vote', BoardType::Zk))->toBeFalse();
+});
+
+it('authorizes board voting management only for project managers', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $coordinator = User::factory()->create();
+    $coordinator->assignRole(SystemRole::Coordinator->value);
+    $verifier = User::factory()->create();
+    $verifier->assignRole(SystemRole::VerifierZk->value);
+
+    expect(Gate::forUser($coordinator)->allows('manage-board-voting'))->toBeTrue()
+        ->and(Gate::forUser($verifier)->allows('manage-board-voting'))->toBeFalse();
 });

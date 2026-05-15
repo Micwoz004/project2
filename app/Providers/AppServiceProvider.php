@@ -6,6 +6,8 @@ use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Users\Enums\SystemRole;
+use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Voting\Models\VoteCard;
 use App\Models\User;
 use App\Policies\BudgetEditionPolicy;
@@ -39,5 +41,27 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('view-results', fn (User $user) => $user->can('results.view') || $user->hasAnyRole(['admin', 'bdo']));
         Gate::define('export-reports', fn (User $user) => $user->can('reports.export') || $user->hasAnyRole(['admin', 'bdo']));
+        Gate::define('cast-board-vote', fn (User $user, BoardType $boardType) => $this->canCastBoardVote($user, $boardType));
+        Gate::define('manage-board-voting', fn (User $user) => $user->can('projects.manage') || $user->hasAnyRole(['admin', 'bdo']));
+    }
+
+    private function canCastBoardVote(User $user, BoardType $boardType): bool
+    {
+        if ($user->hasAnyRole(['admin', 'bdo'])) {
+            return true;
+        }
+
+        return match ($boardType) {
+            BoardType::Zk => $user->hasAnyRole([
+                SystemRole::PresidentZk->value,
+                SystemRole::VicePresidentZk->value,
+                SystemRole::VerifierZk->value,
+            ]),
+            BoardType::Ot, BoardType::At => $user->hasAnyRole([
+                SystemRole::PresidentZod->value,
+                SystemRole::VicePresidentZod->value,
+                SystemRole::VerifierZod->value,
+            ]),
+        };
     }
 }

@@ -28,6 +28,8 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 - `SyncSystemRolesAndPermissionsAction` tworzy role legacy: `admin`, `analyst ODS`, `applicant`, `checkVoter`, `consultant`, `coordinator`, role ZK/ZOD/W JO oraz `bdo`.
 - `LegacyUserImportService` importuje `departments` i `users` po `legacy_id`, zachowuje status aktywności i przypisuje departament przez `departments.legacy_id`.
 - `LegacyRbacImportService` importuje `authitem`, `authitemchild` i `authassignment` do Spatie Permission na podstawie fixture, przypisując użytkowników przez `users.legacy_id`.
+- `UserActivationToken` odwzorowuje legacy `activations` z typami: `1` aktywacja e-mail, `2` aktywacja SMS, `3` reset hasła.
+- Legacy linki aktywacyjne i resetu hasła są ważne przez `system.activationLinkLifetime`; docelowa akcja auth UI musi zachować tę regułę.
 
 ## Świadome różnice względem legacy
 

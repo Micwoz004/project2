@@ -26,6 +26,7 @@ use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Models\Department;
 use App\Domain\Users\Models\LegacyAuditLog;
+use App\Domain\Users\Models\UserActivationToken;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Models\AdvancedVerification;
 use App\Domain\Verification\Models\BoardVoteRejection;
@@ -81,6 +82,7 @@ class LegacyFixtureImportService
                 'settings' => $this->importSettings($payload['settings'] ?? []),
                 'pages' => $this->importPages($payload['pages'] ?? []),
                 'statuses' => $this->importProjectStatusLabels($payload['statuses'] ?? []),
+                'activations' => $this->importUserActivationTokens($payload['activations'] ?? []),
                 'tasktypes' => $this->importTaskTypes($payload['tasktypes'] ?? []),
                 'categories' => $this->importCategories($payload['categories'] ?? []),
                 'tasks' => $this->importTasks($payload['tasks'] ?? []),
@@ -256,6 +258,28 @@ class LegacyFixtureImportService
             ], [
                 'status' => $legacyId,
                 'name' => Arr::get($row, 'name'),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importUserActivationTokens(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $createdAt = Arr::get($row, 'createTime');
+
+            UserActivationToken::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'user_id' => $this->user((int) Arr::get($row, 'userId'))->id,
+                'hash' => Arr::get($row, 'hash'),
+                'type' => (int) Arr::get($row, 'type'),
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
             ]);
         }
 

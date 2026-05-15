@@ -24,6 +24,7 @@ use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Models\Department;
 use App\Domain\Users\Models\LegacyAuditLog;
+use App\Domain\Users\Models\UserActivationToken;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
 use App\Domain\Verification\Models\AdvancedVerification;
@@ -87,6 +88,13 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         'statuses' => [[
             'id' => ProjectStatus::Picked->value,
             'name' => 'Wybrany do głosowania',
+        ]],
+        'activations' => [[
+            'id' => 127,
+            'userId' => 600,
+            'hash' => 'activation-hash-fixture',
+            'createTime' => '2025-03-13 11:00:00',
+            'type' => 1,
         ]],
         'tasktypes' => [[
             'id' => 20,
@@ -579,6 +587,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['settings'])->toBe(1)
         ->and($batch->stats['pages'])->toBe(1)
         ->and($batch->stats['statuses'])->toBe(1)
+        ->and($batch->stats['activations'])->toBe(1)
         ->and($batch->stats['tasks'])->toBe(1)
         ->and($batch->stats['logs'])->toBe(1)
         ->and($batch->stats['taskscategories'])->toBe(2)
@@ -625,6 +634,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(ContentPage::query()->where('legacy_id', 111)->firstOrFail()->body)->toBe('<p>Witaj w SBO 2025</p>')
         ->and(ProjectStatusLabel::query()->where('legacy_id', ProjectStatus::Picked->value)->firstOrFail()->name)
         ->toBe('Wybrany do głosowania')
+        ->and(UserActivationToken::query()->where('legacy_id', 127)->firstOrFail()->user_id)->toBe($boardUser->id)
+        ->and(UserActivationToken::query()->where('legacy_id', 127)->firstOrFail()->hash)->toBe('activation-hash-fixture')
         ->and($project->status)->toBe(ProjectStatus::Picked)
         ->and($project->budget_edition_id)->toBe($edition->id)
         ->and(LegacyAuditLog::query()->where('legacy_id', 126)->firstOrFail()->project_id)->toBe($project->id)

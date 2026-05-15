@@ -64,6 +64,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | --- | --- | --- |
 | `users` | `users` | Rozszerzone o legacy pola i departament. |
 | `authitem`, `authitemchild`, `authassignment` | Spatie Permission | Import ról/uprawnień mapuje nazwy legacy. |
+| `activations` | `user_activation_tokens` | Typy legacy: aktywacja e-mail, aktywacja SMS, reset hasła; hash zachowany w DB, nie w logach. |
 
 ## Świadome zmiany struktury
 

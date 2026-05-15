@@ -47,6 +47,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `AssignVerificationDepartmentAction` tworzy lub aktualizuje przydział departamentu dla konkretnego typu weryfikacji.
 - `SubmitInitialMeritVerificationAction` wymaga przydziału przy wysyłce, zapisuje kartę i przenosi projekt do `SentForMeritVerification` albo `InitialVerificationRejected`.
 - `SubmitFinalMeritVerificationAction` wymaga przydziału przy wysyłce, waliduje koszty i przenosi projekt do `MeritVerificationAccepted` albo `MeritVerificationRejected`.
+- Przy wielu przydziałach departamentów status projektu pozostaje odpowiednio `DuringInitialVerification` albo `DuringMeritVerification` do czasu odesłania wszystkich kart danego typu; negatywna karta po zakończeniu kompletu przydziałów rozstrzyga status negatywny.
 - `SubmitConsultationVerificationAction` wymaga przydziału przy wysyłce i oznacza konsultację jako wysłaną bez zmiany statusu projektu.
 - `LegacyFixtureImportService` importuje historyczne karty weryfikacji, konsultacje i przydziały, zapisując pełny rekord w `raw_legacy_payload`.
 - `DetailedVerification` i `LocationVerification` zachowują specyficzne formularze legacy w `answers` JSON oraz osobne pola wyniku, rekomendacji, publiczności i dat.
@@ -60,7 +61,7 @@ Status: częściowo zaimplementowane w etapie 3.
 
 - Pełne listy pól pytań z formularzy legacy są przechowywane w `answers` JSON. Logika statusów i wymaganych danych jest w domenie; kompletne formularze UI zostaną odwzorowane później.
 - UI historii wersji kart merytorycznych nie jest jeszcze zbudowane, ale domena zapisuje nowe snapshoty kart.
-- Nie rozstrzygamy jeszcze automatycznie agregacji wielu departamentów. Każda karta i przydział działa per departament; końcowe reguły agregacji zostaną doprecyzowane przy module administracyjnej obsługi weryfikacji.
+- Agregacja wielu departamentów jest zaimplementowana dla statusów wstępnej i końcowej weryfikacji. Do doprecyzowania pozostają ekrany administracyjne pokazujące pełny rozkład decyzji.
 
 ## Zgodność do sprawdzenia
 

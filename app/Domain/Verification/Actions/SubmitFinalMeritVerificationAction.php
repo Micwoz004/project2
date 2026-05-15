@@ -93,9 +93,15 @@ class SubmitFinalMeritVerificationAction
             if ($sent) {
                 $this->markAssignmentSent($project, $department, VerificationAssignmentType::MeritFinish);
 
-                $project->forceFill([
-                    'status' => $projectStatus,
-                ])->save();
+                if ($this->allAssignmentsSent($project, VerificationAssignmentType::MeritFinish)) {
+                    $project->forceFill([
+                        'status' => $this->hasRejectedCard($project) ? ProjectStatus::MeritVerificationRejected : $projectStatus,
+                    ])->save();
+                } else {
+                    $project->forceFill([
+                        'status' => ProjectStatus::DuringMeritVerification,
+                    ])->save();
+                }
             }
 
             Log::info('verification.final.submit.success', [
@@ -202,5 +208,22 @@ class SubmitFinalMeritVerificationAction
                 'sent_at' => now(),
                 'is_returned' => false,
             ]);
+    }
+
+    private function allAssignmentsSent(Project $project, VerificationAssignmentType $type): bool
+    {
+        return ! $project->verificationAssignments()
+            ->where('type', $type->value)
+            ->whereNull('sent_at')
+            ->exists();
+    }
+
+    private function hasRejectedCard(Project $project): bool
+    {
+        return FinalMeritVerification::query()
+            ->where('project_id', $project->id)
+            ->where('status', VerificationCardStatus::Sent)
+            ->where('result', false)
+            ->exists();
     }
 }

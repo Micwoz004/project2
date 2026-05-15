@@ -73,6 +73,24 @@ it('submits positive initial merit verification and moves project forward', func
             ->count())->toBe(1);
 });
 
+it('waits for all initial merit departments before moving project forward', function (): void {
+    $actor = User::factory()->create();
+    $project = meritProject(ProjectStatus::DuringInitialVerification);
+    $firstDepartment = verificationDepartment('Pierwsza jednostka');
+    $secondDepartment = verificationDepartment('Druga jednostka');
+
+    app(AssignVerificationDepartmentAction::class)->execute($project, $firstDepartment, VerificationAssignmentType::MeritInitial);
+    app(AssignVerificationDepartmentAction::class)->execute($project, $secondDepartment, VerificationAssignmentType::MeritInitial);
+
+    app(SubmitInitialMeritVerificationAction::class)->execute($project, $firstDepartment, $actor, true);
+
+    expect($project->refresh()->status)->toBe(ProjectStatus::DuringInitialVerification);
+
+    app(SubmitInitialMeritVerificationAction::class)->execute($project, $secondDepartment, $actor, true);
+
+    expect($project->refresh()->status)->toBe(ProjectStatus::SentForMeritVerification);
+});
+
 it('requires assignment before sending initial merit verification', function (): void {
     $actor = User::factory()->create();
     $project = meritProject(ProjectStatus::FormallyVerified);
@@ -142,6 +160,30 @@ it('stores final merit corrected and future costs like legacy json fields', func
             ->where('verification_legacy_id', $verification->id)
             ->where('type', VerificationAssignmentType::MeritFinish->value)
             ->count())->toBe(1);
+});
+
+it('waits for all final merit departments and rejects when any sent card is negative', function (): void {
+    $actor = User::factory()->create();
+    $project = meritProject(ProjectStatus::DuringMeritVerification);
+    $firstDepartment = verificationDepartment('Pierwsza jednostka końcowa');
+    $secondDepartment = verificationDepartment('Druga jednostka końcowa');
+
+    app(AssignVerificationDepartmentAction::class)->execute($project, $firstDepartment, VerificationAssignmentType::MeritFinish);
+    app(AssignVerificationDepartmentAction::class)->execute($project, $secondDepartment, VerificationAssignmentType::MeritFinish);
+
+    app(SubmitFinalMeritVerificationAction::class)->execute($project, $firstDepartment, $actor, true);
+
+    expect($project->refresh()->status)->toBe(ProjectStatus::DuringMeritVerification);
+
+    app(SubmitFinalMeritVerificationAction::class)->execute(
+        $project,
+        $secondDepartment,
+        $actor,
+        false,
+        resultComments: 'Negatywna opinia jednostki.',
+    );
+
+    expect($project->refresh()->status)->toBe(ProjectStatus::MeritVerificationRejected);
 });
 
 it('requires complete costs when final merit card is sent', function (): void {

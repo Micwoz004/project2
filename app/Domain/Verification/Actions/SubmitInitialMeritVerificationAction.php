@@ -79,9 +79,15 @@ class SubmitInitialMeritVerificationAction
             if ($sent) {
                 $this->markAssignmentSent($project, $department, VerificationAssignmentType::MeritInitial);
 
-                $project->forceFill([
-                    'status' => $projectStatus,
-                ])->save();
+                if ($this->allAssignmentsSent($project, VerificationAssignmentType::MeritInitial)) {
+                    $project->forceFill([
+                        'status' => $this->hasRejectedCard($project) ? ProjectStatus::InitialVerificationRejected : $projectStatus,
+                    ])->save();
+                } else {
+                    $project->forceFill([
+                        'status' => ProjectStatus::DuringInitialVerification,
+                    ])->save();
+                }
             }
 
             Log::info('verification.initial.submit.success', [
@@ -143,5 +149,22 @@ class SubmitInitialMeritVerificationAction
                 'sent_at' => now(),
                 'is_returned' => false,
             ]);
+    }
+
+    private function allAssignmentsSent(Project $project, VerificationAssignmentType $type): bool
+    {
+        return ! $project->verificationAssignments()
+            ->where('type', $type->value)
+            ->whereNull('sent_at')
+            ->exists();
+    }
+
+    private function hasRejectedCard(Project $project): bool
+    {
+        return InitialMeritVerification::query()
+            ->where('project_id', $project->id)
+            ->where('status', VerificationCardStatus::Sent)
+            ->where('result', false)
+            ->exists();
     }
 }

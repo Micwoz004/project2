@@ -18,7 +18,7 @@ Status: częściowo zaimplementowane w etapie 1.
 1. [x] Dodać storage publiczny/prywatny i fizyczny upload plików.
 2. [x] Rozbudować `ProjectFileType` o pełne typy legacy i limity liczby plików.
 3. [x] Dodać domenową synchronizację współautorów i zgód.
-4. [ ] Ustalić reguły anonimizacji załączników.
+4. [x] Ustalić bazową bramkę publikacji załączników po anonimizacji.
 5. [x] Pokryć testami metadane plików, typy, limity i wymagane zgody.
 6. [x] Dodać import fixture dla `files`, `filesprivate` i `cocreators`.
 
@@ -37,6 +37,8 @@ Status: częściowo zaimplementowane w etapie 1.
 - `ProjectFileValidator` sprawdza rozszerzenie, rozmiar i limit liczby plików danego typu.
 - `RegisterProjectFileAction` rejestruje metadane pliku i loguje operację bez treści pliku oraz bez PII.
 - `StoreProjectFileAction` zapisuje fizyczny plik na dysku `public` albo `local`, a następnie tworzy `ProjectFile`; walidacja legacy jest wykonywana przed zapisem do storage.
+- `MarkProjectAttachmentsAnonymizedAction` oznacza projekt jako gotowy do publicznej prezentacji załączników.
+- `ProjectFile::publiclyVisible()` udostępnia publicznie wyłącznie pliki `is_private=false` oraz tylko wtedy, gdy projekt ma `attachments_anonymized=true`.
 - `ProjectCoauthorValidator` waliduje limit dwóch współautorów, wymagane dane kontaktowe, potwierdzenie przeczytania i zgodę na co najmniej jedną formę kontaktu.
 - `SyncProjectCoauthorsAction` wymienia listę współautorów projektu transakcyjnie.
 - `LegacyFixtureImportService` rozdziela `files` i `filesprivate` flagą `is_private` oraz przenosi współautorów z `cocreators`.
@@ -44,4 +46,4 @@ Status: częściowo zaimplementowane w etapie 1.
 ## Zgodność do sprawdzenia
 
 - Potwierdzić, czy historyczny limit `1024 * 1024 * 10000` ma zostać zachowany, czy świadomie skorygowany do 10 MB w UI i walidacji.
-- Dopisać anonimizację załączników po rozpoznaniu reguł publikacji plików w widokach publicznych.
+- Doprecyzować, czy legacy wykonywało fizyczną transformację plików podczas anonimizacji; aktualny baseline traktuje anonimizację jako decyzję publikacyjną po ręcznym przygotowaniu pliku.

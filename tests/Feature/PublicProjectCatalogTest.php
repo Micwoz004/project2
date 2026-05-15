@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Files\Actions\MarkProjectAttachmentsAnonymizedAction;
+use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
@@ -94,4 +96,37 @@ it('filters public projects by edition area category and search term', function 
         ->assertDontSee('Zielony skwer w innej edycji')
         ->assertDontSee('Zielony skwer w innym obszarze')
         ->assertDontSee('Boisko szkolne');
+});
+
+it('shows only public files after project attachments are anonymized', function (): void {
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'title' => 'Projekt z załącznikami',
+        'status' => ProjectStatus::Picked,
+    ]));
+    $project->files()->create([
+        'stored_name' => 'projects/1/attachments/publiczny.pdf',
+        'original_name' => 'publiczny.pdf',
+        'type' => ProjectFileType::Other,
+        'is_private' => false,
+    ]);
+    $project->files()->create([
+        'stored_name' => 'projects/1/attachments/prywatny.pdf',
+        'original_name' => 'prywatny.pdf',
+        'type' => ProjectFileType::OwnerAgreement,
+        'is_private' => true,
+    ]);
+
+    $this->get(route('public.projects.show', $project))
+        ->assertOk()
+        ->assertDontSee('publiczny.pdf')
+        ->assertDontSee('prywatny.pdf');
+
+    app(MarkProjectAttachmentsAnonymizedAction::class)->execute($project);
+
+    $this->get(route('public.projects.show', $project))
+        ->assertOk()
+        ->assertSee('publiczny.pdf')
+        ->assertDontSee('prywatny.pdf');
 });

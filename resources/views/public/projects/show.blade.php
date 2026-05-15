@@ -42,4 +42,15 @@
             </tbody>
         </table>
     </section>
+
+    @if ($project->publicFiles->isNotEmpty())
+        <section>
+            <h2>Załączniki</h2>
+            <ul>
+                @foreach ($project->publicFiles as $file)
+                    <li><a href="{{ $file->publicUrl() }}">{{ $file->original_name }}</a></li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
 </x-public.layout>

@@ -42,7 +42,7 @@ class PublicProjectController extends Controller
         abort_unless(Gate::allows('view', $project), 404);
 
         return view('public.projects.show', [
-            'project' => $project->load(['area', 'budgetEdition', 'costItems', 'files']),
+            'project' => $project->load(['area', 'budgetEdition', 'costItems', 'publicFiles']),
         ]);
     }
 

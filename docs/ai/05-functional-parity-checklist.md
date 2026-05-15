@@ -102,11 +102,12 @@
 - [x] Import fixture historycznych logów administracyjnych z tabeli `logs`.
 - [x] Komenda Artisan `sbo:legacy-import` do importu znormalizowanego JSON fixture.
 - [x] Fizyczny zapis załączników projektu do publicznego/prywatnego storage z walidacją legacy przed zapisem.
+- [x] Publiczna widoczność załączników dopiero po oznaczeniu projektu jako zanonimizowanego i tylko dla plików nieprywatnych.
 
 ## Do pełnego parytetu
 
 - [ ] Pełny formularz projektu z uploadami i zgodami 1:1 względem widoków Yii.
-- [ ] Anonimizacja załączników i pełne podpięcie uploadów w formularzach UI.
+- [ ] Pełne podpięcie uploadów w formularzach UI oraz potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Korekty projektu w UI autora/admina oraz korekty załączników/kosztów.
 - [ ] Weryfikacja formalna z pełną listą pól legacy.
 - [ ] Weryfikacje merytoryczne i konsultacje departamentów.

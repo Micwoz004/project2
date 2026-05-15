@@ -100,6 +100,11 @@ class Project extends Model
         return $this->hasMany(ProjectFile::class);
     }
 
+    public function publicFiles(): HasMany
+    {
+        return $this->hasMany(ProjectFile::class)->publiclyVisible();
+    }
+
     public function coauthors(): HasMany
     {
         return $this->hasMany(ProjectCoauthor::class);

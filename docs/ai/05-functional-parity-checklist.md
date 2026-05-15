@@ -68,6 +68,7 @@
 - [x] Import fixture konsultacji oraz głosowań ZK/OT/AT i odrzuceń.
 - [x] Baseline korespondencji i komentarzy projektu z uprawnieniami i odczytem.
 - [x] Import fixture korespondencji i komentarzy projektu.
+- [x] Import fixture historycznych wersji projektu z tabeli `versions`.
 
 ## Do pełnego parytetu
 

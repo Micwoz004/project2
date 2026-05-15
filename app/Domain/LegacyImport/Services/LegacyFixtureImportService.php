@@ -14,6 +14,7 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCostItem;
+use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Models\BoardVoteRejection;
@@ -33,6 +34,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use JsonException;
 
 class LegacyFixtureImportService
 {
@@ -72,6 +74,7 @@ class LegacyFixtureImportService
                 'atotvotesrejection' => $this->importBoardVoteRejections($payload['atotvotesrejection'] ?? []),
                 'correspondence' => $this->importCorrespondence($payload['correspondence'] ?? []),
                 'taskcomments' => $this->importProjectComments($payload['taskcomments'] ?? []),
+                'versions' => $this->importProjectVersions($payload['versions'] ?? []),
                 'voters' => $this->importVoters($payload['voters'] ?? []),
                 'votecards' => $this->importVoteCards($payload['votecards'] ?? []),
                 'votes' => $this->importVotes($payload['votes'] ?? []),
@@ -427,6 +430,34 @@ class LegacyFixtureImportService
     /**
      * @param  list<array<string, mixed>>  $rows
      */
+    private function importProjectVersions(array $rows): int
+    {
+        foreach ($rows as $row) {
+            $legacyId = $this->legacyId($row);
+            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $status = ProjectStatus::tryFrom((int) Arr::get($row, 'status', 0));
+            $createdAt = Arr::get($row, 'createTime');
+
+            ProjectVersion::query()->updateOrCreate([
+                'legacy_id' => $legacyId,
+            ], [
+                'project_id' => $project->id,
+                'user_id' => $this->optionalUserId(Arr::get($row, 'userId')),
+                'status' => $status?->value,
+                'data' => $this->decodeLegacyJson(Arr::get($row, 'data'), 'versions', $legacyId),
+                'files' => $this->decodeLegacyJson(Arr::get($row, 'files'), 'versions', $legacyId),
+                'costs' => $this->decodeLegacyJson(Arr::get($row, 'costs'), 'versions', $legacyId),
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
     private function importVoters(array $rows): int
     {
         foreach ($rows as $row) {
@@ -556,6 +587,42 @@ class LegacyFixtureImportService
         }
 
         return User::query()->where('legacy_id', (int) $legacyId)->value('id');
+    }
+
+    /**
+     * @return array<string, mixed>|list<mixed>
+     */
+    private function decodeLegacyJson(mixed $value, string $table, int $legacyId): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        try {
+            $decoded = json_decode((string) $value, true, flags: JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            Log::warning('legacy_import.fixture.invalid_json', [
+                'table' => $table,
+                'legacy_id' => $legacyId,
+            ]);
+
+            throw new DomainException("Niepoprawny JSON legacy {$table}:{$legacyId}.", previous: $exception);
+        }
+
+        if (! is_array($decoded)) {
+            Log::warning('legacy_import.fixture.invalid_json_shape', [
+                'table' => $table,
+                'legacy_id' => $legacyId,
+            ]);
+
+            throw new DomainException("Niepoprawny kształt JSON legacy {$table}:{$legacyId}.");
+        }
+
+        return $decoded;
     }
 
     /**

@@ -12,6 +12,7 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Models\ProjectCostItem;
+use App\Domain\Projects\Models\ProjectVersion;
 use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\BoardType;
@@ -200,6 +201,16 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'userId' => 600,
             'content' => 'Komentarz wewnętrzny',
         ]],
+        'versions' => [[
+            'id' => 104,
+            'taskId' => 40,
+            'userId' => 600,
+            'status' => ProjectStatus::Picked->value,
+            'data' => '{"title":"Park kieszonkowy","status":"10"}',
+            'files' => '[{"id":"90","originalName":"Lista poparcia.pdf"}]',
+            'costs' => '[{"id":"50","description":"Nasadzenia","sum":"1000"}]',
+            'createTime' => '2025-03-12 13:00:00',
+        ]],
         'voters' => [[
             'id' => 60,
             'pesel' => '44051401458',
@@ -250,6 +261,7 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['atotvotesrejection'])->toBe(1)
         ->and($batch->stats['correspondence'])->toBe(1)
         ->and($batch->stats['taskcomments'])->toBe(1)
+        ->and($batch->stats['versions'])->toBe(1)
         ->and($edition->legacy_id)->toBe(10)
         ->and(ProjectArea::query()->where('legacy_id', 20)->firstOrFail()->is_local)->toBeTrue()
         ->and($project->status)->toBe(ProjectStatus::Picked)
@@ -271,6 +283,9 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(BoardVoteRejection::query()->where('legacy_id', 101)->firstOrFail()->comment)->toBe('Powód odrzucenia')
         ->and(CorrespondenceMessage::query()->where('legacy_id', 102)->firstOrFail()->is_read)->toBeTrue()
         ->and(ProjectComment::query()->where('legacy_id', 103)->firstOrFail()->content)->toBe('Komentarz wewnętrzny')
+        ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->data['title'])->toBe('Park kieszonkowy')
+        ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->files[0]['originalName'])->toBe('Lista poparcia.pdf')
+        ->and(ProjectVersion::query()->where('legacy_id', 104)->firstOrFail()->costs[0]['sum'])->toBe('1000')
         ->and($voteCard->status)->toBe(VoteCardStatus::Accepted)
         ->and(Vote::query()->where('legacy_id', 80)->firstOrFail()->project_id)->toBe($project->id)
         ->and((int) $totals->first()->points)->toBe(1);

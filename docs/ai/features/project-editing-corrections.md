@@ -36,6 +36,7 @@ Status: częściowo zaimplementowane w etapie 1.
 - `ProjectCorrectionField` jawnie opisuje whitelistę pól legacy.
 - `StartCorrectionAction` tworzy korektę, blokuje korektę kopii roboczej, odrzuca pustą listę pól, podbija `correction_no` i ustawia okno korekty na projekcie.
 - `ApplyCorrectionAction` dopuszcza tylko aktywne okno, filtruje payload do pól wskazanych w korekcie, uruchamia walidator składania projektu i zapisuje snapshot w `project_versions`.
+- `LegacyFixtureImportService` przenosi historyczne rekordy `versions` do `project_versions`, zachowując `legacy_id`, JSON pól projektu, plików i kosztów oraz czas utworzenia wersji.
 - Po poprawnym zastosowaniu korekty aktywne okno jest zamykane przez `correction_done=true` i wyczyszczenie flagi `need_correction`.
 
 ## Zgodność do sprawdzenia

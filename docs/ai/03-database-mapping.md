@@ -12,7 +12,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `taskcosts` | `project_cost_items` | Kwoty jako decimal. |
 | `files`, `filesprivate` | `project_files` | Połączone z flagą `is_private` i typem załącznika. |
 | `cocreators` | `project_coauthors` | Zgody i dane kontaktowe zachowane. |
-| `versions` | `project_versions` | Snapshot JSON projektu, plików i kosztów. |
+| `versions` | `project_versions` | Snapshot JSON projektu, plików i kosztów; `status=0` z legacy trafia jako `null`, bo nie jest statusem projektu. |
 | `taskcorrection` | `project_corrections` | Lista pól dopuszczonych do poprawy, termin i flaga wykonania korekty. |
 | `categories`, `taskscategories` | `categories`, `category_project` | Pivot zamiast tabeli legacy o nazwie Yii. |
 | `firstnamedictionary`, `lastnamedictionary`, `motherlastnamedictionary` | `dictionary_entries` | Konsolidacja przez `kind`; unikalność `source_table + legacy_id`. |

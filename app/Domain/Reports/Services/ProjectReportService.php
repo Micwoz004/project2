@@ -7,6 +7,7 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Models\ProjectVersion;
+use App\Domain\Verification\Enums\VerificationCardStatus;
 use App\Domain\Verification\Models\AdvancedVerification;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -152,6 +153,44 @@ class ProjectReportService
         return $rows;
     }
 
+    public function verificationResultManifestRows(): Collection
+    {
+        Log::info('project_report.verification_result_manifest.start');
+
+        $rows = Project::query()
+            ->with([
+                'area',
+                'formalVerifications',
+                'initialMeritVerifications',
+                'finalMeritVerifications',
+                'consultationVerifications',
+            ])
+            ->whereNotIn('status', [
+                ProjectStatus::WorkingCopy->value,
+                ProjectStatus::Revoked->value,
+            ])
+            ->orderBy('id')
+            ->get()
+            ->filter(fn (Project $project) => $this->hasVerificationResultPayload($project))
+            ->map(fn (Project $project) => [
+                'project_id' => $project->legacy_id ?: $project->id,
+                'project_number' => $this->legacyFullNumber($project),
+                'title' => $project->title,
+                'formal_present' => $project->formalVerifications->isNotEmpty() ? 1 : 0,
+                'initial_sent_count' => $this->sentVerificationCount($project->initialMeritVerifications),
+                'final_sent_count' => $this->sentVerificationCount($project->finalMeritVerifications),
+                'consultation_sent_count' => $this->sentVerificationCount($project->consultationVerifications),
+                'file_name' => $this->verificationResultFileName($project),
+            ])
+            ->values();
+
+        Log::info('project_report.verification_result_manifest.success', [
+            'rows_count' => $rows->count(),
+        ]);
+
+        return $rows;
+    }
+
     private function correctionFieldAllowed(ProjectCorrection $correction, string $field): int
     {
         return in_array($field, $correction->allowed_fields, true) ? 1 : 0;
@@ -193,6 +232,26 @@ class ProjectReportService
         }
 
         return ProjectStatus::tryFrom((int) $status)?->publicLabel() ?: '---';
+    }
+
+    private function hasVerificationResultPayload(Project $project): bool
+    {
+        return $project->formalVerifications->isNotEmpty()
+            || $this->sentVerificationCount($project->initialMeritVerifications) > 0
+            || $this->sentVerificationCount($project->finalMeritVerifications) > 0
+            || $this->sentVerificationCount($project->consultationVerifications) > 0;
+    }
+
+    private function sentVerificationCount(Collection $verifications): int
+    {
+        return $verifications
+            ->filter(fn ($verification) => $verification->status === VerificationCardStatus::Sent)
+            ->count();
+    }
+
+    private function verificationResultFileName(Project $project): string
+    {
+        return str_replace('/', '_', $this->legacyFullNumber($project)).'_'.($project->legacy_id ?: $project->id).'/karta_weryfikacji.pdf';
     }
 
     private function legacyFullNumber(Project $project): string

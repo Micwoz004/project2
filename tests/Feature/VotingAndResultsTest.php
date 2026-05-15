@@ -12,12 +12,16 @@ use App\Domain\Reports\Exports\ProjectCorrectionsCsvExporter;
 use App\Domain\Reports\Exports\ProjectHistoryCsvExporter;
 use App\Domain\Reports\Exports\SubmittedProjectsCsvExporter;
 use App\Domain\Reports\Exports\UnsentAdvancedVerificationsCsvExporter;
+use App\Domain\Reports\Exports\VerificationResultManifestCsvExporter;
 use App\Domain\Reports\Services\ProjectReportService;
 use App\Domain\Reports\Services\VoteCardReportService;
 use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Models\Department;
+use App\Domain\Verification\Enums\VerificationCardStatus;
 use App\Domain\Verification\Models\AdvancedVerification;
+use App\Domain\Verification\Models\FormalVerification;
+use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Voting\Actions\RegisterPaperVoteCardAction;
 use App\Domain\Voting\Actions\UpdateVoteCardStatusAction;
 use App\Domain\Voting\Data\VoterIdentityData;
@@ -981,4 +985,62 @@ it('builds and exports legacy project history report', function (): void {
         ->and($csv)->toContain('"Identyfikator wniosku","Numer wniosku",Tytuł,"Kategoria projektu",Dzielnica')
         ->and($csv)->toContain('1332,P1/0007,"Park kieszonkowy","Projekt lokalny",Pogodno,Uzasadnienie,Szczecin,Cel,Opis')
         ->and($csv)->toContain('operator');
+});
+
+it('builds and exports verification result manifest like legacy pdf batch selection', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes([
+        'symbol' => 'P1',
+    ]));
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'legacy_id' => 1332,
+        'number' => 7,
+        'title' => 'Projekt z weryfikacją',
+        'status' => ProjectStatus::FormallyVerified,
+    ]));
+    $draftOnlyProject = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'number' => 8,
+        'title' => 'Projekt bez wysłanych kart',
+        'status' => ProjectStatus::FormallyVerified,
+    ]));
+    Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'number' => 9,
+        'title' => 'Kopia robocza',
+        'status' => ProjectStatus::WorkingCopy,
+    ]));
+
+    FormalVerification::query()->create([
+        'project_id' => $project->id,
+        'answers' => [],
+        'raw_legacy_payload' => [],
+    ]);
+    InitialMeritVerification::query()->create([
+        'project_id' => $project->id,
+        'status' => VerificationCardStatus::Sent,
+        'answers' => [],
+        'raw_legacy_payload' => [],
+    ]);
+    InitialMeritVerification::query()->create([
+        'project_id' => $draftOnlyProject->id,
+        'status' => VerificationCardStatus::WorkingCopy,
+        'answers' => [],
+        'raw_legacy_payload' => [],
+    ]);
+
+    $rows = app(ProjectReportService::class)->verificationResultManifestRows();
+    $csv = app(VerificationResultManifestCsvExporter::class)->export();
+
+    expect($rows)->toHaveCount(1)
+        ->and($rows->first())->toMatchArray([
+            'project_id' => 1332,
+            'project_number' => 'P1/0007',
+            'title' => 'Projekt z weryfikacją',
+            'formal_present' => 1,
+            'initial_sent_count' => 1,
+            'file_name' => 'P1_0007_1332/karta_weryfikacji.pdf',
+        ])
+        ->and($csv)->toContain('project_id,project_number,title,formal_present,initial_sent_count,final_sent_count,consultation_sent_count,file_name')
+        ->and($csv)->toContain('1332,P1/0007,"Projekt z weryfikacją",1,1,0,0,P1_0007_1332/karta_weryfikacji.pdf')
+        ->and($csv)->not->toContain('Projekt bez wysłanych kart')
+        ->and($csv)->not->toContain('Kopia robocza');
 });

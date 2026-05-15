@@ -15,6 +15,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `versions` | `project_versions` | Snapshot JSON projektu, plików i kosztów. |
 | `taskcorrection` | `project_corrections` | Lista pól dopuszczonych do poprawy, termin i flaga wykonania korekty. |
 | `categories`, `taskscategories` | `categories`, `category_project` | Pivot zamiast tabeli legacy o nazwie Yii. |
+| `firstnamedictionary`, `lastnamedictionary`, `motherlastnamedictionary` | `dictionary_entries` | Konsolidacja przez `kind`; unikalność `source_table + legacy_id`. |
 | `departments` | `departments` | Używane przez projekty, pliki i weryfikacje. |
 | `pages` | `content_pages` | Strony publiczne per edycja. |
 | `settings` | `application_settings` | Klucz/kategoria/wartość. |
@@ -56,4 +57,5 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 - Załączniki publiczne i prywatne są jedną tabelą z flagą `is_private`, zamiast dwóch tabel.
 - Głosowania rad/komisji są jedną tabelą `project_board_votes`, żeby uniknąć powielania tych samych pól.
 - Korekty projektów mają osobną tabelę `project_corrections`; pola `projects.need_correction`, `correction_no`, `correction_start_time`, `correction_end_time` pozostają szybką denormalizacją dla blokad edycji i kompatybilności z legacy `tasks`.
+- Trzy słowniki imion/nazwisk są połączone w `dictionary_entries`, dlatego `legacy_id` jest unikalne tylko razem z `source_table`.
 - `legacy_id` jest unikalne i opcjonalne, co umożliwia import etapami.

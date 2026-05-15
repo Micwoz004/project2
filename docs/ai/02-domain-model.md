@@ -12,6 +12,7 @@
 - `LegacyImport` - kontrolowany import fixture i przyszły import dumpa ze statystykami.
 - `Users` - użytkownicy, departamenty, role/uprawnienia.
 - `Settings` - ustawienia, strony treści i słowniki.
+- `Dictionaries` - skonsolidowane słowniki imion, nazwisk i nazwisk matek z legacy.
 - `Communications` - korespondencja i komentarze.
 
 ## Najważniejsze encje
@@ -50,4 +51,5 @@ Statusy legacy są zachowane jako `ProjectStatus` z wartościami integer: `1,2,3
 - `VoteCardReportService` - zagregowane statusy kart i demografia zaakceptowanych kart bez PII.
 - `PublicResultsCsvExporter` - publiczny eksport wyników bez danych wyborców.
 - `LegacyFixtureImportService` - transakcyjny, idempotentny import baseline danych legacy po `legacy_id`.
+- `LegacyDictionaryImportService` - import słowników legacy po `source_table + legacy_id`.
 - `AddProjectCommentAction`, `SendProjectCorrespondenceMessageAction`, `MarkCorrespondenceMessageReadAction` - bazowa komunikacja projektu bez logowania treści.

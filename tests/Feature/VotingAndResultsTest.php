@@ -6,6 +6,8 @@ use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Reports\Exports\AdminVoteCardsCsvExporter;
+use App\Domain\Reports\Exports\SubmittedProjectsCsvExporter;
+use App\Domain\Reports\Services\ProjectReportService;
 use App\Domain\Reports\Services\VoteCardReportService;
 use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
@@ -794,4 +796,34 @@ it('exports legacy admin vote cards csv with pii columns', function (): void {
 
     expect($csv)->toContain('"ID karty","Typ karty",PESEL,"Imie głosującego","Nazwisko głosującego","Oświadczenie zamieszkania",Status,Uwagi,"Data dodania","Data modyfikacji",IP')
         ->and($csv)->toContain('000015,interaktywna,44051401458,Jan,Kowalski,Nie,ważna,OK,"2025-04-11 12:00:00","2025-04-11 13:00:00",127.0.0.1');
+});
+
+it('builds and exports legacy submitted projects report', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes([
+        'symbol' => 'P1',
+    ]));
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'number' => 7,
+        'title' => 'Park kieszonkowy',
+        'submitted_at' => '2025-01-10 12:00:00',
+    ]));
+    Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'number' => 8,
+        'title' => 'Za stary projekt',
+        'submitted_at' => '2018-01-10 12:00:00',
+    ]));
+
+    $rows = app(ProjectReportService::class)->submittedProjectRows();
+    $csv = app(SubmittedProjectsCsvExporter::class)->export();
+
+    expect($rows)->toHaveCount(1)
+        ->and($rows->first())->toMatchArray([
+            'project_number' => 'P1/0007',
+            'title' => $project->title,
+            'submitted_at' => '2025-01-10 12:00:00',
+        ])
+        ->and($csv)->toContain('"Numer wniosku",Tytuł,"Data złożenia"')
+        ->and($csv)->toContain('P1/0007,"Park kieszonkowy","2025-01-10 12:00:00"')
+        ->and($csv)->not->toContain('Za stary projekt');
 });

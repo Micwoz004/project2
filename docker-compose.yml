@@ -1,0 +1,67 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: sbo
+      DB_USERNAME: sbo
+      DB_PASSWORD: sbo
+      REDIS_HOST: redis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+    depends_on:
+      - postgres
+      - redis
+      - mailpit
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: sbo
+      POSTGRES_USER: sbo
+      POSTGRES_PASSWORD: sbo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6379:6379"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  legacy-mysql:
+    image: mysql:8.4
+    profiles:
+      - legacy-import
+    environment:
+      MYSQL_DATABASE: sbo_legacy
+      MYSQL_USER: sbo
+      MYSQL_PASSWORD: sbo
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+
+volumes:
+  postgres-data:

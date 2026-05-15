@@ -1,0 +1,48 @@
+# Model domenowy Laravel
+
+## Moduły
+
+- `BudgetEditions` - edycje SBO, harmonogram, stan procesu.
+- `Projects` - projekty, statusy, kosztorysy, współautorzy, wersje.
+- `Files` - załączniki publiczne/prywatne.
+- `Verification` - weryfikacja formalna, wstępna, merytoryczna, konsultacje i przydziały.
+- `Voting` - wyborcy, tokeny, karty głosowania, głosy, hashe uprawnionych, SMS.
+- `Results` - liczenie wyników z ważnych kart.
+- `Reports` - eksporty i raporty publiczne/administracyjne.
+- `Users` - użytkownicy, departamenty, role/uprawnienia.
+- `Settings` - ustawienia, strony treści i słowniki.
+- `Communications` - korespondencja i komentarze.
+
+## Najważniejsze encje
+
+- `BudgetEdition` odwzorowuje `taskgroups`.
+- `ProjectArea` odwzorowuje `tasktypes`.
+- `Project` odwzorowuje `tasks`.
+- `ProjectCostItem` odwzorowuje `taskcosts`.
+- `ProjectFile` odwzorowuje `files` i `filesprivate`.
+- `ProjectCoauthor` odwzorowuje `cocreators`.
+- `ProjectVersion` odwzorowuje `versions`.
+- `ProjectCorrection` odwzorowuje `taskcorrection`.
+- `VoteCard`, `Vote`, `Voter`, `VotingToken`, `VoterRegistryHash`, `SmsLog` odwzorowują głosowanie.
+- `Department` odwzorowuje `departments`.
+
+## Statusy projektu
+
+Statusy legacy są zachowane jako `ProjectStatus` z wartościami integer: `1,2,3,4,5,10..25,-1,-2,-3,-4,-10,-11,-12,-13,-14`. Enum ma osobne etykiety publiczne i administracyjne.
+
+## Reguły umieszczone w domenie
+
+- `SubmitProjectAction` - składanie projektu, lista poparcia, kosztorys, blokada statusu, zakaz URL, wersjonowanie.
+- `StartCorrectionAction` i `ApplyCorrectionAction` - okno korekty, whitelist pól z `taskcorrection`, blokada po terminie i snapshot wersji.
+- `BeginFormalVerificationAction` i `CompleteFormalVerificationAction` - bazowe przejścia oceny formalnej, wymóg listy poparcia przy wyniku pozytywnym i uzasadnienie przy negatywnym.
+- `AssignVerificationDepartmentAction` - przydział departamentu do typu weryfikacji.
+- `SubmitInitialMeritVerificationAction`, `SubmitFinalMeritVerificationAction`, `SubmitConsultationVerificationAction` - statusy kart, oznaczenie przydziału jako wysłanego, wynik wstępny/końcowy i walidacja kosztów.
+- `CastProjectBoardVoteAction`, `RecordBoardVoteRejectionAction`, `StartBoardVotingAction`, `BoardDecisionResolver` - głosy ZK/OT/AT, unikalność głosu, uzasadnienia odrzucenia i przejścia statusów.
+- `BudgetEditionStateResolver` - stan procesu zgodny z `TaskGroup::getState`.
+- `PeselService` - checksum, data urodzenia, wiek, płeć.
+- `VoterHashService` - hash `newverification` zgodny z legacy salt `D0FB5FC74E`.
+- `VotingTokenService` - 6-cyfrowy SMS token, limit 5 kodów na telefon, unieważnianie starych tokenów PESEL.
+- `CastVoteService` - okno głosowania, checksum i unikalność PESEL, hash rejestru `newverification`, oświadczenia, zgoda rodzica, brak PESEL jako `Verifying`, limity lokalne/ogólnomiejskie, tylko `STATUS_PICKED`, transakcja zapisu.
+- `UpdateVoteCardStatusAction` - administracyjna zmiana statusu karty z operatorem, czasem obsługi i notatką.
+- `ResultsCalculator` - sumowanie punktów wyłącznie z kart `VoteCardStatus::Accepted`, także po obszarach i kategoriach.
+- `VoteCardReportService` - zagregowane statusy kart i demografia zaakceptowanych kart bez PII.

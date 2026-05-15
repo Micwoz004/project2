@@ -1,0 +1,56 @@
+# Głosowania rad i odwołania
+
+1. Legacy: `ZkVote`, `AtVote`, `OtVote`, `AtOtVotesRejection`, kontrolery weryfikacji.
+2. Tabele: `zkvotes`, `atvotes`, `otvotes`, `atotvotesrejection`, `tasks`.
+3. Dane wejściowe: wybór członka rady/komisji, głos, komentarz, odrzucenie.
+4. Dane zapisywane: głos członka, typ rady/komisji, powód odrzucenia.
+5. Statusy: `DuringTeamVerification=15`, `TeamAccepted=16`, `TeamRejected=17`, `TeamForReverification=19`, odwołania `20..22`, negatywne `-13`, `-14`.
+6. Walidacje: jeden głos użytkownika na projekt i typ, wymagany komentarz przy odrzuceniu.
+7. Role: członkowie Rady SBO, komisje odwoławcze, administratorzy.
+8. Edge case: remis, brak quorum, cofnięcie głosu, odwołanie po terminie.
+9. Laravel: `project_board_votes`, `board_vote_rejections`, enum typu rady/komisji.
+10. Zgodność: porównać wynik decyzji z legacy dla tych samych głosów.
+
+## Plan wdrożenia
+
+Status: częściowo zaimplementowane w etapie 4.
+
+1. [x] Zdefiniować enum typu rady/komisji i wartości głosu.
+2. [x] Dodać akcję oddania głosu członka.
+3. [x] Dodać reguły jednego głosu per projekt/użytkownik/typ.
+4. [x] Dodać kalkulator decyzji i odwołań.
+5. [x] Pokryć testami remisy, odrzucenia i ponowną weryfikację.
+6. [ ] Uzupełnić UI/Filament dla oddawania i zamykania głosowań.
+
+## Rozpoznane reguły legacy
+
+- `ZkVote` zapisuje `vote=1` albo `vote=-1`.
+- `Task::zkAccepted()` uznaje projekt, gdy głosów pozytywnych jest więcej niż wymagane minimum albo przy wyniku granicznym rozstrzyga głos przewodniczącego ZK.
+- `ProcessingController::actionProcessZKVote()` w prostym przeliczeniu ustawia `Picked`, gdy pozytywnych głosów jest więcej, `RejectedZo`, gdy negatywnych jest więcej, a remis zostawia bez rozstrzygnięcia.
+- `OtVote` ma wybory: `1=wstrzymuje się`, `2=do ponownej weryfikacji`, `3=odrzucony z możliwością odwołania`, `4=zatwierdzony na listę`.
+- `ProcessingController::actionProcessOTVote()` ustawia `Picked`, gdy akceptacja ma samodzielną większość; przy remisie odrzucenie/ponowna weryfikacja nie rozstrzyga; odrzucenie ustawia `TeamRejected`, ponowna weryfikacja ustawia `TeamForReverification`.
+- `AtVote` ma wybory: `1=wstrzymuje się`, `2=zatwierdzony na listę`, `3=odrzucony ostatecznie`.
+- `ProcessingController::actionProcessATVote()` przy remisie nie rozstrzyga; przewaga odrzucenia ustawia `TeamRejectedFinally`, przewaga akceptacji `Picked`.
+- `AtOtVotesRejection` wymaga `taskId`, `votesType` i `comment`; dotyczy typów `AT` i `OT`.
+
+## Zaimplementowany odpowiednik Laravel
+
+- `BoardType` rozróżnia `ZK`, `OT`, `AT`.
+- Osobne enumy wyborów zachowują różne znaczenia tych samych liczb w legacy: `ZkVoteChoice`, `OtVoteChoice`, `AtVoteChoice`.
+- `ProjectBoardVote` konsoliduje `zkvotes`, `otvotes`, `atvotes`.
+- `BoardVoteRejection` konsoliduje `atotvotesrejection`.
+- `CastProjectBoardVoteAction` waliduje wybór zależnie od typu głosowania i blokuje duplikat per projekt/użytkownik/typ.
+- `RecordBoardVoteRejectionAction` wymaga komentarza i dopuszcza uzasadnienia tylko dla `AT`/`OT`.
+- `StartBoardVotingAction` ustawia status projektu na `DuringTeamVerification` albo `DuringTeamRecallVerification` i zachowuje flagę historycznego odrzucenia.
+- `BoardDecisionResolver` liczy decyzje zgodnie z akcjami `actionProcessZKVote`, `actionProcessOTVote`, `actionProcessATVote`.
+
+## Świadome uproszczenia na tym etapie
+
+- Nie zaimplementowano jeszcze szczególnego głosu przewodniczącego ZK z `Task::zkAccepted()`. Obecny resolver odwzorowuje prostą ścieżkę `actionProcessZKVote()`.
+- Nie ma jeszcze komend restartu/zamknięcia głosowania usuwających głosy jak `actionForceRestartOTVoting()` i `actionForceRestartATVoting()`.
+- Role członków rady/komisji będą spięte policy po zakończeniu pełnej domeny głosowań.
+
+## Zgodność do sprawdzenia
+
+- Dodać test głosu przewodniczącego ZK po zaimportowaniu przypisania roli `president ZK`.
+- Dopisać akcje restartu i zamknięcia głosowań z zachowaniem skutków legacy.

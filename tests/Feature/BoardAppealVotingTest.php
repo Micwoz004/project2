@@ -6,7 +6,9 @@ use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
+use App\Domain\Verification\Actions\CloseBoardVotingAction;
 use App\Domain\Verification\Actions\RecordBoardVoteRejectionAction;
+use App\Domain\Verification\Actions\RestartBoardVotingAction;
 use App\Domain\Verification\Actions\StartBoardVotingAction;
 use App\Domain\Verification\Enums\AtVoteChoice;
 use App\Domain\Verification\Enums\BoardDecision;
@@ -145,3 +147,35 @@ it('records rejection comments only for OT and AT', function (): void {
 
     app(RecordBoardVoteRejectionAction::class)->execute($project, $user, BoardType::Zk, 'Nieobsługiwane.');
 })->throws(DomainException::class, 'Uzasadnienia odrzucenia dotyczą tylko głosowań AT/OT.');
+
+it('closes and restarts OT voting like legacy force actions', function (): void {
+    $project = boardProject(ProjectStatus::DuringTeamVerification);
+
+    app(CastProjectBoardVoteAction::class)->execute($project, User::factory()->create(), BoardType::Ot, OtVoteChoice::Accepted->value);
+
+    $closed = app(CloseBoardVotingAction::class)->execute($project, BoardType::Ot);
+
+    expect($closed->status)->toBe(ProjectStatus::TeamClosedVerification)
+        ->and($project->boardVotes()->where('board_type', BoardType::Ot->value)->count())->toBe(1);
+
+    $restarted = app(RestartBoardVotingAction::class)->execute($project, BoardType::Ot);
+
+    expect($restarted->status)->toBe(ProjectStatus::DuringTeamVerification)
+        ->and($project->boardVotes()->where('board_type', BoardType::Ot->value)->count())->toBe(0);
+});
+
+it('closes and restarts AT voting like legacy force actions', function (): void {
+    $project = boardProject(ProjectStatus::DuringTeamRecallVerification);
+
+    app(CastProjectBoardVoteAction::class)->execute($project, User::factory()->create(), BoardType::At, AtVoteChoice::Rejected->value);
+
+    $closed = app(CloseBoardVotingAction::class)->execute($project, BoardType::At);
+
+    expect($closed->status)->toBe(ProjectStatus::TeamRecallClosedVerification)
+        ->and($project->boardVotes()->where('board_type', BoardType::At->value)->count())->toBe(1);
+
+    $restarted = app(RestartBoardVotingAction::class)->execute($project, BoardType::At);
+
+    expect($restarted->status)->toBe(ProjectStatus::DuringTeamRecallVerification)
+        ->and($project->boardVotes()->where('board_type', BoardType::At->value)->count())->toBe(0);
+});

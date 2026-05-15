@@ -65,6 +65,8 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `users` | `users` | Rozszerzone o legacy pola i departament. |
 | `authitem`, `authitemchild`, `authassignment` | Spatie Permission | Import ról/uprawnień mapuje nazwy legacy. |
 | `activations` | `user_activation_tokens` | Typy legacy: aktywacja e-mail, aktywacja SMS, reset hasła; hash zachowany w DB, nie w logach. |
+| `pesel` | `legacy_pesel_records` | Administrowany rejestr PESEL legacy; tabela była pusta w dumpie 2025, ale CRUD istnieje. |
+| `verification` | `legacy_pesel_verification_entries` | Whitelist autentyczności PESEL używany przez `User::verifyPeselAuthenticity`; tabela pusta w dumpie 2025. |
 
 ## Świadome zmiany struktury
 

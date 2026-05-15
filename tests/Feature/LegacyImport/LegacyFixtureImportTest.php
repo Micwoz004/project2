@@ -24,6 +24,8 @@ use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Models\Department;
 use App\Domain\Users\Models\LegacyAuditLog;
+use App\Domain\Users\Models\LegacyPeselRecord;
+use App\Domain\Users\Models\LegacyPeselVerificationEntry;
 use App\Domain\Users\Models\UserActivationToken;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
@@ -95,6 +97,18 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'hash' => 'activation-hash-fixture',
             'createTime' => '2025-03-13 11:00:00',
             'type' => 1,
+        ]],
+        'pesel' => [[
+            'id' => 128,
+            'pesel' => '44051401458',
+            'firstName' => 'Jan',
+            'secondName' => 'Piotr',
+            'motherLastName' => 'Kowalska',
+            'lastName' => 'Testowy',
+            'fatherName' => 'Adam',
+        ]],
+        'verification' => [[
+            'pesel' => '44051401458',
         ]],
         'tasktypes' => [[
             'id' => 20,
@@ -588,6 +602,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and($batch->stats['pages'])->toBe(1)
         ->and($batch->stats['statuses'])->toBe(1)
         ->and($batch->stats['activations'])->toBe(1)
+        ->and($batch->stats['pesel'])->toBe(1)
+        ->and($batch->stats['verification'])->toBe(1)
         ->and($batch->stats['tasks'])->toBe(1)
         ->and($batch->stats['logs'])->toBe(1)
         ->and($batch->stats['taskscategories'])->toBe(2)
@@ -636,6 +652,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->toBe('Wybrany do głosowania')
         ->and(UserActivationToken::query()->where('legacy_id', 127)->firstOrFail()->user_id)->toBe($boardUser->id)
         ->and(UserActivationToken::query()->where('legacy_id', 127)->firstOrFail()->hash)->toBe('activation-hash-fixture')
+        ->and(LegacyPeselRecord::query()->where('legacy_id', 128)->firstOrFail()->first_name)->toBe('Jan')
+        ->and(LegacyPeselVerificationEntry::query()->where('pesel', '44051401458')->exists())->toBeTrue()
         ->and($project->status)->toBe(ProjectStatus::Picked)
         ->and($project->budget_edition_id)->toBe($edition->id)
         ->and(LegacyAuditLog::query()->where('legacy_id', 126)->firstOrFail()->project_id)->toBe($project->id)

@@ -88,6 +88,7 @@
 - [x] Import fixture stron procesu głosowania z tabeli `pages`.
 - [x] Import fixture słownika nazw statusów z tabeli `statuses`.
 - [x] Import fixture tokenów aktywacji i resetu hasła z tabeli `activations`.
+- [x] Import fixture rejestrów PESEL z tabel `pesel` i `verification`.
 - [x] Import fixture historycznych logów administracyjnych z tabeli `logs`.
 
 ## Do pełnego parytetu

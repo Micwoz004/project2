@@ -30,6 +30,8 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 - `LegacyRbacImportService` importuje `authitem`, `authitemchild` i `authassignment` do Spatie Permission na podstawie fixture, przypisując użytkowników przez `users.legacy_id`.
 - `UserActivationToken` odwzorowuje legacy `activations` z typami: `1` aktywacja e-mail, `2` aktywacja SMS, `3` reset hasła.
 - Legacy linki aktywacyjne i resetu hasła są ważne przez `system.activationLinkLifetime`; docelowa akcja auth UI musi zachować tę regułę.
+- `LegacyPeselRecord` odwzorowuje administrowany rejestr `pesel` dostępny w legacy przez permission `manage pesel`.
+- `LegacyPeselVerificationEntry` odwzorowuje whitelistę `verification`, którą legacy `User::verifyPeselAuthenticity` sprawdzało dla autentyczności PESEL.
 
 ## Świadome różnice względem legacy
 

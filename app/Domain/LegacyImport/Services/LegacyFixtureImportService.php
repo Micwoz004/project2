@@ -26,6 +26,8 @@ use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Models\Department;
 use App\Domain\Users\Models\LegacyAuditLog;
+use App\Domain\Users\Models\LegacyPeselRecord;
+use App\Domain\Users\Models\LegacyPeselVerificationEntry;
 use App\Domain\Users\Models\UserActivationToken;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Models\AdvancedVerification;
@@ -83,6 +85,8 @@ class LegacyFixtureImportService
                 'pages' => $this->importPages($payload['pages'] ?? []),
                 'statuses' => $this->importProjectStatusLabels($payload['statuses'] ?? []),
                 'activations' => $this->importUserActivationTokens($payload['activations'] ?? []),
+                'pesel' => $this->importLegacyPeselRecords($payload['pesel'] ?? []),
+                'verification' => $this->importLegacyPeselVerificationEntries($payload['verification'] ?? []),
                 'tasktypes' => $this->importTaskTypes($payload['tasktypes'] ?? []),
                 'categories' => $this->importCategories($payload['categories'] ?? []),
                 'tasks' => $this->importTasks($payload['tasks'] ?? []),
@@ -280,6 +284,41 @@ class LegacyFixtureImportService
                 'type' => (int) Arr::get($row, 'type'),
                 'created_at' => $createdAt,
                 'updated_at' => $createdAt,
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importLegacyPeselRecords(array $rows): int
+    {
+        foreach ($rows as $row) {
+            LegacyPeselRecord::query()->updateOrCreate([
+                'legacy_id' => $this->legacyId($row),
+            ], [
+                'pesel' => Arr::get($row, 'pesel'),
+                'first_name' => Arr::get($row, 'firstName'),
+                'second_name' => Arr::get($row, 'secondName'),
+                'mother_last_name' => Arr::get($row, 'motherLastName'),
+                'last_name' => Arr::get($row, 'lastName'),
+                'father_name' => Arr::get($row, 'fatherName'),
+            ]);
+        }
+
+        return count($rows);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function importLegacyPeselVerificationEntries(array $rows): int
+    {
+        foreach ($rows as $row) {
+            LegacyPeselVerificationEntry::query()->updateOrCreate([
+                'pesel' => Arr::get($row, 'pesel'),
             ]);
         }
 

@@ -37,6 +37,7 @@
 - `Department` odwzorowuje `departments`.
 - `LegacyAuditLog` odwzorowuje historyczne logi operacji administracyjnych `logs`.
 - `UserActivationToken` odwzorowuje tokeny aktywacji kont i resetu hasła `activations`.
+- `LegacyPeselRecord` i `LegacyPeselVerificationEntry` odwzorowują rejestry `pesel` oraz `verification`.
 - `ApplicationSetting` odwzorowuje `settings` z zachowaniem surowych wartości legacy.
 - `ContentPage` odwzorowuje `pages` per edycja SBO i symbol strony procesu.
 - `CorrespondenceMessage`, `ProjectComment`, `ProjectPublicComment`, `ProjectNotification`, `MailLog` odwzorowują komunikację, komentarze i historię wysyłek.

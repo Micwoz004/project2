@@ -3,6 +3,8 @@
 namespace App\Domain\Projects\Models;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Communications\Models\CorrespondenceMessage;
+use App\Domain\Communications\Models\ProjectComment;
 use App\Domain\Files\Models\ProjectFile;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Users\Models\Department;
@@ -146,6 +148,16 @@ class Project extends Model
     public function boardVoteRejections(): HasMany
     {
         return $this->hasMany(BoardVoteRejection::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(ProjectComment::class);
+    }
+
+    public function correspondenceMessages(): HasMany
+    {
+        return $this->hasMany(CorrespondenceMessage::class);
     }
 
     public function scopePubliclyVisible(Builder $query): Builder

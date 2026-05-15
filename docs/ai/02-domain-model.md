@@ -48,3 +48,4 @@ Statusy legacy są zachowane jako `ProjectStatus` z wartościami integer: `1,2,3
 - `ResultsCalculator` - sumowanie punktów wyłącznie z kart `VoteCardStatus::Accepted`, także po obszarach i kategoriach.
 - `VoteCardReportService` - zagregowane statusy kart i demografia zaakceptowanych kart bez PII.
 - `LegacyFixtureImportService` - transakcyjny, idempotentny import baseline danych legacy po `legacy_id`.
+- `AddProjectCommentAction`, `SendProjectCorrespondenceMessageAction`, `MarkCorrespondenceMessageReadAction` - bazowa komunikacja projektu bez logowania treści.

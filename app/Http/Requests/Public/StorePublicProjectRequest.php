@@ -29,7 +29,52 @@ class StorePublicProjectRequest extends FormRequest
             'cost_amount' => ['required', 'numeric', 'min:0'],
             'support_list' => ['accepted'],
             'support_list_file' => ['required', 'file'],
+            'coauthors' => ['sometimes', 'array', 'max:2'],
+            'coauthors.*.first_name' => ['nullable', 'string', 'max:127'],
+            'coauthors.*.last_name' => ['nullable', 'string', 'max:127'],
+            'coauthors.*.email' => ['nullable', 'email', 'max:127'],
+            'coauthors.*.phone' => ['nullable', 'string', 'max:30'],
+            'coauthors.*.post_code' => ['nullable', 'string', 'max:6'],
+            'coauthors.*.city' => ['nullable', 'string', 'max:127'],
+            'coauthors.*.personal_data_agree' => ['nullable', 'boolean'],
+            'coauthors.*.name_agree' => ['nullable', 'boolean'],
+            'coauthors.*.data_evaluation_agree' => ['nullable', 'boolean'],
+            'coauthors.*.read_confirm' => ['nullable', 'boolean'],
+            'coauthors.*.confirm' => ['nullable', 'boolean'],
+            'coauthors.*.email_agree' => ['nullable', 'boolean'],
+            'coauthors.*.phone_agree' => ['nullable', 'boolean'],
         ];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function coauthors(): array
+    {
+        return collect($this->validated('coauthors', []))
+            ->filter(fn (array $coauthor): bool => collect([
+                $coauthor['first_name'] ?? null,
+                $coauthor['last_name'] ?? null,
+                $coauthor['email'] ?? null,
+                $coauthor['phone'] ?? null,
+            ])->filter()->isNotEmpty())
+            ->map(fn (array $coauthor): array => [
+                'first_name' => $coauthor['first_name'] ?? '',
+                'last_name' => $coauthor['last_name'] ?? '',
+                'email' => $coauthor['email'] ?? null,
+                'phone' => $coauthor['phone'] ?? null,
+                'post_code' => $coauthor['post_code'] ?? null,
+                'city' => $coauthor['city'] ?? null,
+                'personal_data_agree' => (bool) ($coauthor['personal_data_agree'] ?? false),
+                'name_agree' => (bool) ($coauthor['name_agree'] ?? false),
+                'data_evaluation_agree' => (bool) ($coauthor['data_evaluation_agree'] ?? false),
+                'read_confirm' => (bool) ($coauthor['read_confirm'] ?? false),
+                'confirm' => (bool) ($coauthor['confirm'] ?? false),
+                'email_agree' => (bool) ($coauthor['email_agree'] ?? false),
+                'phone_agree' => (bool) ($coauthor['phone_agree'] ?? false),
+            ])
+            ->values()
+            ->all();
     }
 
     public function attributes(): array
@@ -43,6 +88,7 @@ class StorePublicProjectRequest extends FormRequest
             'cost_amount' => 'kwota',
             'support_list' => 'lista poparcia',
             'support_list_file' => 'plik listy poparcia',
+            'coauthors' => 'współautorzy',
         ];
     }
 }

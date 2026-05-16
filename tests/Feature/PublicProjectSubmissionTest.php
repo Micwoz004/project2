@@ -48,6 +48,13 @@ it('creates a submitted project through the public endpoint', function (): void 
         'free_of_charge' => 'Tak',
         'cost_description' => 'Zakup i montaż wyposażenia',
         'cost_amount' => 10000,
+        'coauthors' => [[
+            'first_name' => 'Anna',
+            'last_name' => 'Nowak',
+            'email' => 'anna@example.test',
+            'read_confirm' => '1',
+            'email_agree' => '1',
+        ]],
         'support_list' => '1',
         'support_list_file' => UploadedFile::fake()->create('lista-poparcia.pdf', 128, 'application/pdf'),
     ])->assertRedirect(route('public.projects.index'));
@@ -59,6 +66,8 @@ it('creates a submitted project through the public endpoint', function (): void 
 
     expect($project->status)->toBe(ProjectStatus::Submitted)
         ->and($project->costItems()->count())->toBe(1)
+        ->and($project->coauthors()->count())->toBe(1)
+        ->and($project->coauthors()->firstOrFail()->email)->toBe('anna@example.test')
         ->and($project->files()->count())->toBe(1)
         ->and($project->versions()->count())->toBe(1)
         ->and($project->category_id)->toBe($category->id)
@@ -66,6 +75,42 @@ it('creates a submitted project through the public endpoint', function (): void 
         ->and($supportListFile->is_private)->toBeTrue()
         ->and($supportListFile->is_task_form_attachment)->toBeTrue()
         ->and($supportListFile->original_name)->toBe('lista-poparcia.pdf');
+});
+
+it('rejects public project submission when coauthor has no public contact consent', function (): void {
+    Storage::fake('local');
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $category = Category::query()->create(['name' => 'Zieleń']);
+
+    $this->from(route('public.projects.create'))
+        ->post(route('public.projects.store'), [
+            'budget_edition_id' => $edition->id,
+            'project_area_id' => $area->id,
+            'category_id' => $category->id,
+            'title' => 'Nowy park kieszonkowy',
+            'localization' => 'Szczecin',
+            'description' => 'Opis projektu',
+            'goal' => 'Cel projektu',
+            'argumentation' => 'Uzasadnienie',
+            'availability' => 'Dostępność',
+            'recipients' => 'Mieszkańcy',
+            'free_of_charge' => 'Tak',
+            'cost_description' => 'Zakup i montaż wyposażenia',
+            'cost_amount' => 10000,
+            'coauthors' => [[
+                'first_name' => 'Anna',
+                'last_name' => 'Nowak',
+                'email' => 'anna@example.test',
+                'read_confirm' => '1',
+            ]],
+            'support_list' => '1',
+            'support_list_file' => UploadedFile::fake()->create('lista-poparcia.pdf', 128, 'application/pdf'),
+        ])
+        ->assertRedirect(route('public.projects.create'))
+        ->assertSessionHasErrors(['project']);
+
+    expect(Project::query()->where('status', ProjectStatus::Submitted->value)->count())->toBe(0);
 });
 
 it('returns not found for hidden or non-public project details', function (): void {

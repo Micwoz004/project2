@@ -13,12 +13,12 @@
 
 ## Plan wdrożenia
 
-Status: częściowo zaimplementowane.
+Status: częściowo zaimplementowane; publiczne zgłoszenie zapisuje podstawowy projekt, koszt, kategorię, listę poparcia i współautorów.
 
 1. Przenieść walidację wejścia publicznego do Form Request. Wykonane: `StorePublicProjectRequest`.
 2. Wyodrębnić walidację domenową z akcji składania projektu. Wykonane: `ProjectSubmissionValidator`.
 3. Dodać policy dla widoczności, edycji i składania projektu. Wykonane: `ProjectPolicy` i `ProjectLifecycleService`.
-4. Rozszerzyć formularz o autorów, kategorie, mapę i prawdziwe uploady. Wykonane częściowo: publiczny formularz zapisuje realny upload listy poparcia jako prywatny `ProjectFile` oraz zapisuje kategorię główną i pivot kategorii projektu.
+4. Rozszerzyć formularz o autorów, kategorie, mapę i prawdziwe uploady. Wykonane częściowo: publiczny formularz zapisuje realny upload listy poparcia jako prywatny `ProjectFile`, zapisuje kategorię główną i pivot kategorii projektu oraz synchronizuje maksymalnie dwóch współautorów.
 5. Dodać testy: wymagane pola, URL, koszt, lista poparcia, status i wersja.
 
 ## Implementacja Laravel
@@ -27,3 +27,4 @@ Status: częściowo zaimplementowane.
 - `StorePublicProjectRequest` wymaga kategorii projektu; `PublicProjectController::store()` zapisuje ją w `projects.category_id` i synchronizuje pivot `category_project`, żeby zachować zgodność z raportami po kategoriach.
 - `PublicProjectController::store()` zapisuje listę poparcia przez `StoreProjectFileAction` przed złożeniem projektu i oznacza plik jako `is_task_form_attachment`.
 - Lista poparcia z publicznego formularza jest prywatna (`is_private=true`), zgodnie z ostrożnym odwzorowaniem danych wrażliwych z legacy.
+- `StorePublicProjectRequest::coauthors()` filtruje puste sloty współautorów i przekazuje dane do `SyncProjectCoauthorsAction`, która wymusza reguły legacy `Cocreator`.

@@ -69,6 +69,46 @@
         <label for="cost_amount">Kwota</label>
         <input id="cost_amount" name="cost_amount" value="{{ old('cost_amount') }}" type="number" step="0.01" min="0" required>
 
+        <h2>Współautorzy</h2>
+        @for ($index = 0; $index < 2; $index++)
+            <fieldset>
+                <legend>Współautor {{ $index + 1 }}</legend>
+
+                <label for="coauthor_{{ $index }}_first_name">Imię</label>
+                <input id="coauthor_{{ $index }}_first_name" name="coauthors[{{ $index }}][first_name]" value="{{ old("coauthors.$index.first_name") }}" maxlength="127">
+
+                <label for="coauthor_{{ $index }}_last_name">Nazwisko</label>
+                <input id="coauthor_{{ $index }}_last_name" name="coauthors[{{ $index }}][last_name]" value="{{ old("coauthors.$index.last_name") }}" maxlength="127">
+
+                <label for="coauthor_{{ $index }}_email">E-mail</label>
+                <input id="coauthor_{{ $index }}_email" name="coauthors[{{ $index }}][email]" value="{{ old("coauthors.$index.email") }}" type="email" maxlength="127">
+
+                <label for="coauthor_{{ $index }}_phone">Telefon</label>
+                <input id="coauthor_{{ $index }}_phone" name="coauthors[{{ $index }}][phone]" value="{{ old("coauthors.$index.phone") }}" maxlength="30">
+
+                <label for="coauthor_{{ $index }}_post_code">Kod pocztowy</label>
+                <input id="coauthor_{{ $index }}_post_code" name="coauthors[{{ $index }}][post_code]" value="{{ old("coauthors.$index.post_code") }}" maxlength="6">
+
+                <label for="coauthor_{{ $index }}_city">Miejscowość</label>
+                <input id="coauthor_{{ $index }}_city" name="coauthors[{{ $index }}][city]" value="{{ old("coauthors.$index.city") }}" maxlength="127">
+
+                <label>
+                    <input name="coauthors[{{ $index }}][read_confirm]" type="checkbox" value="1" @checked(old("coauthors.$index.read_confirm"))>
+                    Współautor potwierdził zapoznanie się z informacją.
+                </label>
+
+                <label>
+                    <input name="coauthors[{{ $index }}][email_agree]" type="checkbox" value="1" @checked(old("coauthors.$index.email_agree"))>
+                    Współautor zgadza się na kontakt e-mail.
+                </label>
+
+                <label>
+                    <input name="coauthors[{{ $index }}][phone_agree]" type="checkbox" value="1" @checked(old("coauthors.$index.phone_agree"))>
+                    Współautor zgadza się na kontakt telefoniczny.
+                </label>
+            </fieldset>
+        @endfor
+
         <label>
             <input name="support_list" type="checkbox" value="1" @checked(old('support_list')) required>
             Potwierdzam dołączenie listy poparcia zgodnie z regulaminem.

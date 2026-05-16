@@ -128,6 +128,7 @@
 - [x] Akcja Filament do edycji głosów na istniejącej karcie z domenową walidacją limitów i projektów.
 - [x] Bazowe szablony i kolejka powiadomień projektu z audytem w logach mailowych.
 - [x] Publiczny panel autora do zastosowania aktywnej korekty projektu z whitelistą pól legacy.
+- [x] Publiczne zgłoszenie projektu zapisuje współautorów przez domenowe reguły `Cocreator`.
 
 ## Do pełnego parytetu
 

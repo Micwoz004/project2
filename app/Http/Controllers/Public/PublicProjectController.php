@@ -7,6 +7,7 @@ use App\Domain\Files\Actions\StoreProjectFileAction;
 use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Projects\Actions\ApplyCorrectionAction;
 use App\Domain\Projects\Actions\SubmitProjectAction;
+use App\Domain\Projects\Actions\SyncProjectCoauthorsAction;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
@@ -114,6 +115,7 @@ class PublicProjectController extends Controller
     public function store(
         StorePublicProjectRequest $request,
         StoreProjectFileAction $storeProjectFile,
+        SyncProjectCoauthorsAction $syncProjectCoauthors,
         SubmitProjectAction $submitProject,
     ): RedirectResponse {
         Log::info('project.public_store.start', [
@@ -166,6 +168,8 @@ class PublicProjectController extends Controller
             $file->forceFill([
                 'is_task_form_attachment' => true,
             ])->save();
+
+            $syncProjectCoauthors->execute($project, $request->coauthors());
 
             $submitProject->execute($project);
         } catch (DomainException $exception) {

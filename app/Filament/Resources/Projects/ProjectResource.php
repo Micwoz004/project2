@@ -9,6 +9,7 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Users\Models\Department;
+use App\Domain\Verification\Actions\AssignVerificationDepartmentAction;
 use App\Domain\Verification\Actions\BeginFormalVerificationAction;
 use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
 use App\Domain\Verification\Actions\CloseBoardVotingAction;
@@ -16,11 +17,19 @@ use App\Domain\Verification\Actions\CompleteFormalVerificationAction;
 use App\Domain\Verification\Actions\ForwardFormalVerificationToInitialVerificationAction;
 use App\Domain\Verification\Actions\RequestFormalCorrectionAction;
 use App\Domain\Verification\Actions\RestartBoardVotingAction;
+use App\Domain\Verification\Actions\SubmitConsultationVerificationAction;
+use App\Domain\Verification\Actions\SubmitFinalMeritVerificationAction;
+use App\Domain\Verification\Actions\SubmitInitialMeritVerificationAction;
 use App\Domain\Verification\Enums\AtVoteChoice;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\OtVoteChoice;
+use App\Domain\Verification\Enums\VerificationAssignmentType;
 use App\Domain\Verification\Enums\ZkVoteChoice;
+use App\Domain\Verification\Models\ConsultationVerification;
+use App\Domain\Verification\Models\FinalMeritVerification;
 use App\Domain\Verification\Models\FormalVerification;
+use App\Domain\Verification\Models\InitialMeritVerification;
+use App\Domain\Verification\Models\VerificationAssignment;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProjects;
@@ -145,6 +154,10 @@ class ProjectResource extends Resource
                 self::rejectFormalVerificationAction(),
                 self::requestFormalCorrectionAction(),
                 self::forwardFormalVerificationAction(),
+                self::assignMeritDepartmentsAction(),
+                self::submitInitialMeritVerificationAction(),
+                self::submitFinalMeritVerificationAction(),
+                self::submitConsultationVerificationAction(),
                 self::castBoardVoteAction(BoardType::Zk),
                 self::castBoardVoteAction(BoardType::Ot),
                 self::castBoardVoteAction(BoardType::At),
@@ -184,6 +197,44 @@ class ProjectResource extends Resource
     {
         return self::canVerifyProjects()
             && $project->status === ProjectStatus::FormallyVerified;
+    }
+
+    public static function canAssignMeritDepartments(Project $project): bool
+    {
+        return self::canVerifyProjects()
+            && in_array($project->status, [
+                ProjectStatus::FormallyVerified,
+                ProjectStatus::DuringInitialVerification,
+                ProjectStatus::SentForMeritVerification,
+                ProjectStatus::DuringMeritVerification,
+            ], true);
+    }
+
+    public static function canSubmitInitialMeritVerification(Project $project): bool
+    {
+        return self::canVerifyProjects()
+            && in_array($project->status, [
+                ProjectStatus::FormallyVerified,
+                ProjectStatus::DuringInitialVerification,
+            ], true);
+    }
+
+    public static function canSubmitFinalMeritVerification(Project $project): bool
+    {
+        return self::canVerifyProjects()
+            && in_array($project->status, [
+                ProjectStatus::SentForMeritVerification,
+                ProjectStatus::DuringMeritVerification,
+            ], true);
+    }
+
+    public static function canSubmitConsultationVerification(Project $project): bool
+    {
+        return self::canVerifyProjects()
+            && in_array($project->status, [
+                ProjectStatus::SentForMeritVerification,
+                ProjectStatus::DuringMeritVerification,
+            ], true);
     }
 
     public static function beginFormalVerificationFromAdmin(Project $project): Project
@@ -233,6 +284,75 @@ class ProjectResource extends Resource
             self::departmentsFromData($data),
             self::optionalDateTime($data['deadline'] ?? null),
             $data['notes'] ?? null,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<VerificationAssignment>
+     */
+    public static function assignMeritDepartmentsFromAdminForm(Project $project, array $data): array
+    {
+        $assignments = [];
+        $type = VerificationAssignmentType::from((int) $data['type']);
+
+        foreach (self::departmentsFromData($data) as $department) {
+            $assignments[] = app(AssignVerificationDepartmentAction::class)->execute(
+                $project,
+                $department,
+                $type,
+                self::optionalDateTime($data['deadline'] ?? null),
+                $data['notes'] ?? null,
+            );
+        }
+
+        return $assignments;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function submitInitialMeritVerificationFromAdminForm(Project $project, array $data): InitialMeritVerification
+    {
+        return app(SubmitInitialMeritVerificationAction::class)->execute(
+            $project,
+            self::departmentFromData($data),
+            self::authenticatedUser('verification.initial.submit.rejected_guest'),
+            (bool) ($data['result'] ?? false),
+            self::meritAnswersFromData($data),
+            $data['result_comments'] ?? null,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function submitFinalMeritVerificationFromAdminForm(Project $project, array $data): FinalMeritVerification
+    {
+        return app(SubmitFinalMeritVerificationAction::class)->execute(
+            $project,
+            self::departmentFromData($data),
+            self::authenticatedUser('verification.final.submit.rejected_guest'),
+            (bool) ($data['result'] ?? false),
+            self::meritAnswersFromData($data),
+            $data['result_comments'] ?? null,
+            self::costRowsFromData($data, 'corrected'),
+            self::costRowsFromData($data, 'future'),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function submitConsultationVerificationFromAdminForm(Project $project, array $data): ConsultationVerification
+    {
+        return app(SubmitConsultationVerificationAction::class)->execute(
+            $project,
+            self::departmentFromData($data),
+            self::authenticatedUser('verification.consultation.submit.rejected_guest'),
+            (bool) ($data['result'] ?? false),
+            self::meritAnswersFromData($data),
+            $data['result_comments'] ?? null,
         );
     }
 
@@ -419,6 +539,70 @@ class ProjectResource extends Resource
             ->action(fn (array $data, Project $record): Project => self::forwardFormalVerificationFromAdminForm($record, $data));
     }
 
+    private static function assignMeritDepartmentsAction(): Action
+    {
+        return Action::make('assign_merit_departments')
+            ->label('Przydziel jednostki')
+            ->schema([
+                Select::make('type')
+                    ->label('Typ weryfikacji')
+                    ->options(self::verificationAssignmentTypeOptions())
+                    ->required(),
+                Select::make('department_ids')
+                    ->label('Jednostki')
+                    ->multiple()
+                    ->options(fn (): array => self::departmentOptions())
+                    ->required(),
+                DateTimePicker::make('deadline')
+                    ->label('Termin'),
+                Textarea::make('notes')
+                    ->label('Uwagi')
+                    ->maxLength(5000)
+                    ->columnSpanFull(),
+            ])
+            ->visible(fn (Project $record): bool => self::canAssignMeritDepartments($record))
+            ->action(fn (array $data, Project $record): array => self::assignMeritDepartmentsFromAdminForm($record, $data));
+    }
+
+    private static function submitInitialMeritVerificationAction(): Action
+    {
+        return Action::make('submit_initial_merit_verification')
+            ->label('Wyślij wstępną')
+            ->schema(self::meritVerificationSchema())
+            ->visible(fn (Project $record): bool => self::canSubmitInitialMeritVerification($record))
+            ->action(fn (array $data, Project $record): InitialMeritVerification => self::submitInitialMeritVerificationFromAdminForm($record, $data));
+    }
+
+    private static function submitFinalMeritVerificationAction(): Action
+    {
+        return Action::make('submit_final_merit_verification')
+            ->label('Wyślij końcową')
+            ->schema([
+                ...self::meritVerificationSchema(),
+                TextInput::make('corrected_cost_description')
+                    ->label('Opis kosztu szacunkowego'),
+                TextInput::make('corrected_cost_sum')
+                    ->label('Koszt szacunkowy')
+                    ->numeric(),
+                TextInput::make('future_cost_description')
+                    ->label('Opis kosztu przyszłego'),
+                TextInput::make('future_cost_sum')
+                    ->label('Koszt przyszły')
+                    ->numeric(),
+            ])
+            ->visible(fn (Project $record): bool => self::canSubmitFinalMeritVerification($record))
+            ->action(fn (array $data, Project $record): FinalMeritVerification => self::submitFinalMeritVerificationFromAdminForm($record, $data));
+    }
+
+    private static function submitConsultationVerificationAction(): Action
+    {
+        return Action::make('submit_consultation_verification')
+            ->label('Wyślij konsultację')
+            ->schema(self::meritVerificationSchema())
+            ->visible(fn (Project $record): bool => self::canSubmitConsultationVerification($record))
+            ->action(fn (array $data, Project $record): ConsultationVerification => self::submitConsultationVerificationFromAdminForm($record, $data));
+    }
+
     private static function closeBoardVotingAction(BoardType $boardType): Action
     {
         return Action::make('close_'.strtolower($boardType->value).'_board_voting')
@@ -456,6 +640,47 @@ class ProjectResource extends Resource
                 AtVoteChoice::Rejected->value => 'Odrzucony ostatecznie',
             ],
         };
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private static function meritVerificationSchema(): array
+    {
+        return [
+            Select::make('department_id')
+                ->label('Jednostka')
+                ->options(fn (): array => self::departmentOptions())
+                ->required(),
+            Toggle::make('result')
+                ->label('Wynik pozytywny')
+                ->default(true),
+            Textarea::make('answers_notes')
+                ->label('Treść opinii')
+                ->maxLength(5000)
+                ->columnSpanFull(),
+            Textarea::make('result_comments')
+                ->label('Uzasadnienie wyniku negatywnego')
+                ->maxLength(5000)
+                ->columnSpanFull(),
+        ];
+    }
+
+    private static function verificationAssignmentTypeOptions(): array
+    {
+        return [
+            VerificationAssignmentType::MeritInitial->value => 'Weryfikacja wstępna',
+            VerificationAssignmentType::MeritFinish->value => 'Weryfikacja końcowa',
+            VerificationAssignmentType::Consultation->value => 'Konsultacja',
+        ];
+    }
+
+    private static function departmentOptions(): array
+    {
+        return Department::query()
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
     }
 
     /**
@@ -528,6 +753,44 @@ class ProjectResource extends Resource
             ->whereIn('id', array_values($data['department_ids'] ?? []))
             ->get()
             ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function departmentFromData(array $data): Department
+    {
+        return Department::query()->findOrFail((int) $data['department_id']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, string|null>
+     */
+    private static function meritAnswersFromData(array $data): array
+    {
+        return [
+            'notes' => $data['answers_notes'] ?? null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<array{description: string, sum: int|float|string}>
+     */
+    private static function costRowsFromData(array $data, string $prefix): array
+    {
+        $description = trim((string) ($data[$prefix.'_cost_description'] ?? ''));
+        $sum = $data[$prefix.'_cost_sum'] ?? null;
+
+        if ($description === '' && ($sum === null || $sum === '')) {
+            return [];
+        }
+
+        return [[
+            'description' => $description,
+            'sum' => $sum ?? '',
+        ]];
     }
 
     private static function optionalDateTime(mixed $value): ?Carbon

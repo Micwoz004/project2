@@ -18,7 +18,7 @@ Status: częściowo zaimplementowane w etapie 3.
 1. [x] Spisać podstawową logikę wstępnej, końcowej i konsultacyjnej oceny merytorycznej.
 2. [x] Dodać przydziały departamentów i terminy.
 3. [x] Dodać akcje zakończenia oceny z decyzją.
-4. [ ] Udostępnić formularze w Filament według roli/departamentu.
+4. [x] Udostępnić bazowe formularze w Filament według roli/departamentu.
 5. [x] Pokryć testami przydziały, konsultacje, koszty i negatywne wyniki.
 6. [ ] Uzupełnić pełne formularze pól legacy w UI/DTO.
 7. [x] Dodać import fixture dla `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation` i `taskdepartmentassignment`.
@@ -56,6 +56,8 @@ Status: częściowo zaimplementowane w etapie 3.
 - `ProjectDepartmentRecommendation` konsoliduje legacy `prerecommendations` i `recommendationswjo`, zachowując opinię, notatki, koszt, datę wysłania i odpowiedzi formularza WJO.
 - `ProjectDepartmentScope` konsoliduje legacy `tasksinitialverification` i `tasksdepartments`, odtwarzając listę jednostek uprawnionych do opiniowania projektu.
 - `VerificationPressureLog` zachowuje legacy `verificationpressure`: tytuł/treść monitu, odbiorców, typ (`2` dyrektor, `3` ręczny), jednostkę i legacy ID przydziału.
+- `ProjectResource` w Filament udostępnia przydzielanie jednostek do typów `MeritInitial`, `MeritFinish` i `Consultation` oraz wysyłkę kart wstępnych, końcowych i konsultacyjnych. Widoczność akcji wymaga uprawnień weryfikacyjnych i statusów pasujących do etapu.
+- Bazowe formularze UI zapisują wynik, treść opinii, uzasadnienie negatywne oraz pojedynczą pozycję kosztu szacunkowego/przyszłego; pełne listy pól legacy nadal są przechowywane w `answers` JSON i pozostają do odwzorowania w kompletnej wersji UI.
 
 ## Świadome uproszczenia na tym etapie
 

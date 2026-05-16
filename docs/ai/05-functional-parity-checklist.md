@@ -108,6 +108,7 @@
 - [x] Przekazanie po weryfikacji formalnej do weryfikacji wstępnej z `need_pre_verification` i przydziałami jednostek.
 - [x] Korekta formalna uruchamia wspólne okno korekty i utrzymuje projekt w weryfikacji formalnej.
 - [x] Wersjonowanie karty formalnej przy zapisie przez `verification_versions`.
+- [x] Akcje Filament dla rozpoczęcia, zakończenia, korekty i przekazania formalnej weryfikacji.
 - [x] Wersjonowanie kart weryfikacji merytorycznej i konsultacyjnej przy zapisie przez `verification_versions`.
 - [x] Agregacja statusu weryfikacji merytorycznej po wielu departamentach przed zmianą statusu projektu.
 - [x] Głos przewodniczącego ZK rozstrzyga graniczny wynik 4:4 zgodnie z `Task::zkAccepted()`.
@@ -125,7 +126,7 @@
 - [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
 - [ ] Pełne podpięcie pozostałych uploadów w formularzach UI oraz potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Korekty projektu w UI autora/admina oraz korekty załączników/kosztów.
-- [ ] Weryfikacja formalna z pełną listą pól legacy w UI.
+- [ ] Weryfikacja formalna z pełną listą pytań/pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje departamentów.
 - [ ] UI historii wersji kart weryfikacji i administracyjny podgląd agregacji wielu departamentów.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.

@@ -3,16 +3,24 @@
 namespace App\Filament\Resources\Projects;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Projects\Enums\ProjectCorrectionField;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectCorrection;
+use App\Domain\Users\Models\Department;
+use App\Domain\Verification\Actions\BeginFormalVerificationAction;
 use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
 use App\Domain\Verification\Actions\CloseBoardVotingAction;
+use App\Domain\Verification\Actions\CompleteFormalVerificationAction;
+use App\Domain\Verification\Actions\ForwardFormalVerificationToInitialVerificationAction;
+use App\Domain\Verification\Actions\RequestFormalCorrectionAction;
 use App\Domain\Verification\Actions\RestartBoardVotingAction;
 use App\Domain\Verification\Enums\AtVoteChoice;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\OtVoteChoice;
 use App\Domain\Verification\Enums\ZkVoteChoice;
+use App\Domain\Verification\Models\FormalVerification;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProjects;
@@ -22,6 +30,8 @@ use DomainException;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -31,6 +41,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -129,6 +140,11 @@ class ProjectResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
+                self::beginFormalVerificationAction(),
+                self::acceptFormalVerificationAction(),
+                self::rejectFormalVerificationAction(),
+                self::requestFormalCorrectionAction(),
+                self::forwardFormalVerificationAction(),
                 self::castBoardVoteAction(BoardType::Zk),
                 self::castBoardVoteAction(BoardType::Ot),
                 self::castBoardVoteAction(BoardType::At),
@@ -138,6 +154,86 @@ class ProjectResource extends Resource
                 self::restartBoardVotingAction(BoardType::At),
                 DeleteAction::make(),
             ]);
+    }
+
+    public static function canBeginFormalVerification(Project $project): bool
+    {
+        return self::canVerifyProjects()
+            && $project->status === ProjectStatus::Submitted;
+    }
+
+    public static function canCompleteFormalVerification(Project $project): bool
+    {
+        return self::canVerifyProjects()
+            && in_array($project->status, [
+                ProjectStatus::Submitted,
+                ProjectStatus::DuringFormalVerification,
+            ], true);
+    }
+
+    public static function canRequestFormalCorrection(Project $project): bool
+    {
+        return self::canVerifyProjects()
+            && in_array($project->status, [
+                ProjectStatus::Submitted,
+                ProjectStatus::DuringFormalVerification,
+            ], true);
+    }
+
+    public static function canForwardFormalVerification(Project $project): bool
+    {
+        return self::canVerifyProjects()
+            && $project->status === ProjectStatus::FormallyVerified;
+    }
+
+    public static function beginFormalVerificationFromAdmin(Project $project): Project
+    {
+        return app(BeginFormalVerificationAction::class)->execute(
+            $project,
+            self::authenticatedUser('verification.formal.begin.rejected_guest'),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function completeFormalVerificationFromAdminForm(Project $project, array $data, bool $result): FormalVerification
+    {
+        return app(CompleteFormalVerificationAction::class)->execute(
+            $project,
+            self::authenticatedUser('verification.formal.complete.rejected_guest'),
+            $result,
+            self::formalAnswersFromData($data),
+            $data['result_comments'] ?? null,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function requestFormalCorrectionFromAdminForm(Project $project, array $data): ProjectCorrection
+    {
+        return app(RequestFormalCorrectionAction::class)->execute(
+            $project,
+            self::authenticatedUser('verification.formal.correction.rejected_guest'),
+            self::correctionFieldsFromData($data),
+            $data['notes'] ?? null,
+            self::optionalDateTime($data['deadline'] ?? null),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function forwardFormalVerificationFromAdminForm(Project $project, array $data): Project
+    {
+        return app(ForwardFormalVerificationToInitialVerificationAction::class)->execute(
+            $project,
+            self::authenticatedUser('verification.formal.forward_initial.rejected_guest'),
+            self::departmentsFromData($data),
+            self::optionalDateTime($data['deadline'] ?? null),
+            $data['notes'] ?? null,
+        );
     }
 
     public static function canCastBoardVote(Project $project, BoardType $boardType): bool
@@ -237,12 +333,90 @@ class ProjectResource extends Resource
             ->action(function (array $data, Project $record) use ($boardType): void {
                 app(CastProjectBoardVoteAction::class)->execute(
                     $record,
-                    self::authenticatedUser(),
+                    self::authenticatedUser('verification.board.vote.rejected_guest'),
                     $boardType,
                     (int) $data['choice'],
                     $data['comment'] ?? null,
                 );
             });
+    }
+
+    private static function beginFormalVerificationAction(): Action
+    {
+        return Action::make('begin_formal_verification')
+            ->label('Rozpocznij formalną')
+            ->requiresConfirmation()
+            ->visible(fn (Project $record): bool => self::canBeginFormalVerification($record))
+            ->action(fn (Project $record): Project => self::beginFormalVerificationFromAdmin($record));
+    }
+
+    private static function acceptFormalVerificationAction(): Action
+    {
+        return Action::make('accept_formal_verification')
+            ->label('Formalnie OK')
+            ->schema(self::formalVerificationAnswerSchema())
+            ->visible(fn (Project $record): bool => self::canCompleteFormalVerification($record))
+            ->action(fn (array $data, Project $record): FormalVerification => self::completeFormalVerificationFromAdminForm($record, $data, true));
+    }
+
+    private static function rejectFormalVerificationAction(): Action
+    {
+        return Action::make('reject_formal_verification')
+            ->label('Odrzuć formalnie')
+            ->schema([
+                ...self::formalVerificationAnswerSchema(),
+                Textarea::make('result_comments')
+                    ->label('Uzasadnienie')
+                    ->required()
+                    ->maxLength(5000)
+                    ->columnSpanFull(),
+            ])
+            ->visible(fn (Project $record): bool => self::canCompleteFormalVerification($record))
+            ->action(fn (array $data, Project $record): FormalVerification => self::completeFormalVerificationFromAdminForm($record, $data, false));
+    }
+
+    private static function requestFormalCorrectionAction(): Action
+    {
+        return Action::make('request_formal_correction')
+            ->label('Korekta formalna')
+            ->schema([
+                CheckboxList::make('allowed_fields')
+                    ->label('Pola do poprawy')
+                    ->options(self::correctionFieldOptions())
+                    ->required(),
+                DateTimePicker::make('deadline')
+                    ->label('Termin korekty'),
+                Textarea::make('notes')
+                    ->label('Uwagi dla wnioskodawcy')
+                    ->maxLength(5000)
+                    ->columnSpanFull(),
+            ])
+            ->visible(fn (Project $record): bool => self::canRequestFormalCorrection($record))
+            ->action(fn (array $data, Project $record): ProjectCorrection => self::requestFormalCorrectionFromAdminForm($record, $data));
+    }
+
+    private static function forwardFormalVerificationAction(): Action
+    {
+        return Action::make('forward_formal_verification')
+            ->label('Do weryfikacji wstępnej')
+            ->schema([
+                Select::make('department_ids')
+                    ->label('Jednostki')
+                    ->multiple()
+                    ->options(fn (): array => Department::query()
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->all())
+                    ->required(),
+                DateTimePicker::make('deadline')
+                    ->label('Termin'),
+                Textarea::make('notes')
+                    ->label('Uwagi')
+                    ->maxLength(5000)
+                    ->columnSpanFull(),
+            ])
+            ->visible(fn (Project $record): bool => self::canForwardFormalVerification($record))
+            ->action(fn (array $data, Project $record): Project => self::forwardFormalVerificationFromAdminForm($record, $data));
     }
 
     private static function closeBoardVotingAction(BoardType $boardType): Action
@@ -284,7 +458,96 @@ class ProjectResource extends Resource
         };
     }
 
-    private static function authenticatedUser(): User
+    /**
+     * @return array<int, mixed>
+     */
+    private static function formalVerificationAnswerSchema(): array
+    {
+        return [
+            Toggle::make('was_sent_on_correct_form')
+                ->label('Zgłoszenie na właściwym formularzu'),
+            Toggle::make('has_support_attachment')
+                ->label('Poprawna lista poparcia'),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, int>
+     */
+    private static function formalAnswersFromData(array $data): array
+    {
+        return [
+            'wasSentOnCorrectForm' => (bool) ($data['was_sent_on_correct_form'] ?? false) ? 1 : 0,
+            'hasSupportAttachment' => (bool) ($data['has_support_attachment'] ?? false) ? 1 : 0,
+        ];
+    }
+
+    private static function correctionFieldOptions(): array
+    {
+        return [
+            ProjectCorrectionField::Title->value => 'Tytuł',
+            ProjectCorrectionField::ProjectArea->value => 'Obszar',
+            ProjectCorrectionField::Localization->value => 'Lokalizacja',
+            ProjectCorrectionField::MapData->value => 'Mapa',
+            ProjectCorrectionField::Goal->value => 'Cel',
+            ProjectCorrectionField::Description->value => 'Opis',
+            ProjectCorrectionField::Argumentation->value => 'Uzasadnienie',
+            ProjectCorrectionField::Availability->value => 'Dostępność',
+            ProjectCorrectionField::Category->value => 'Kategoria',
+            ProjectCorrectionField::Recipients->value => 'Odbiorcy',
+            ProjectCorrectionField::FreeOfCharge->value => 'Nieodpłatność',
+            ProjectCorrectionField::Cost->value => 'Koszt',
+            ProjectCorrectionField::SupportAttachment->value => 'Lista poparcia',
+            ProjectCorrectionField::AgreementAttachment->value => 'Zgoda właściciela',
+            ProjectCorrectionField::MapAttachment->value => 'Załącznik mapy',
+            ProjectCorrectionField::ParentAgreementAttachment->value => 'Zgoda rodzica',
+            ProjectCorrectionField::Attachments->value => 'Pozostałe załączniki',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<ProjectCorrectionField>
+     */
+    private static function correctionFieldsFromData(array $data): array
+    {
+        return array_map(
+            static fn (string $field): ProjectCorrectionField => ProjectCorrectionField::from($field),
+            array_values($data['allowed_fields'] ?? []),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<Department>
+     */
+    private static function departmentsFromData(array $data): array
+    {
+        return Department::query()
+            ->whereIn('id', array_values($data['department_ids'] ?? []))
+            ->get()
+            ->all();
+    }
+
+    private static function optionalDateTime(mixed $value): ?Carbon
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return Carbon::parse($value);
+    }
+
+    private static function canVerifyProjects(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User
+            && ($user->can('projects.verify') || $user->can('projects.manage') || $user->hasAnyRole(['admin', 'bdo']));
+    }
+
+    private static function authenticatedUser(string $rejectionLog): User
     {
         $user = Auth::user();
 
@@ -292,7 +555,7 @@ class ProjectResource extends Resource
             return $user;
         }
 
-        Log::warning('verification.board.vote.rejected_guest');
+        Log::warning($rejectionLog);
 
         throw new DomainException('Użytkownik musi być zalogowany.');
     }

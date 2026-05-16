@@ -19,7 +19,7 @@ Status: częściowo zaimplementowane w etapie 3.
 2. [x] Dodać akcję rozpoczęcia i zakończenia oceny formalnej.
 3. [x] Dodać reguły pozytywnego/negatywnego wyniku.
 4. [x] Dodać reguły korekty i przekazania dalej do weryfikacji wstępnej.
-5. [ ] Zbudować Filament Page dla oceny formalnej.
+5. [x] Podpiąć baseline obsługi oceny formalnej w Filament przez akcje na projekcie.
 6. [x] Pokryć testami wymagane odpowiedzi i statusy.
 7. [x] Dodać import fixture dla `taskverification` z zachowaniem `raw_legacy_payload`.
 8. [x] Dodać import fixture dla historycznego `verificationversion`.
@@ -40,6 +40,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `RequestFormalCorrectionAction` uruchamia korektę formalną dla projektu złożonego albo będącego w weryfikacji formalnej, przełącza projekt do `DuringFormalVerification` i używa wspólnego mechanizmu `StartCorrectionAction`.
 - `ForwardFormalVerificationToInitialVerificationAction` przekazuje projekt ze statusu `FormallyVerified` do `DuringInitialVerification`, ustawia `need_pre_verification=true` i tworzy przydziały `MeritInitial` dla wskazanych jednostek.
 - `RecordVerificationVersionAction` zapisuje snapshot bieżącej karty formalnej do `verification_versions` z typem `FormalVerification=4`, zgodnie z mechanizmem `VerificationVersion::beforeSave()` w Yii.
+- `ProjectResource` w Filament udostępnia rozpoczęcie weryfikacji formalnej, pozytywne/negatywne zakończenie, uruchomienie korekty formalnej i przekazanie do weryfikacji wstępnej. Widoczność akcji wymaga `projects.verify`, `projects.manage`, `admin` albo `bdo` oraz pasującego statusu projektu.
 - Pozytywny wynik wymaga `projects.is_support_list=true`.
 - Negatywny wynik wymaga `result_comments`.
 - `LegacyFixtureImportService` importuje historyczne `taskverification`, mapuje wspólne pola i zachowuje pełny rekord w `raw_legacy_payload`.
@@ -48,5 +49,4 @@ Status: częściowo zaimplementowane w etapie 3.
 ## Zgodność do sprawdzenia
 
 - Uzupełnić pełną listę pytań formularza formalnego w Filament na podstawie `TaskVerification::attributeLabels()`.
-- `needCorrection`, `needPreVerification`, `initialDepartments` i wersjonowanie kart formalnych są obsługiwane w domenie; UI zostaje do podpięcia.
-- Podpiąć `VerificationVersion` do bieżących akcji zapisu kart, żeby nowe zmiany w Laravel tworzyły snapshoty tak jak `beforeSave()` w Yii.
+- Porównać docelowe etykiety akcji i komunikatów Filament z wymaganiami urzędu, jeżeli wdrożenie ma zachować teksty legacy.

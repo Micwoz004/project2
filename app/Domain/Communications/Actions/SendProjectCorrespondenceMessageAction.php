@@ -2,6 +2,7 @@
 
 namespace App\Domain\Communications\Actions;
 
+use App\Domain\Communications\Enums\ProjectNotificationTemplate;
 use App\Domain\Communications\Models\CorrespondenceMessage;
 use App\Domain\Projects\Models\Project;
 use App\Models\User;
@@ -10,6 +11,10 @@ use Illuminate\Support\Facades\Log;
 
 class SendProjectCorrespondenceMessageAction
 {
+    public function __construct(
+        private readonly QueueProjectNotificationAction $queueProjectNotification,
+    ) {}
+
     public function execute(Project $project, User $sender, ?User $recipient, string $messageText): CorrespondenceMessage
     {
         Log::info('correspondence_message.send.start', [
@@ -42,6 +47,17 @@ class SendProjectCorrespondenceMessageAction
             'message_text' => $messageText,
             'is_read' => false,
         ]);
+
+        if ($recipient instanceof User) {
+            $this->queueProjectNotification->execute(
+                $project,
+                $sender,
+                $recipient,
+                $recipient->email,
+                ProjectNotificationTemplate::CorrespondenceMessage,
+                ['message' => $messageText],
+            );
+        }
 
         Log::info('correspondence_message.send.success', [
             'project_id' => $project->id,

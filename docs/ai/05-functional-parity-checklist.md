@@ -126,6 +126,7 @@
 - [x] Akcje Filament dla oddawania głosów ZK/OT/AT z bramką `cast-board-vote` i blokadą duplikatu użytkownika.
 - [x] Akcja Filament do rejestracji papierowych kart głosowania przez domenową logikę głosowania.
 - [x] Akcja Filament do edycji głosów na istniejącej karcie z domenową walidacją limitów i projektów.
+- [x] Bazowe szablony i kolejka powiadomień projektu z audytem w logach mailowych.
 
 ## Do pełnego parytetu
 
@@ -136,7 +137,7 @@
 - [ ] Weryfikacje merytoryczne i konsultacje z pełną listą pól legacy w UI.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
-- [ ] Kolejki i szablony powiadomień mail/SMS z pełną mapą typów legacy.
+- [ ] Pełna mapa wszystkich punktów wysyłki mail/SMS względem legacy.
 - [ ] Pełny import przypisań ról/uprawnień z dumpa legacy.
 - [ ] Pełny import użytkowników, departamentów i RBAC bezpośrednio z dumpa legacy.
 - [ ] Polityki Laravel dla każdej roli i operacji modułów weryfikacji/głosowania/raportów.

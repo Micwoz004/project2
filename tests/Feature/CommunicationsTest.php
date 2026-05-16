@@ -2,11 +2,18 @@
 
 use App\Domain\Communications\Actions\AddProjectCommentAction;
 use App\Domain\Communications\Actions\MarkCorrespondenceMessageReadAction;
+use App\Domain\Communications\Actions\QueueProjectNotificationAction;
 use App\Domain\Communications\Actions\SendProjectCorrespondenceMessageAction;
+use App\Domain\Communications\Enums\ProjectNotificationTemplate;
+use App\Domain\Communications\Jobs\SendProjectNotificationJob;
+use App\Domain\Communications\Models\MailLog;
+use App\Domain\Communications\Models\ProjectNotification;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemPermission;
 use App\Models\User;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Mail;
 
 it('allows project managers to add internal comments', function (): void {
     app(SyncSystemRolesAndPermissionsAction::class)->execute();
@@ -35,6 +42,7 @@ it('rejects project comments from unauthorized users', function (): void {
 
 it('allows project author and managers to send and read correspondence', function (): void {
     app(SyncSystemRolesAndPermissionsAction::class)->execute();
+    Bus::fake();
 
     $author = User::factory()->create();
     $manager = User::factory()->create();
@@ -57,7 +65,10 @@ it('allows project author and managers to send and read correspondence', functio
         ->and($message->user_id)->toBe($manager->id)
         ->and($read->is_read)->toBeTrue()
         ->and($read->read_at)->not->toBeNull()
-        ->and($project->correspondenceMessages()->count())->toBe(1);
+        ->and($project->correspondenceMessages()->count())->toBe(1)
+        ->and(ProjectNotification::query()->where('project_id', $project->id)->where('sent_to_user_id', $manager->id)->count())->toBe(1);
+
+    Bus::assertDispatched(SendProjectNotificationJob::class);
 });
 
 it('rejects empty correspondence content', function (): void {
@@ -70,3 +81,49 @@ it('rejects empty correspondence content', function (): void {
 
     app(SendProjectCorrespondenceMessageAction::class)->execute($project, $author, null, '   ');
 })->throws(DomainException::class, 'Treść wiadomości nie może być pusta.');
+
+it('sends queued project notifications and writes mail logs', function (): void {
+    Bus::fake();
+    Mail::fake();
+
+    $author = User::factory()->create();
+    $recipient = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'title' => 'Park kieszonkowy',
+    ]);
+
+    $notification = app(QueueProjectNotificationAction::class)->execute(
+        $project,
+        $author,
+        $recipient,
+        $recipient->email,
+        ProjectNotificationTemplate::FormalCorrection,
+        ['notes' => 'Uzupełnij kosztorys.'],
+    );
+
+    (new SendProjectNotificationJob($notification->id))->handle();
+
+    expect($notification->subject)->toContain('Wezwanie do korekty projektu')
+        ->and($notification->body)->toContain('Uzupełnij kosztorys.')
+        ->and(MailLog::query()->where('email', $recipient->email)->where('subject', $notification->subject)->count())->toBe(1);
+});
+
+it('rejects queued project notifications without recipient email', function (): void {
+    $author = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id, [
+        'creator_id' => $author->id,
+    ]);
+
+    app(QueueProjectNotificationAction::class)->execute(
+        $project,
+        $author,
+        null,
+        '   ',
+        ProjectNotificationTemplate::ProjectStatusChanged,
+    );
+})->throws(DomainException::class, 'Adres e-mail odbiorcy jest wymagany.');

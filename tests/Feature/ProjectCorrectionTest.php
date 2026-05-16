@@ -95,6 +95,34 @@ it('applies only fields allowed by active correction and records a version', fun
         ->and($correction->refresh()->correction_done)->toBeTrue();
 });
 
+it('replaces cost items when cost correction is allowed', function (): void {
+    Carbon::setTestNow('2026-05-15 10:00:00');
+
+    $actor = User::factory()->create();
+    $project = submittedProjectReadyForCorrection($actor);
+
+    $correction = app(StartCorrectionAction::class)->execute(
+        $project,
+        $actor,
+        [ProjectCorrectionField::Cost],
+        deadline: now()->addDays(3),
+    );
+
+    $updated = app(ApplyCorrectionAction::class)->execute($project->refresh(), $actor, [
+        'cost_items' => [
+            ['description' => 'Projekt', 'amount' => 1200],
+            ['description' => 'Montaż', 'amount' => 800],
+        ],
+    ]);
+
+    expect($updated->costItems()->count())->toBe(2)
+        ->and($updated->cost_formatted)->toBe('2000.00')
+        ->and($updated->cost)->toContain('Projekt: 1200')
+        ->and($updated->need_correction)->toBeFalse()
+        ->and($updated->versions()->count())->toBe(1)
+        ->and($correction->refresh()->correction_done)->toBeTrue();
+});
+
 it('rejects corrections outside an active window', function (): void {
     Carbon::setTestNow('2026-05-15 10:00:00');
 

@@ -131,12 +131,13 @@
 - [x] Publiczne zgłoszenie projektu zapisuje współautorów przez domenowe reguły `Cocreator`.
 - [x] Publiczne zgłoszenie projektu zapisuje bazowe dane mapy i współrzędne.
 - [x] Publiczne zgłoszenie projektu obsługuje uploady legacy: lista poparcia, zgody właściciela/rodzica, mapa i pozostałe załączniki.
+- [x] Korekta kosztorysu projektu podmienia pozycje kosztów i przelicza sumę.
 
 ## Do pełnego parytetu
 
 - [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
 - [ ] Potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
-- [ ] Korekty załączników/kosztów w publicznym UI autora.
+- [ ] Korekty załączników w publicznym UI autora.
 - [ ] Weryfikacja formalna z pełną listą pytań/pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje z pełną listą pól legacy w UI.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.

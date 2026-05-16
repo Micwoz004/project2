@@ -185,7 +185,7 @@ it('lets the project author apply an active correction through the public endpoi
     app(StartCorrectionAction::class)->execute(
         $project,
         $author,
-        [ProjectCorrectionField::Title, ProjectCorrectionField::Category, ProjectCorrectionField::Description],
+        [ProjectCorrectionField::Title, ProjectCorrectionField::Category, ProjectCorrectionField::Description, ProjectCorrectionField::Cost],
         'Popraw tytuł i kategorię.',
         now()->addDay(),
     );
@@ -202,6 +202,9 @@ it('lets the project author apply an active correction through the public endpoi
             'category_id' => $newCategory->id,
             'description' => 'Opis po korekcie',
             'goal' => 'Tego pola nie wolno poprawić',
+            'cost_items' => [
+                ['description' => 'Nowy koszt', 'amount' => 2500],
+            ],
         ])
         ->assertRedirect(route('public.projects.index'));
 
@@ -212,6 +215,7 @@ it('lets the project author apply an active correction through the public endpoi
         ->and($project->categories()->pluck('categories.id')->all())->toBe([$newCategory->id])
         ->and($project->description)->toBe('Opis po korekcie')
         ->and($project->goal)->toBe('Cel projektu')
+        ->and($project->costItems()->firstOrFail()->amount)->toBe('2500.00')
         ->and($project->need_correction)->toBeFalse()
         ->and($project->versions()->count())->toBe(1);
 });

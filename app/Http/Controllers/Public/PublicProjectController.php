@@ -64,7 +64,7 @@ class PublicProjectController extends Controller
         abort_unless($correction instanceof ProjectCorrection, 404);
 
         return view('public.projects.correction', [
-            'project' => $project->load(['area', 'category']),
+            'project' => $project->load(['area', 'category', 'costItems']),
             'correction' => $correction,
             'areas' => ProjectArea::query()->orderBy('name')->get(),
             'categories' => Category::query()->orderBy('name')->get(),

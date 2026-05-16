@@ -23,6 +23,13 @@
         if (is_array($mapDataValue)) {
             $mapDataValue = json_encode($mapDataValue, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         }
+        $costItemsValue = old('cost_items', $project->costItems->map(fn ($item) => [
+            'description' => $item->description,
+            'amount' => $item->amount,
+        ])->all());
+        if ($costItemsValue === []) {
+            $costItemsValue = [['description' => '', 'amount' => '']];
+        }
     @endphp
 
     <form class="panel" method="post" action="{{ route('public.projects.corrections.update', $project) }}">
@@ -94,6 +101,21 @@
         @if (in_array('free_of_charge', $allowed, true))
             <label for="free_of_charge">Bezpłatność</label>
             <textarea id="free_of_charge" name="free_of_charge" required>{{ old('free_of_charge', $project->free_of_charge) }}</textarea>
+        @endif
+
+        @if (in_array('cost', $allowed, true))
+            <h2>Kosztorys</h2>
+            @foreach ($costItemsValue as $index => $costItem)
+                <fieldset>
+                    <legend>Pozycja {{ $index + 1 }}</legend>
+
+                    <label for="cost_items_{{ $index }}_description">Opis</label>
+                    <input id="cost_items_{{ $index }}_description" name="cost_items[{{ $index }}][description]" value="{{ $costItem['description'] ?? '' }}" required maxlength="1000">
+
+                    <label for="cost_items_{{ $index }}_amount">Kwota</label>
+                    <input id="cost_items_{{ $index }}_amount" name="cost_items[{{ $index }}][amount]" value="{{ $costItem['amount'] ?? '' }}" type="number" step="0.01" min="0" required>
+                </fieldset>
+            @endforeach
         @endif
 
         <p><button type="submit">Zapisz korektę</button></p>

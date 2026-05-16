@@ -47,6 +47,9 @@ class UpdatePublicProjectCorrectionRequest extends FormRequest
             'availability' => ['sometimes', 'required', 'string', 'max:63000'],
             'recipients' => ['sometimes', 'required', 'string', 'max:63000'],
             'free_of_charge' => ['sometimes', 'required', 'string', 'max:63000'],
+            'cost_items' => ['sometimes', 'array'],
+            'cost_items.*.description' => ['required_with:cost_items', 'string', 'max:1000'],
+            'cost_items.*.amount' => ['required_with:cost_items', 'numeric', 'min:0'],
         ];
     }
 
@@ -62,6 +65,9 @@ class UpdatePublicProjectCorrectionRequest extends FormRequest
             'category_id' => 'kategoria',
             'free_of_charge' => 'bezpłatność',
             'map_data' => 'dane mapy',
+            'cost_items' => 'kosztorys',
+            'cost_items.*.description' => 'opis pozycji kosztorysu',
+            'cost_items.*.amount' => 'kwota pozycji kosztorysu',
         ];
     }
 }

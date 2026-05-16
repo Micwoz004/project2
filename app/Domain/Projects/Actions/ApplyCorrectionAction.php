@@ -43,8 +43,9 @@ class ApplyCorrectionAction
 
         $correction = $this->activeCorrection($project);
         $allowedAttributes = $this->filterAllowedAttributes($attributes, $correction);
+        $costItems = $this->filterAllowedCostItems($attributes, $correction);
 
-        if ($allowedAttributes === []) {
+        if ($allowedAttributes === [] && $costItems === null) {
             Log::warning('project.correction.apply.rejected_no_allowed_fields', [
                 'project_id' => $project->id,
                 'actor_id' => $actor->id,
@@ -54,10 +55,14 @@ class ApplyCorrectionAction
             throw new DomainException('Przekazane pola nie są dopuszczone do korekty.');
         }
 
-        return DB::transaction(function () use ($project, $actor, $correction, $allowedAttributes): Project {
+        return DB::transaction(function () use ($project, $actor, $correction, $allowedAttributes, $costItems): Project {
             $project->forceFill($allowedAttributes)->save();
             if (array_key_exists(ProjectCorrectionField::Category->value, $allowedAttributes) && $allowedAttributes[ProjectCorrectionField::Category->value] !== null) {
                 $project->categories()->sync([$allowedAttributes[ProjectCorrectionField::Category->value]]);
+            }
+
+            if ($costItems !== null) {
+                $this->replaceCostItems($project, $costItems);
             }
 
             $this->validator->assertCanSubmit($project);
@@ -116,5 +121,61 @@ class ApplyCorrectionAction
         );
 
         return array_intersect_key($attributes, array_flip($allowedColumns));
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return list<array{description: string, amount: float}>|null
+     */
+    private function filterAllowedCostItems(array $attributes, ProjectCorrection $correction): ?array
+    {
+        if (! in_array(ProjectCorrectionField::Cost->value, $correction->allowed_fields, true) || ! array_key_exists('cost_items', $attributes)) {
+            return null;
+        }
+
+        return collect($attributes['cost_items'])
+            ->map(fn (array $item): array => [
+                'description' => trim((string) ($item['description'] ?? '')),
+                'amount' => (float) ($item['amount'] ?? 0),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  list<array{description: string, amount: float}>  $costItems
+     */
+    private function replaceCostItems(Project $project, array $costItems): void
+    {
+        if ($costItems === []) {
+            Log::warning('project.correction.apply.rejected_missing_cost_items', [
+                'project_id' => $project->id,
+            ]);
+
+            throw new DomainException('Projekt musi mieć co najmniej jedną pozycję kosztorysu.');
+        }
+
+        foreach ($costItems as $costItem) {
+            if ($costItem['description'] === '' || $costItem['amount'] < 0) {
+                Log::warning('project.correction.apply.rejected_invalid_cost_item', [
+                    'project_id' => $project->id,
+                ]);
+
+                throw new DomainException('Pozycja kosztorysu wymaga opisu i nieujemnej kwoty.');
+            }
+        }
+
+        $project->costItems()->delete();
+
+        foreach ($costItems as $costItem) {
+            $project->costItems()->create($costItem);
+        }
+
+        $project->forceFill([
+            'cost' => collect($costItems)
+                ->map(fn (array $costItem): string => $costItem['description'].': '.$costItem['amount'])
+                ->implode(PHP_EOL),
+            'cost_formatted' => collect($costItems)->sum('amount'),
+        ])->save();
     }
 }

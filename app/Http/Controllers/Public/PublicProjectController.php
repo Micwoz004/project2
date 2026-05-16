@@ -175,6 +175,11 @@ class PublicProjectController extends Controller
                 'is_task_form_attachment' => true,
             ])->save();
 
+            $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, 'owner_agreement_files', ProjectFileType::OwnerAgreement, true);
+            $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, 'map_files', ProjectFileType::Map);
+            $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, 'parent_agreement_files', ProjectFileType::ParentAgreement, true);
+            $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, 'attachment_files', ProjectFileType::Other);
+
             $syncProjectCoauthors->execute($project, $request->coauthors());
 
             $submitProject->execute($project);
@@ -194,5 +199,49 @@ class PublicProjectController extends Controller
         return redirect()
             ->route('public.projects.index')
             ->with('status', 'Projekt został zgłoszony.');
+    }
+
+    private function storeProjectFilesFromInput(
+        StorePublicProjectRequest $request,
+        StoreProjectFileAction $storeProjectFile,
+        Project $project,
+        string $inputName,
+        ProjectFileType $type,
+        bool $isPrivate = false,
+    ): void {
+        foreach ($this->uploadedFiles($request, $inputName) as $uploadedFile) {
+            $file = $storeProjectFile->execute(
+                $project,
+                $type,
+                $uploadedFile,
+                null,
+                $type->label().' z formularza publicznego',
+                $isPrivate,
+            );
+            $file->forceFill([
+                'is_task_form_attachment' => true,
+            ])->save();
+        }
+    }
+
+    /**
+     * @return list<UploadedFile>
+     */
+    private function uploadedFiles(StorePublicProjectRequest $request, string $inputName): array
+    {
+        $files = $request->file($inputName, []);
+
+        if ($files instanceof UploadedFile) {
+            return [$files];
+        }
+
+        if (! is_array($files)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $files,
+            static fn (mixed $file): bool => $file instanceof UploadedFile,
+        ));
     }
 }

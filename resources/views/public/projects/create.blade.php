@@ -142,6 +142,18 @@
         <label for="support_list_file">Plik listy poparcia</label>
         <input id="support_list_file" name="support_list_file" type="file" required>
 
+        <label for="owner_agreement_files">Zgody właściciela</label>
+        <input id="owner_agreement_files" name="owner_agreement_files[]" type="file" multiple>
+
+        <label for="map_files">Załączniki mapy</label>
+        <input id="map_files" name="map_files[]" type="file" multiple>
+
+        <label for="parent_agreement_files">Zgody rodzica lub opiekuna</label>
+        <input id="parent_agreement_files" name="parent_agreement_files[]" type="file" multiple>
+
+        <label for="attachment_files">Pozostałe załączniki</label>
+        <input id="attachment_files" name="attachment_files[]" type="file" multiple>
+
         <p><button type="submit">Złóż projekt</button></p>
     </form>
 </x-public.layout>

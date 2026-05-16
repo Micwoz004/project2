@@ -130,11 +130,12 @@
 - [x] Publiczny panel autora do zastosowania aktywnej korekty projektu z whitelistą pól legacy.
 - [x] Publiczne zgłoszenie projektu zapisuje współautorów przez domenowe reguły `Cocreator`.
 - [x] Publiczne zgłoszenie projektu zapisuje bazowe dane mapy i współrzędne.
+- [x] Publiczne zgłoszenie projektu obsługuje uploady legacy: lista poparcia, zgody właściciela/rodzica, mapa i pozostałe załączniki.
 
 ## Do pełnego parytetu
 
 - [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
-- [ ] Pełne podpięcie pozostałych uploadów w formularzach UI oraz potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
+- [ ] Potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Korekty załączników/kosztów w publicznym UI autora.
 - [ ] Weryfikacja formalna z pełną listą pytań/pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje z pełną listą pól legacy w UI.

@@ -30,6 +30,7 @@ it('validates public project submission at the request boundary', function (): v
 
 it('creates a submitted project through the public endpoint', function (): void {
     Storage::fake('local');
+    Storage::fake('public');
     $edition = budgetEdition();
     $area = ProjectArea::query()->create(areaAttributes());
     $category = Category::query()->create(['name' => 'Zieleń']);
@@ -63,12 +64,27 @@ it('creates a submitted project through the public endpoint', function (): void 
         ]],
         'support_list' => '1',
         'support_list_file' => UploadedFile::fake()->create('lista-poparcia.pdf', 128, 'application/pdf'),
+        'owner_agreement_files' => [
+            UploadedFile::fake()->create('zgoda-wlasciciela.pdf', 64, 'application/pdf'),
+        ],
+        'map_files' => [
+            UploadedFile::fake()->create('mapa.png', 64, 'image/png'),
+        ],
+        'attachment_files' => [
+            UploadedFile::fake()->create('opis.pdf', 64, 'application/pdf'),
+        ],
     ])->assertRedirect(route('public.projects.index'));
 
     $project = Project::query()->firstOrFail();
-    $supportListFile = $project->files()->firstOrFail();
+    $supportListFile = $project->files()->where('type', ProjectFileType::SupportList)->firstOrFail();
+    $ownerAgreementFile = $project->files()->where('type', ProjectFileType::OwnerAgreement)->firstOrFail();
+    $mapFile = $project->files()->where('type', ProjectFileType::Map)->firstOrFail();
+    $attachmentFile = $project->files()->where('type', ProjectFileType::Other)->firstOrFail();
 
     Storage::disk('local')->assertExists($supportListFile->stored_name);
+    Storage::disk('local')->assertExists($ownerAgreementFile->stored_name);
+    Storage::disk('public')->assertExists($mapFile->stored_name);
+    Storage::disk('public')->assertExists($attachmentFile->stored_name);
 
     expect($project->status)->toBe(ProjectStatus::Submitted)
         ->and($project->address)->toBe('Plac Andersa 1')
@@ -80,12 +96,18 @@ it('creates a submitted project through the public endpoint', function (): void 
         ->and($project->costItems()->count())->toBe(1)
         ->and($project->coauthors()->count())->toBe(1)
         ->and($project->coauthors()->firstOrFail()->email)->toBe('anna@example.test')
-        ->and($project->files()->count())->toBe(1)
+        ->and($project->files()->count())->toBe(4)
         ->and($project->versions()->count())->toBe(1)
         ->and($project->category_id)->toBe($category->id)
         ->and($project->categories()->pluck('categories.id')->all())->toBe([$category->id])
         ->and($supportListFile->is_private)->toBeTrue()
+        ->and($ownerAgreementFile->is_private)->toBeTrue()
+        ->and($mapFile->is_private)->toBeFalse()
+        ->and($attachmentFile->is_private)->toBeFalse()
         ->and($supportListFile->is_task_form_attachment)->toBeTrue()
+        ->and($ownerAgreementFile->is_task_form_attachment)->toBeTrue()
+        ->and($mapFile->is_task_form_attachment)->toBeTrue()
+        ->and($attachmentFile->is_task_form_attachment)->toBeTrue()
         ->and($supportListFile->original_name)->toBe('lista-poparcia.pdf');
 });
 

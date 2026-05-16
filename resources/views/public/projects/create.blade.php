@@ -9,6 +9,13 @@
         </div>
     @endif
 
+    @php
+        $mapDataValue = old('map_data', '');
+        if (is_array($mapDataValue)) {
+            $mapDataValue = json_encode($mapDataValue, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        }
+    @endphp
+
     <form class="panel" method="post" action="{{ route('public.projects.store') }}" enctype="multipart/form-data">
         @csrf
 
@@ -44,6 +51,24 @@
 
         <label for="localization">Lokalizacja</label>
         <textarea id="localization" name="localization" required>{{ old('localization') }}</textarea>
+
+        <label for="address">Adres</label>
+        <input id="address" name="address" value="{{ old('address') }}" maxlength="300">
+
+        <label for="plot">Działka</label>
+        <textarea id="plot" name="plot">{{ old('plot') }}</textarea>
+
+        <label for="lat">Szerokość geograficzna</label>
+        <input id="lat" name="lat" value="{{ old('lat') }}" type="number" step="0.0000001" min="-90" max="90">
+
+        <label for="lng">Długość geograficzna</label>
+        <input id="lng" name="lng" value="{{ old('lng') }}" type="number" step="0.0000001" min="-180" max="180">
+
+        <label for="map_lng_lat">Współrzędne mapy</label>
+        <textarea id="map_lng_lat" name="map_lng_lat">{{ old('map_lng_lat') }}</textarea>
+
+        <label for="map_data">Dane mapy JSON</label>
+        <textarea id="map_data" name="map_data">{{ $mapDataValue }}</textarea>
 
         <label for="description">Opis</label>
         <textarea id="description" name="description" required>{{ old('description') }}</textarea>

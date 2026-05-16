@@ -129,6 +129,7 @@
 - [x] Bazowe szablony i kolejka powiadomień projektu z audytem w logach mailowych.
 - [x] Publiczny panel autora do zastosowania aktywnej korekty projektu z whitelistą pól legacy.
 - [x] Publiczne zgłoszenie projektu zapisuje współautorów przez domenowe reguły `Cocreator`.
+- [x] Publiczne zgłoszenie projektu zapisuje bazowe dane mapy i współrzędne.
 
 ## Do pełnego parytetu
 

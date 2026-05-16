@@ -6,6 +6,21 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StorePublicProjectRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('map_data') || ! is_string($this->input('map_data'))) {
+            return;
+        }
+
+        $decoded = json_decode($this->input('map_data'), true);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $this->merge([
+                'map_data' => $decoded,
+            ]);
+        }
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -19,6 +34,12 @@ class StorePublicProjectRequest extends FormRequest
             'category_id' => ['required', 'exists:categories,id'],
             'title' => ['required', 'string', 'max:600'],
             'localization' => ['required', 'string', 'max:63000'],
+            'address' => ['nullable', 'string', 'max:300'],
+            'plot' => ['nullable', 'string', 'max:63000'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'map_lng_lat' => ['nullable', 'string', 'max:63000'],
+            'map_data' => ['nullable', 'array'],
             'description' => ['required', 'string', 'max:63000'],
             'goal' => ['required', 'string', 'max:63000'],
             'argumentation' => ['required', 'string', 'max:63000'],
@@ -83,6 +104,12 @@ class StorePublicProjectRequest extends FormRequest
             'budget_edition_id' => 'edycja',
             'project_area_id' => 'obszar',
             'category_id' => 'kategoria',
+            'address' => 'adres',
+            'plot' => 'działka',
+            'lat' => 'szerokość geograficzna',
+            'lng' => 'długość geograficzna',
+            'map_lng_lat' => 'współrzędne mapy',
+            'map_data' => 'dane mapy',
             'free_of_charge' => 'bezpłatność',
             'cost_description' => 'pozycja kosztorysu',
             'cost_amount' => 'kwota',

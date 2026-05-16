@@ -40,6 +40,12 @@ it('creates a submitted project through the public endpoint', function (): void 
         'category_id' => $category->id,
         'title' => 'Nowy park kieszonkowy',
         'localization' => 'Szczecin',
+        'address' => 'Plac Andersa 1',
+        'plot' => 'Działka 10/2',
+        'lat' => '53.4285432',
+        'lng' => '14.5528116',
+        'map_lng_lat' => '14.5528116,53.4285432',
+        'map_data' => json_encode(['type' => 'Point', 'coordinates' => [14.5528116, 53.4285432]]),
         'description' => 'Opis projektu',
         'goal' => 'Cel projektu',
         'argumentation' => 'Uzasadnienie',
@@ -65,6 +71,12 @@ it('creates a submitted project through the public endpoint', function (): void 
     Storage::disk('local')->assertExists($supportListFile->stored_name);
 
     expect($project->status)->toBe(ProjectStatus::Submitted)
+        ->and($project->address)->toBe('Plac Andersa 1')
+        ->and($project->plot)->toBe('Działka 10/2')
+        ->and($project->lat)->toBe('53.4285432')
+        ->and($project->lng)->toBe('14.5528116')
+        ->and($project->map_lng_lat)->toBe('14.5528116,53.4285432')
+        ->and($project->map_data)->toBe(['type' => 'Point', 'coordinates' => [14.5528116, 53.4285432]])
         ->and($project->costItems()->count())->toBe(1)
         ->and($project->coauthors()->count())->toBe(1)
         ->and($project->coauthors()->firstOrFail()->email)->toBe('anna@example.test')

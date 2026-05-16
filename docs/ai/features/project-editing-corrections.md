@@ -13,13 +13,13 @@
 
 ## Plan wdrożenia
 
-Status: częściowo zaimplementowane w etapie 1.
+Status: częściowo zaimplementowane; domena, Filament i publiczny panel autora dla wspieranych pól są dostępne.
 
 1. [x] Dodać serwis `ProjectLifecycleService` dla blokad edycji.
 2. [x] Dodać akcje rozpoczęcia i zakończenia korekty.
 3. [x] Wymusić wersjonowanie każdej korekty.
 4. [x] Udostępnić administracyjne korekty w Filament.
-5. [ ] Udostępnić korekty w publicznym panelu autora.
+5. [x] Udostępnić korekty w publicznym panelu autora.
 6. [x] Pokryć testami okno korekty, statusy i whitelistę pól.
 7. [ ] Dopisać obsługę załączników/kosztów w korektach po implementacji pełnych uploadów.
 
@@ -44,10 +44,13 @@ Status: częściowo zaimplementowane w etapie 1.
 - `LegacyFixtureImportService` przenosi historyczne rekordy `versions` do `project_versions`, zachowując `legacy_id`, JSON pól projektu, plików i kosztów oraz czas utworzenia wersji.
 - Po poprawnym zastosowaniu korekty aktywne okno jest zamykane przez `correction_done=true` i wyczyszczenie flagi `need_correction`.
 - `ProjectResource` w Filament udostępnia administracyjne wezwanie do korekty z whitelistą pól oraz zastosowanie korekty przez `ApplyCorrectionAction`. Formularz administracyjny obejmuje pola projektu wspierane przez `ProjectCorrectionField::editableProjectColumns()`.
+- Publiczne trasy `/moje-projekty/{project}/korekta` pozwalają autorowi w aktywnym oknie korekty poprawić tylko pola odblokowane w `project_corrections.allowed_fields`.
+- `UpdatePublicProjectCorrectionRequest` waliduje poprawiane pola na granicy HTTP i opiera decyzję dostępu na `ProjectPolicy::update`.
+- Korekta kategorii synchronizuje także pivot `category_project`, żeby publiczna kategoria główna i wielokategorie nie rozjechały się po poprawce.
 
 ## Zgodność do sprawdzenia
 
 - Porównać pełne liczności `taskcorrection` z `project_corrections` po docelowym imporcie z dumpa MySQL.
-- Dodać publiczny panel autora do wprowadzania korekty w aktywnym oknie.
+- Rozszerzyć publiczny panel autora po pełnym module formularza o mapę i układ pól 1:1 względem widoków Yii.
 - Po pełnym module plików dopisać obsługę korekty załączników: lista poparcia, zgoda właściciela, mapa, zgoda rodzica i inne załączniki.
 - Po module kosztorysów rozszerzyć korekty kosztów tak, żeby wymagały minimum jednej pozycji jak legacy.

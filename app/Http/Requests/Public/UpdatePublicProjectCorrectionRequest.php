@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Http\Requests\Public;
+
+use App\Domain\Projects\Models\Project;
+use App\Models\User;
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdatePublicProjectCorrectionRequest extends FormRequest
+{
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('map_data') || ! is_string($this->input('map_data'))) {
+            return;
+        }
+
+        $decoded = json_decode($this->input('map_data'), true);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $this->merge([
+                'map_data' => $decoded,
+            ]);
+        }
+    }
+
+    public function authorize(): bool
+    {
+        $project = $this->route('project');
+        $user = $this->user();
+
+        return $project instanceof Project
+            && $user instanceof User
+            && $user->can('update', $project);
+    }
+
+    public function rules(): array
+    {
+        return [
+            'project_area_id' => ['sometimes', 'required', 'exists:project_areas,id'],
+            'category_id' => ['sometimes', 'required', 'exists:categories,id'],
+            'title' => ['sometimes', 'required', 'string', 'max:600'],
+            'localization' => ['sometimes', 'required', 'string', 'max:63000'],
+            'map_data' => ['sometimes', 'nullable', 'array'],
+            'description' => ['sometimes', 'required', 'string', 'max:63000'],
+            'goal' => ['sometimes', 'required', 'string', 'max:63000'],
+            'argumentation' => ['sometimes', 'required', 'string', 'max:63000'],
+            'availability' => ['sometimes', 'required', 'string', 'max:63000'],
+            'recipients' => ['sometimes', 'required', 'string', 'max:63000'],
+            'free_of_charge' => ['sometimes', 'required', 'string', 'max:63000'],
+        ];
+    }
+
+    public function actor(): User
+    {
+        return $this->user();
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'project_area_id' => 'obszar',
+            'category_id' => 'kategoria',
+            'free_of_charge' => 'bezpłatność',
+            'map_data' => 'dane mapy',
+        ];
+    }
+}

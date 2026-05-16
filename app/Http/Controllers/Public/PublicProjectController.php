@@ -5,14 +5,17 @@ namespace App\Http\Controllers\Public;
 use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Files\Actions\StoreProjectFileAction;
 use App\Domain\Files\Enums\ProjectFileType;
+use App\Domain\Projects\Actions\ApplyCorrectionAction;
 use App\Domain\Projects\Actions\SubmitProjectAction;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Services\PublicProjectCatalogQuery;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StorePublicProjectRequest;
+use App\Http\Requests\Public\UpdatePublicProjectCorrectionRequest;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,6 +48,58 @@ class PublicProjectController extends Controller
         return view('public.projects.show', [
             'project' => $project->load(['area', 'budgetEdition', 'costItems', 'publicFiles']),
         ]);
+    }
+
+    public function editCorrection(Project $project): View
+    {
+        Gate::authorize('update', $project);
+
+        $correction = $project->corrections()
+            ->where('correction_done', false)
+            ->where('correction_deadline', '>', now())
+            ->latest()
+            ->first();
+
+        abort_unless($correction instanceof ProjectCorrection, 404);
+
+        return view('public.projects.correction', [
+            'project' => $project->load(['area', 'category']),
+            'correction' => $correction,
+            'areas' => ProjectArea::query()->orderBy('name')->get(),
+            'categories' => Category::query()->orderBy('name')->get(),
+        ]);
+    }
+
+    public function updateCorrection(
+        UpdatePublicProjectCorrectionRequest $request,
+        Project $project,
+        ApplyCorrectionAction $applyCorrection,
+    ): RedirectResponse {
+        Log::info('project.public_correction.start', [
+            'project_id' => $project->id,
+            'actor_id' => $request->actor()->id,
+        ]);
+
+        try {
+            $updated = $applyCorrection->execute($project, $request->actor(), $request->validated());
+        } catch (DomainException $exception) {
+            Log::warning('project.public_correction.rejected', [
+                'project_id' => $project->id,
+                'actor_id' => $request->actor()->id,
+                'reason' => $exception->getMessage(),
+            ]);
+
+            return back()->withInput()->withErrors(['project' => $exception->getMessage()]);
+        }
+
+        Log::info('project.public_correction.success', [
+            'project_id' => $updated->id,
+            'actor_id' => $request->actor()->id,
+        ]);
+
+        return redirect()
+            ->route('public.projects.index')
+            ->with('status', 'Korekta projektu została zapisana.');
     }
 
     public function create(): View

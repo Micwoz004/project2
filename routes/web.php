@@ -14,6 +14,10 @@ Route::get('/projekt/{project}', [PublicProjectController::class, 'show'])->name
 Route::get('/projekty-mapa', [PublicProjectController::class, 'index'])->name('public.projects.map');
 Route::get('/projekty/zglos', [PublicProjectController::class, 'create'])->name('public.projects.create');
 Route::post('/projekty/zglos', [PublicProjectController::class, 'store'])->name('public.projects.store');
+Route::middleware('auth')->group(function (): void {
+    Route::get('/moje-projekty/{project}/korekta', [PublicProjectController::class, 'editCorrection'])->name('public.projects.corrections.edit');
+    Route::put('/moje-projekty/{project}/korekta', [PublicProjectController::class, 'updateCorrection'])->name('public.projects.corrections.update');
+});
 Route::get('/glosowanie', [PublicVotingController::class, 'welcome'])->name('public.voting.welcome');
 Route::post('/glosowanie/kod-sms', [PublicVotingController::class, 'issueToken'])->name('public.voting.token');
 Route::post('/glosowanie', [PublicVotingController::class, 'cast'])->name('public.voting.cast');

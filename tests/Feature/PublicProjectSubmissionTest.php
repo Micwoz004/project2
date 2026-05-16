@@ -1,9 +1,14 @@
 <?php
 
+use App\Domain\Files\Enums\ProjectFileType;
+use App\Domain\Files\Models\ProjectFile;
+use App\Domain\Projects\Actions\StartCorrectionAction;
+use App\Domain\Projects\Enums\ProjectCorrectionField;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -71,4 +76,81 @@ it('returns not found for hidden or non-public project details', function (): vo
     ]));
 
     $this->get(route('public.projects.show', $project))->assertNotFound();
+});
+
+it('lets the project author apply an active correction through the public endpoint', function (): void {
+    $author = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $category = Category::query()->create(['name' => 'Zieleń']);
+    $newCategory = Category::query()->create(['name' => 'Sport']);
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'category_id' => $category->id,
+        'status' => ProjectStatus::Submitted,
+        'is_support_list' => true,
+        'submitted_at' => now()->subDay(),
+    ]));
+    $project->categories()->sync([$category->id]);
+    $project->costItems()->create([
+        'description' => 'Prace projektowe',
+        'amount' => 1000,
+    ]);
+    ProjectFile::query()->create([
+        'project_id' => $project->id,
+        'stored_name' => 'support.pdf',
+        'original_name' => 'support.pdf',
+        'type' => ProjectFileType::SupportList,
+    ]);
+
+    app(StartCorrectionAction::class)->execute(
+        $project,
+        $author,
+        [ProjectCorrectionField::Title, ProjectCorrectionField::Category, ProjectCorrectionField::Description],
+        'Popraw tytuł i kategorię.',
+        now()->addDay(),
+    );
+
+    $this->actingAs($author)
+        ->get(route('public.projects.corrections.edit', $project))
+        ->assertOk()
+        ->assertSee('Korekta projektu')
+        ->assertSee('Popraw tytuł i kategorię.');
+
+    $this->actingAs($author)
+        ->put(route('public.projects.corrections.update', $project), [
+            'title' => 'Tytuł po korekcie',
+            'category_id' => $newCategory->id,
+            'description' => 'Opis po korekcie',
+            'goal' => 'Tego pola nie wolno poprawić',
+        ])
+        ->assertRedirect(route('public.projects.index'));
+
+    $project->refresh();
+
+    expect($project->title)->toBe('Tytuł po korekcie')
+        ->and($project->category_id)->toBe($newCategory->id)
+        ->and($project->categories()->pluck('categories.id')->all())->toBe([$newCategory->id])
+        ->and($project->description)->toBe('Opis po korekcie')
+        ->and($project->goal)->toBe('Cel projektu')
+        ->and($project->need_correction)->toBeFalse()
+        ->and($project->versions()->count())->toBe(1);
+});
+
+it('forbids public correction access for other users', function (): void {
+    $author = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'status' => ProjectStatus::Submitted,
+        'need_correction' => true,
+        'correction_start_time' => now()->subHour(),
+        'correction_end_time' => now()->addDay(),
+    ]));
+
+    $this->actingAs($otherUser)
+        ->get(route('public.projects.corrections.edit', $project))
+        ->assertForbidden();
 });

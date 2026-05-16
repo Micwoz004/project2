@@ -56,6 +56,10 @@ class ApplyCorrectionAction
 
         return DB::transaction(function () use ($project, $actor, $correction, $allowedAttributes): Project {
             $project->forceFill($allowedAttributes)->save();
+            if (array_key_exists(ProjectCorrectionField::Category->value, $allowedAttributes) && $allowedAttributes[ProjectCorrectionField::Category->value] !== null) {
+                $project->categories()->sync([$allowedAttributes[ProjectCorrectionField::Category->value]]);
+            }
+
             $this->validator->assertCanSubmit($project);
 
             $correction->forceFill([

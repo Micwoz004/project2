@@ -127,12 +127,13 @@
 - [x] Akcja Filament do rejestracji papierowych kart głosowania przez domenową logikę głosowania.
 - [x] Akcja Filament do edycji głosów na istniejącej karcie z domenową walidacją limitów i projektów.
 - [x] Bazowe szablony i kolejka powiadomień projektu z audytem w logach mailowych.
+- [x] Publiczny panel autora do zastosowania aktywnej korekty projektu z whitelistą pól legacy.
 
 ## Do pełnego parytetu
 
 - [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
 - [ ] Pełne podpięcie pozostałych uploadów w formularzach UI oraz potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
-- [ ] Korekty projektu w publicznym UI autora oraz korekty załączników/kosztów.
+- [ ] Korekty załączników/kosztów w publicznym UI autora.
 - [ ] Weryfikacja formalna z pełną listą pytań/pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje z pełną listą pól legacy w UI.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.

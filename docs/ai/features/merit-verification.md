@@ -58,12 +58,12 @@ Status: częściowo zaimplementowane w etapie 3.
 - `VerificationPressureLog` zachowuje legacy `verificationpressure`: tytuł/treść monitu, odbiorców, typ (`2` dyrektor, `3` ręczny), jednostkę i legacy ID przydziału.
 - `ProjectResource` w Filament udostępnia przydzielanie jednostek do typów `MeritInitial`, `MeritFinish` i `Consultation` oraz wysyłkę kart wstępnych, końcowych i konsultacyjnych. Widoczność akcji wymaga uprawnień weryfikacyjnych i statusów pasujących do etapu.
 - Bazowe formularze UI zapisują wynik, treść opinii, uzasadnienie negatywne oraz pojedynczą pozycję kosztu szacunkowego/przyszłego; pełne listy pól legacy nadal są przechowywane w `answers` JSON i pozostają do odwzorowania w kompletnej wersji UI.
+- `VerificationOverviewService` buduje administracyjny podgląd przydziałów, kart i wersji `verification_versions`; `ProjectResource` pokazuje go jako modal `Historia weryfikacji` dla użytkowników z uprawnieniami weryfikacyjnymi.
 
 ## Świadome uproszczenia na tym etapie
 
 - Pełne listy pól pytań z formularzy legacy są przechowywane w `answers` JSON. Logika statusów i wymaganych danych jest w domenie; kompletne formularze UI zostaną odwzorowane później.
-- UI historii wersji kart merytorycznych nie jest jeszcze zbudowane, ale domena zapisuje nowe snapshoty kart.
-- Agregacja wielu departamentów jest zaimplementowana dla statusów wstępnej i końcowej weryfikacji. Do doprecyzowania pozostają ekrany administracyjne pokazujące pełny rozkład decyzji.
+- Podgląd historii weryfikacji jest tekstowym modalem administracyjnym; docelowo można go rozbudować do tabel zależnych, jeśli będzie potrzebny pełny ekran analityczny.
 
 ## Zgodność do sprawdzenia
 

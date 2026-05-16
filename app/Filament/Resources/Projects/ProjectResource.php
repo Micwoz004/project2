@@ -33,6 +33,7 @@ use App\Domain\Verification\Models\FinalMeritVerification;
 use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Verification\Models\VerificationAssignment;
+use App\Domain\Verification\Services\VerificationOverviewService;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProjects;
@@ -163,6 +164,7 @@ class ProjectResource extends Resource
                 self::submitInitialMeritVerificationAction(),
                 self::submitFinalMeritVerificationAction(),
                 self::submitConsultationVerificationAction(),
+                self::verificationOverviewAction(),
                 self::castBoardVoteAction(BoardType::Zk),
                 self::castBoardVoteAction(BoardType::Ot),
                 self::castBoardVoteAction(BoardType::At),
@@ -245,6 +247,12 @@ class ProjectResource extends Resource
     public static function canStartProjectCorrection(Project $project): bool
     {
         return self::canManageProjects()
+            && $project->status !== ProjectStatus::WorkingCopy;
+    }
+
+    public static function canViewVerificationOverview(Project $project): bool
+    {
+        return self::canVerifyProjects()
             && $project->status !== ProjectStatus::WorkingCopy;
     }
 
@@ -397,6 +405,16 @@ class ProjectResource extends Resource
             self::authenticatedUser('project.correction.apply.rejected_guest'),
             self::correctionAttributesFromData($data),
         );
+    }
+
+    public static function verificationOverviewFormData(Project $project): array
+    {
+        $service = app(VerificationOverviewService::class);
+
+        return [
+            'verification_overview' => $service->overviewText($project),
+            'verification_versions' => $service->versionsText($project),
+        ];
     }
 
     public static function canCastBoardVote(Project $project, BoardType $boardType): bool
@@ -674,6 +692,30 @@ class ProjectResource extends Resource
             ->schema(self::meritVerificationSchema())
             ->visible(fn (Project $record): bool => self::canSubmitConsultationVerification($record))
             ->action(fn (array $data, Project $record): ConsultationVerification => self::submitConsultationVerificationFromAdminForm($record, $data));
+    }
+
+    private static function verificationOverviewAction(): Action
+    {
+        return Action::make('verification_overview')
+            ->label('Historia weryfikacji')
+            ->fillForm(fn (Project $record): array => self::verificationOverviewFormData($record))
+            ->schema([
+                Textarea::make('verification_overview')
+                    ->label('Przydziały i karty')
+                    ->rows(12)
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->columnSpanFull(),
+                Textarea::make('verification_versions')
+                    ->label('Wersje kart')
+                    ->rows(8)
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->columnSpanFull(),
+            ])
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Zamknij')
+            ->visible(fn (Project $record): bool => self::canViewVerificationOverview($record));
     }
 
     private static function closeBoardVotingAction(BoardType $boardType): Action

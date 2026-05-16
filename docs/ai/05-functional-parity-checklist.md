@@ -116,6 +116,7 @@
 - [x] Wersjonowanie kart weryfikacji merytorycznej i konsultacyjnej przy zapisie przez `verification_versions`.
 - [x] Bazowe akcje Filament dla przydziałów, weryfikacji wstępnej, końcowej i konsultacyjnej.
 - [x] Agregacja statusu weryfikacji merytorycznej po wielu departamentach przed zmianą statusu projektu.
+- [x] Administracyjny podgląd historii kart weryfikacji, wersji i agregacji przydziałów departamentów.
 - [x] Głos przewodniczącego ZK rozstrzyga graniczny wynik 4:4 zgodnie z `Task::zkAccepted()`.
 - [x] Zamknięcie i restart głosowań OT/AT z efektami legacy.
 - [x] Gate dla ról rad/komisji (`cast-board-vote`) oraz zarządzania głosowaniem (`manage-board-voting`).
@@ -133,7 +134,6 @@
 - [ ] Korekty projektu w publicznym UI autora oraz korekty załączników/kosztów.
 - [ ] Weryfikacja formalna z pełną listą pytań/pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje z pełną listą pól legacy w UI.
-- [ ] UI historii wersji kart weryfikacji i administracyjny podgląd agregacji wielu departamentów.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
 - [ ] Kolejki i szablony powiadomień mail/SMS z pełną mapą typów legacy.

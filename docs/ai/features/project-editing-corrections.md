@@ -18,9 +18,10 @@ Status: częściowo zaimplementowane w etapie 1.
 1. [x] Dodać serwis `ProjectLifecycleService` dla blokad edycji.
 2. [x] Dodać akcje rozpoczęcia i zakończenia korekty.
 3. [x] Wymusić wersjonowanie każdej korekty.
-4. [ ] Udostępnić korekty w Filament i publicznym panelu autora.
-5. [x] Pokryć testami okno korekty, statusy i whitelistę pól.
-6. [ ] Dopisać obsługę załączników/kosztów w korektach po implementacji pełnych uploadów.
+4. [x] Udostępnić administracyjne korekty w Filament.
+5. [ ] Udostępnić korekty w publicznym panelu autora.
+6. [x] Pokryć testami okno korekty, statusy i whitelistę pól.
+7. [ ] Dopisać obsługę załączników/kosztów w korektach po implementacji pełnych uploadów.
 
 ## Rozpoznane reguły legacy
 
@@ -42,9 +43,11 @@ Status: częściowo zaimplementowane w etapie 1.
 - `DecideProjectChangeSuggestionAction` odtwarza `TaskChangesSuggestion::afterSave`: akceptacja aktualizuje pola projektu, podmienia kosztorys i opisy plików oraz ustawia `ChangesSuggestionAccepted`; odrzucenie wraca do `DuringMeritVerification`.
 - `LegacyFixtureImportService` przenosi historyczne rekordy `versions` do `project_versions`, zachowując `legacy_id`, JSON pól projektu, plików i kosztów oraz czas utworzenia wersji.
 - Po poprawnym zastosowaniu korekty aktywne okno jest zamykane przez `correction_done=true` i wyczyszczenie flagi `need_correction`.
+- `ProjectResource` w Filament udostępnia administracyjne wezwanie do korekty z whitelistą pól oraz zastosowanie korekty przez `ApplyCorrectionAction`. Formularz administracyjny obejmuje pola projektu wspierane przez `ProjectCorrectionField::editableProjectColumns()`.
 
 ## Zgodność do sprawdzenia
 
 - Porównać pełne liczności `taskcorrection` z `project_corrections` po docelowym imporcie z dumpa MySQL.
+- Dodać publiczny panel autora do wprowadzania korekty w aktywnym oknie.
 - Po pełnym module plików dopisać obsługę korekty załączników: lista poparcia, zgoda właściciela, mapa, zgoda rodzica i inne załączniki.
 - Po module kosztorysów rozszerzyć korekty kosztów tak, żeby wymagały minimum jednej pozycji jak legacy.

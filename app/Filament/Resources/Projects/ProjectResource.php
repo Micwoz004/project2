@@ -3,8 +3,11 @@
 namespace App\Filament\Resources\Projects;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Projects\Actions\ApplyCorrectionAction;
+use App\Domain\Projects\Actions\StartCorrectionAction;
 use App\Domain\Projects\Enums\ProjectCorrectionField;
 use App\Domain\Projects\Enums\ProjectStatus;
+use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCorrection;
@@ -154,6 +157,8 @@ class ProjectResource extends Resource
                 self::rejectFormalVerificationAction(),
                 self::requestFormalCorrectionAction(),
                 self::forwardFormalVerificationAction(),
+                self::startProjectCorrectionAction(),
+                self::applyProjectCorrectionAction(),
                 self::assignMeritDepartmentsAction(),
                 self::submitInitialMeritVerificationAction(),
                 self::submitFinalMeritVerificationAction(),
@@ -235,6 +240,18 @@ class ProjectResource extends Resource
                 ProjectStatus::SentForMeritVerification,
                 ProjectStatus::DuringMeritVerification,
             ], true);
+    }
+
+    public static function canStartProjectCorrection(Project $project): bool
+    {
+        return self::canManageProjects()
+            && $project->status !== ProjectStatus::WorkingCopy;
+    }
+
+    public static function canApplyProjectCorrection(Project $project): bool
+    {
+        return self::canManageProjects()
+            && $project->need_correction;
     }
 
     public static function beginFormalVerificationFromAdmin(Project $project): Project
@@ -353,6 +370,32 @@ class ProjectResource extends Resource
             (bool) ($data['result'] ?? false),
             self::meritAnswersFromData($data),
             $data['result_comments'] ?? null,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function startProjectCorrectionFromAdminForm(Project $project, array $data): ProjectCorrection
+    {
+        return app(StartCorrectionAction::class)->execute(
+            $project,
+            self::authenticatedUser('project.correction.rejected_guest'),
+            self::correctionFieldsFromData($data),
+            $data['notes'] ?? null,
+            self::optionalDateTime($data['deadline'] ?? null),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function applyProjectCorrectionFromAdminForm(Project $project, array $data): Project
+    {
+        return app(ApplyCorrectionAction::class)->execute(
+            $project,
+            self::authenticatedUser('project.correction.apply.rejected_guest'),
+            self::correctionAttributesFromData($data),
         );
     }
 
@@ -539,6 +582,36 @@ class ProjectResource extends Resource
             ->action(fn (array $data, Project $record): Project => self::forwardFormalVerificationFromAdminForm($record, $data));
     }
 
+    private static function startProjectCorrectionAction(): Action
+    {
+        return Action::make('start_project_correction')
+            ->label('Wezwij do korekty')
+            ->schema([
+                CheckboxList::make('allowed_fields')
+                    ->label('Pola do poprawy')
+                    ->options(self::correctionFieldOptions())
+                    ->required(),
+                DateTimePicker::make('deadline')
+                    ->label('Termin korekty'),
+                Textarea::make('notes')
+                    ->label('Uwagi dla wnioskodawcy')
+                    ->maxLength(5000)
+                    ->columnSpanFull(),
+            ])
+            ->visible(fn (Project $record): bool => self::canStartProjectCorrection($record))
+            ->action(fn (array $data, Project $record): ProjectCorrection => self::startProjectCorrectionFromAdminForm($record, $data));
+    }
+
+    private static function applyProjectCorrectionAction(): Action
+    {
+        return Action::make('apply_project_correction')
+            ->label('Zastosuj korektę')
+            ->fillForm(fn (Project $record): array => self::correctionFormData($record))
+            ->schema(self::projectCorrectionSchema())
+            ->visible(fn (Project $record): bool => self::canApplyProjectCorrection($record))
+            ->action(fn (array $data, Project $record): Project => self::applyProjectCorrectionFromAdminForm($record, $data));
+    }
+
     private static function assignMeritDepartmentsAction(): Action
     {
         return Action::make('assign_merit_departments')
@@ -666,6 +739,51 @@ class ProjectResource extends Resource
         ];
     }
 
+    /**
+     * @return array<int, mixed>
+     */
+    private static function projectCorrectionSchema(): array
+    {
+        return [
+            TextInput::make('title')
+                ->label('Tytuł')
+                ->maxLength(600),
+            Select::make('project_area_id')
+                ->label('Obszar')
+                ->options(fn (): array => ProjectArea::query()
+                    ->orderBy('name')
+                    ->pluck('name', 'id')
+                    ->all()),
+            Select::make('category_id')
+                ->label('Kategoria główna')
+                ->options(fn (): array => Category::query()
+                    ->orderBy('name')
+                    ->pluck('name', 'id')
+                    ->all()),
+            Textarea::make('localization')
+                ->label('Lokalizacja')
+                ->columnSpanFull(),
+            Textarea::make('goal')
+                ->label('Cel')
+                ->columnSpanFull(),
+            Textarea::make('description')
+                ->label('Opis')
+                ->columnSpanFull(),
+            Textarea::make('argumentation')
+                ->label('Uzasadnienie')
+                ->columnSpanFull(),
+            Textarea::make('availability')
+                ->label('Dostępność')
+                ->columnSpanFull(),
+            Textarea::make('recipients')
+                ->label('Odbiorcy')
+                ->columnSpanFull(),
+            Textarea::make('free_of_charge')
+                ->label('Nieodpłatność')
+                ->columnSpanFull(),
+        ];
+    }
+
     private static function verificationAssignmentTypeOptions(): array
     {
         return [
@@ -731,6 +849,22 @@ class ProjectResource extends Resource
         ];
     }
 
+    private static function correctionFormData(Project $project): array
+    {
+        return [
+            'title' => $project->title,
+            'project_area_id' => $project->project_area_id,
+            'category_id' => $project->category_id,
+            'localization' => $project->localization,
+            'goal' => $project->goal,
+            'description' => $project->description,
+            'argumentation' => $project->argumentation,
+            'availability' => $project->availability,
+            'recipients' => $project->recipients,
+            'free_of_charge' => $project->free_of_charge,
+        ];
+    }
+
     /**
      * @param  array<string, mixed>  $data
      * @return list<ProjectCorrectionField>
@@ -741,6 +875,15 @@ class ProjectResource extends Resource
             static fn (string $field): ProjectCorrectionField => ProjectCorrectionField::from($field),
             array_values($data['allowed_fields'] ?? []),
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private static function correctionAttributesFromData(array $data): array
+    {
+        return array_intersect_key($data, array_flip(ProjectCorrectionField::editableProjectColumns()));
     }
 
     /**
@@ -808,6 +951,14 @@ class ProjectResource extends Resource
 
         return $user instanceof User
             && ($user->can('projects.verify') || $user->can('projects.manage') || $user->hasAnyRole(['admin', 'bdo']));
+    }
+
+    private static function canManageProjects(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User
+            && ($user->can('projects.manage') || $user->hasAnyRole(['admin', 'bdo']));
     }
 
     private static function authenticatedUser(string $rejectionLog): User

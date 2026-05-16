@@ -95,6 +95,7 @@
 - [x] Import fixture korekt projektu z tabeli `taskcorrection`.
 - [x] Model i import fixture propozycji zmian projektu z `taskchangessuggestion`.
 - [x] Akceptacja/odrzucenie propozycji zmian projektu zgodnie z `TaskChangesSuggestion::afterSave`.
+- [x] Administracyjne akcje Filament do wezwania i zastosowania korekty projektu z whitelistą pól.
 - [x] Import fixture ustawień aplikacji z tabeli `settings` z surowymi wartościami legacy.
 - [x] Import fixture stron procesu głosowania z tabeli `pages`.
 - [x] Import fixture słownika nazw statusów z tabeli `statuses`.
@@ -127,7 +128,7 @@
 
 - [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
 - [ ] Pełne podpięcie pozostałych uploadów w formularzach UI oraz potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
-- [ ] Korekty projektu w UI autora/admina oraz korekty załączników/kosztów.
+- [ ] Korekty projektu w publicznym UI autora oraz korekty załączników/kosztów.
 - [ ] Weryfikacja formalna z pełną listą pytań/pól legacy w UI.
 - [ ] Weryfikacje merytoryczne i konsultacje z pełną listą pól legacy w UI.
 - [ ] UI historii wersji kart weryfikacji i administracyjny podgląd agregacji wielu departamentów.

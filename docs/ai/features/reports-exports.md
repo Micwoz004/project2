@@ -19,7 +19,8 @@ Status: baseline domenowy rozpoczęty.
 2. [ ] Dla każdego raportu opisać kolumny, filtry i PII.
 3. [x] Wdrożyć pierwszy publiczny eksport CSV wyników bez PII.
 4. [x] Dodać bazowe raporty bez danych wrażliwych: statusy kart i demografia zaakceptowanych kart.
-5. Pokryć testami kolumny i liczności względem fixture legacy.
+5. [x] Pokryć testami kolumny i liczności względem fixture legacy.
+6. [x] Dodać administracyjne endpointy CSV z uprawnieniem `reports.export`.
 
 ## Implementacja Laravel
 
@@ -38,6 +39,7 @@ Status: baseline domenowy rozpoczęty.
 - `PublicResultsCsvExporter` eksportuje publiczne wyniki CSV z kolumnami `project_id`, `project_number`, `title`, `area`, `points`.
 - `CategoryComparisonCsvExporter` eksportuje raport porównujący punkty po legacy kategorii głównej projektu i po wielu kategoriach z `category_project`; raport nie zawiera PII.
 - `/wyniki/export.csv` jest dostępne tylko w oknie publikacji wyników.
+- `AdminReportController` udostępnia CSV za `auth` i `reports.export`: karty głosowania z PII, projekty złożone, niewysłane weryfikacje jednostek, korekty projektów, historię projektów, manifest wyników weryfikacji i porównanie kategorii.
 
 ## Inwentaryzacja legacy
 
@@ -54,5 +56,5 @@ Status: baseline domenowy rozpoczęty.
 
 ## Świadome braki na tym etapie
 
-- Brak administracyjnych plików XLSX i kolejek dla dużych raportów; pierwszy raport PII ma już dane i eksport CSV.
-- Brak raportów administracyjnych z kolumnami 1:1 względem legacy.
+- Brak administracyjnych plików XLSX i kolejek dla dużych raportów; baseline udostępnia CSV przez kontroler z uprawnieniem.
+- Część raportów administracyjnych ma już kolumny odwzorowane z legacy, ale pełna dokumentacja kolumn/filtrów/PII dla każdego raportu pozostaje do uzupełnienia.

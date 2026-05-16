@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Public\PublicProjectController;
 use App\Http\Controllers\Public\PublicReportController;
 use App\Http\Controllers\Public\PublicResultsController;
@@ -19,3 +20,13 @@ Route::post('/glosowanie', [PublicVotingController::class, 'cast'])->name('publi
 Route::get('/wyniki', [PublicResultsController::class, 'index'])->name('public.results.index');
 Route::get('/wyniki/export.csv', [PublicResultsController::class, 'export'])->name('public.results.export');
 Route::get('/raporty-publiczne', [PublicReportController::class, 'index'])->name('public.reports.index');
+
+Route::middleware('auth')->prefix('admin/reports')->name('admin.reports.')->group(function (): void {
+    Route::get('/vote-cards/{budgetEdition}.csv', [AdminReportController::class, 'voteCards'])->name('vote-cards');
+    Route::get('/submitted-projects.csv', [AdminReportController::class, 'submittedProjects'])->name('submitted-projects');
+    Route::get('/unsent-advanced-verifications.csv', [AdminReportController::class, 'unsentAdvancedVerifications'])->name('unsent-advanced-verifications');
+    Route::get('/project-corrections.csv', [AdminReportController::class, 'projectCorrections'])->name('project-corrections');
+    Route::get('/project-history.csv', [AdminReportController::class, 'projectHistory'])->name('project-history');
+    Route::get('/verification-manifest.csv', [AdminReportController::class, 'verificationManifest'])->name('verification-manifest');
+    Route::get('/category-comparison/{budgetEdition}.csv', [AdminReportController::class, 'categoryComparison'])->name('category-comparison');
+});

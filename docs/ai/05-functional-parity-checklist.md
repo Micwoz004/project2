@@ -67,6 +67,7 @@
 - [x] CSV awaryjnego raportu historii zmian projektów zgodny z `FuckupController::actionGetTaskHistory`.
 - [x] Manifest CSV paczki wyników weryfikacji zgodny z selekcją `DocumentController::actionGenVerificationResultReport`.
 - [x] Publiczny eksport CSV wyników bez PII.
+- [x] Administracyjne endpointy CSV dla bazowych raportów i eksportów z bramką `reports.export`.
 - [x] Import słowników imion, nazwisk i nazwisk matek z legacy.
 - [x] Import relacji `taskscategories` do pivotu kategorii projektów.
 - [x] Fixture import `authitem`, `authitemchild` i `authassignment` do Spatie Permission.
@@ -134,7 +135,7 @@
 - [ ] UI historii wersji kart weryfikacji i administracyjny podgląd agregacji wielu departamentów.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
-- [ ] Raporty i eksporty administracyjne.
+- [ ] Pełna dokumentacja kolumn, filtrów i PII dla każdego raportu administracyjnego.
 - [ ] Kolejki i szablony powiadomień mail/SMS z pełną mapą typów legacy.
 - [ ] Pełny import przypisań ról/uprawnień z dumpa legacy.
 - [ ] Pełny import użytkowników, departamentów i RBAC bezpośrednio z dumpa legacy.

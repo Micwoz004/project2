@@ -18,7 +18,7 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 1. [x] Dodać mapę ról legacy do Spatie.
 2. [x] Dodać import użytkowników i departamentów.
 3. [x] Dodać policies i guard dostępu Filament.
-4. [ ] Zbudować panel użytkowników i ról.
+4. [x] Zbudować panel użytkowników i ról.
 5. [x] Pokryć testami aktywność i uprawnienia dostępu do panelu.
 
 ## Aktualny zakres
@@ -32,9 +32,12 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 - Legacy linki aktywacyjne i resetu hasła są ważne przez `system.activationLinkLifetime`; docelowa akcja auth UI musi zachować tę regułę.
 - `LegacyPeselRecord` odwzorowuje administrowany rejestr `pesel` dostępny w legacy przez permission `manage pesel`.
 - `LegacyPeselVerificationEntry` odwzorowuje whitelistę `verification`, którą legacy `User::verifyPeselAuthenticity` sprawdzało dla autentyczności PESEL.
+- `UserResource` w Filament daje listę, tworzenie i edycję użytkowników, status aktywności, departament oraz przypisania ról Spatie. Dostęp do resource wymaga `users.manage` albo roli `admin`/`bdo`.
+- Tworzenie i edycja kont synchronizują role przez `syncRoles`; puste hasło przy edycji nie nadpisuje istniejącego hasła.
 
 ## Świadome różnice względem legacy
 
 - Nowy kod używa stabilnych permission keys zamiast wyłącznie operacji tekstowych z Yii RBAC. Operacje legacy są nadal tworzone w Spatie, aby import danych mógł zachować oryginalne nazwy.
 - Import użytkowników z fixture tworzy techniczny placeholder e-mail dla historycznych kont bez adresu, ponieważ Laravel wymaga unikalnego e-maila.
 - Pełny import z dumpa pozostaje osobnym krokiem.
+- Panel nie odtwarza ekranów Yii 1:1; zachowuje operacje biznesowe: aktywność konta, przypisanie departamentu oraz role/uprawnienia.

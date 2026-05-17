@@ -8,6 +8,8 @@ class SmsConfigurationValidator
 {
     private const TOKEN_PLACEHOLDER = '{activationSmsToken}';
 
+    private const SUMMARY_PLACEHOLDER = '{smsSummaryTable}';
+
     /**
      * @return list<array{code: string, message: string}>
      */
@@ -116,22 +118,39 @@ class SmsConfigurationValidator
      */
     private function messageIssues(): array
     {
-        $message = (string) config('services.sms.voting_token_message');
+        $tokenMessage = (string) config('services.sms.voting_token_message');
+        $summaryMessage = (string) config('services.sms.voting_summary_message');
 
-        if (trim($message) === '') {
-            return [[
+        $issues = [];
+
+        if (trim($tokenMessage) === '') {
+            $issues[] = [
                 'code' => 'sms_voting_token_message_missing',
                 'message' => 'SMS_VOTING_TOKEN_MESSAGE nie może być puste.',
-            ]];
+            ];
         }
 
-        if (! str_contains($message, self::TOKEN_PLACEHOLDER)) {
-            return [[
+        if (! str_contains($tokenMessage, self::TOKEN_PLACEHOLDER)) {
+            $issues[] = [
                 'code' => 'sms_voting_token_placeholder_missing',
                 'message' => 'SMS_VOTING_TOKEN_MESSAGE musi zawierać {activationSmsToken}.',
-            ]];
+            ];
         }
 
-        return [];
+        if (trim($summaryMessage) === '') {
+            $issues[] = [
+                'code' => 'sms_voting_summary_message_missing',
+                'message' => 'SMS_VOTING_SUMMARY_MESSAGE nie może być puste.',
+            ];
+        }
+
+        if (! str_contains($summaryMessage, self::SUMMARY_PLACEHOLDER)) {
+            $issues[] = [
+                'code' => 'sms_voting_summary_placeholder_missing',
+                'message' => 'SMS_VOTING_SUMMARY_MESSAGE musi zawierać {smsSummaryTable}.',
+            ];
+        }
+
+        return $issues;
     }
 }

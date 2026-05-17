@@ -36,7 +36,8 @@ Status: baseline domenowy i publiczny flow Livewire rozbudowane.
 - Import fixture `voters` przenosi pełniejsze dane wyborcy z legacy: drugie imię, nazwisko matki, ojca, e-mail, adres, IP, user agent, telefon i datę utworzenia.
 - Publiczny endpoint `/glosowanie/kod-sms` tworzy token SMS przez `VotingTokenService`.
 - `VotingTokenService` wysyła wygenerowany kod przez `SmsProvider`. Domyślny `NullSmsProvider` obsługuje środowisko lokalne/testowe, a `HttpSmsProvider` pozwala podpiąć realną bramkę przez `SMS_DRIVER=http`, `SMS_API_URL`, `SMS_API_TOKEN`, `SMS_FROM` i `SMS_VOTING_TOKEN_MESSAGE`.
-- `sbo:sms-config-check {--production} {--json}` waliduje konfigurację SMS: produkcja wymaga `SMS_DRIVER=http`, adresu API, tokenu, nadawcy, dodatniego timeoutu i szablonu zawierającego `{activationSmsToken}`.
+- `VoteSummaryNotificationService` po skutecznym głosie przez token SMS wysyła podsumowanie zgodne z legacy `VotingController::sendVoteSummaryBySms`: obszar, numer losowania, skrócony tytuł i punkty. Błąd wysyłki nie cofa głosu; system zapisuje `sms_logs` i administracyjny `MailLog`, jak legacy `sendVoteSummaryErrorEmail`.
+- `sbo:sms-config-check {--production} {--json}` waliduje konfigurację SMS: produkcja wymaga `SMS_DRIVER=http`, adresu API, tokenu, nadawcy, dodatniego timeoutu oraz szablonów zawierających `{activationSmsToken}` i `{smsSummaryTable}`.
 - `.env.example` zawiera komplet wymaganych zmiennych SMS jako puste placeholdery; realne wartości operatora muszą być ustawione dopiero na środowisku.
 - Livewire `PublicVotingFlow` pokazuje projekty z listy głosowania tylko dla aktualnie wybranej edycji SBO. To domyka zgodność z domenowym `CastVoteService`, który już odrzuca projekt spoza `budget_edition_id` karty.
 - Jeśli provider odrzuci wysyłkę, nowo wygenerowany token jest natychmiast unieważniany, żeby nie został aktywny bez dostarczenia kodu.

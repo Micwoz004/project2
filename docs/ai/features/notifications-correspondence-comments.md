@@ -45,6 +45,7 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 - `SendProjectCorrespondenceMessageAction` po zapisie korespondencji kolejkuje powiadomienie mailowe do adresata.
 - `SendProjectCoauthorConfirmationAction` obsługuje trigger `cocreator.confirmation`: generuje brakujący hash współautora, zapisuje notyfikację, wysyła mail przez kolejkę i używa kompatybilnego linku `/activation/confirmCocreator`.
 - `SendProjectContactMessageAction` obsługuje trigger `project.contact_message`: waliduje `topic`, `email`, `content` jak legacy `ContactForm`, wymaga adresu e-mail autora projektu i zapisuje wiadomość z legacy prefiksem `Otrzymałeś/aś wiadomość od ...`.
+- `VoteSummaryNotificationService` obsługuje trigger `voting.summary.sms` oraz ścieżkę błędu `voting.summary.sms_failure_email`; wysyłka podsumowania nie wpływa na ważność zapisanego głosu.
 - Logi zapisują identyfikatory projektu/użytkownika/wiadomości, ale nie zapisują treści wiadomości ani komentarzy.
 
 ## Mapa punktów wysyłki legacy
@@ -90,7 +91,7 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 ## Świadome braki na tym etapie
 
 - Kolejka obejmuje bazowe powiadomienia projektu; nie wszystkie triggery z `LegacyCommunicationTrigger` mają jeszcze osobne akcje domenowe.
-- Brak integracji z operatorem SMS dla powiadomień innych niż token głosowania.
+- Brak integracji z operatorem SMS dla powiadomień innych niż token głosowania i podsumowanie SMS.
 - Publiczne komentarze mają domenowe akcje zgodne z `CommentsController`: dodanie przez rolę `applicant`, edycję i ukrycie własnego komentarza, akceptację administracyjną, ukrycie administracyjne oraz powiadomienia mailowe dla autora projektu/autora komentarza przez kolejkę Laravel.
 - `ProjectPublicCommentVisibilityService` odtwarza warunki widoczności z legacy `_comments.php`: komentarz zaakceptowany i nieukryty jest publiczny; oczekujący widzi autor komentarza, admin i autor projektu; ukryty przez użytkownika widzi autor komentarza i admin; ukryty administracyjnie widzi tylko admin.
 - Brak pełnego publicznego UI do dodawania i moderowania komentarzy; logika domenowa, import oraz testy są gotowe do podpięcia pod kontrolery/Livewire.

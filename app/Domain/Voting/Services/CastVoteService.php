@@ -29,6 +29,7 @@ class CastVoteService
         private readonly PeselService $peselService,
         private readonly VoterHashService $voterHashService,
         private readonly VotingTokenService $votingTokenService,
+        private readonly VoteSummaryNotificationService $voteSummaryNotificationService,
     ) {}
 
     public function cast(
@@ -52,7 +53,7 @@ class CastVoteService
             $this->votingTokenService->assertActiveTokenForIdentity($votingToken, $identity);
         }
 
-        return DB::transaction(function () use (
+        $voteCard = DB::transaction(function () use (
             $edition,
             $identity,
             $localProjectIds,
@@ -112,6 +113,12 @@ class CastVoteService
 
             return $voteCard->refresh();
         });
+
+        if ($votingToken instanceof VotingToken) {
+            $this->voteSummaryNotificationService->sendAfterVote($voteCard, $votingToken);
+        }
+
+        return $voteCard;
     }
 
     private function assertCanCast(

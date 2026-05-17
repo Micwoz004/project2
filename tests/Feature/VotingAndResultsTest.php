@@ -29,6 +29,7 @@ use App\Domain\Voting\Actions\UpdateVoteCardStatusAction;
 use App\Domain\Voting\Data\VoterIdentityData;
 use App\Domain\Voting\Enums\CitizenConfirmation;
 use App\Domain\Voting\Enums\VoteCardStatus;
+use App\Domain\Voting\Models\SmsLog;
 use App\Domain\Voting\Models\VoteCard;
 use App\Domain\Voting\Models\Voter;
 use App\Domain\Voting\Models\VoterRegistryHash;
@@ -329,6 +330,106 @@ it('disables active sms token after successful vote cast', function (): void {
     );
 
     expect($token->refresh()->disabled)->toBeTrue();
+});
+
+it('sends vote summary sms after successful sms vote cast', function (): void {
+    config([
+        'services.sms.voting_summary_message' => 'Podsumowanie:{smsSummaryTable}',
+    ]);
+    $provider = new class implements SmsProvider
+    {
+        public array $messages = [];
+
+        public function send(string $phone, string $message): void
+        {
+            $this->messages[] = [
+                'phone' => $phone,
+                'message' => $message,
+            ];
+        }
+    };
+    $this->app->instance(SmsProvider::class, $provider);
+
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes([
+        'symbol' => 'L1',
+    ]));
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'title' => 'Park',
+        'status' => ProjectStatus::Picked,
+        'number_drawn' => 7,
+    ]));
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+    );
+    $token = app(VotingTokenService::class)->issueSmsToken($identity, '500600700');
+    $activated = app(VotingTokenService::class)->activateSmsToken('500600700', $token->token);
+
+    app(CastVoteService::class)->cast(
+        $edition,
+        $identity,
+        [$project->id],
+        [],
+        [
+            'citizen_confirm' => CitizenConfirmation::Living,
+            'confirm_missing_category' => true,
+            'voting_token' => $activated,
+        ],
+    );
+
+    expect($provider->messages)->toHaveCount(2)
+        ->and($provider->messages[1]['phone'])->toBe('500600700')
+        ->and($provider->messages[1]['message'])->toContain('L1 nr 7 Park 1 głs');
+});
+
+it('keeps accepted vote and logs sms failure when vote summary sms is rejected', function (): void {
+    $provider = new class implements SmsProvider
+    {
+        public int $calls = 0;
+
+        public function send(string $phone, string $message): void
+        {
+            $this->calls++;
+
+            if ($this->calls > 1) {
+                throw new DomainException('Bramka SMS odrzuciła podsumowanie.');
+            }
+        }
+    };
+    $this->app->instance(SmsProvider::class, $provider);
+
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'status' => ProjectStatus::Picked,
+    ]));
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+    );
+    $token = app(VotingTokenService::class)->issueSmsToken($identity, '500600700');
+    $activated = app(VotingTokenService::class)->activateSmsToken('500600700', $token->token);
+
+    $voteCard = app(CastVoteService::class)->cast(
+        $edition,
+        $identity,
+        [$project->id],
+        [],
+        [
+            'citizen_confirm' => CitizenConfirmation::Living,
+            'confirm_missing_category' => true,
+            'voting_token' => $activated,
+        ],
+    );
+
+    expect($voteCard->status)->toBe(VoteCardStatus::Accepted)
+        ->and(SmsLog::query()->where('voter_id', $voteCard->voter_id)->count())->toBe(1)
+        ->and($token->refresh()->disabled)->toBeTrue();
 });
 
 it('limits sms tokens to five per phone', function (): void {

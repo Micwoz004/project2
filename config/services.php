@@ -42,6 +42,7 @@ return [
         'from' => env('SMS_FROM'),
         'timeout' => env('SMS_TIMEOUT', 10),
         'voting_token_message' => env('SMS_VOTING_TOKEN_MESSAGE', 'Kod SMS do głosowania SBO: {activationSmsToken}'),
+        'voting_summary_message' => env('SMS_VOTING_SUMMARY_MESSAGE', 'Podsumowanie głosowania SBO: {smsSummaryTable}'),
     ],
 
 ];

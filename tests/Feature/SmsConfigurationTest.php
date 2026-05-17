@@ -49,6 +49,25 @@ it('requires token placeholder in sms voting message', function (): void {
     ]);
 });
 
+it('requires summary placeholder in sms voting summary message', function (): void {
+    config([
+        'services.sms.driver' => 'http',
+        'services.sms.url' => 'https://sms.example.test/send',
+        'services.sms.token' => 'secret',
+        'services.sms.from' => 'SBO',
+        'services.sms.timeout' => 10,
+        'services.sms.voting_token_message' => 'Kod SMS do głosowania SBO: {activationSmsToken}',
+        'services.sms.voting_summary_message' => 'Podsumowanie głosowania SBO.',
+    ]);
+
+    $issues = app(SmsConfigurationValidator::class)->validate(true);
+
+    expect($issues)->toContain([
+        'code' => 'sms_voting_summary_placeholder_missing',
+        'message' => 'SMS_VOTING_SUMMARY_MESSAGE musi zawierać {smsSummaryTable}.',
+    ]);
+});
+
 it('accepts complete production http sms configuration', function (): void {
     config([
         'services.sms.driver' => 'http',
@@ -57,6 +76,7 @@ it('accepts complete production http sms configuration', function (): void {
         'services.sms.from' => 'SBO',
         'services.sms.timeout' => 10,
         'services.sms.voting_token_message' => 'Kod SMS do głosowania SBO: {activationSmsToken}',
+        'services.sms.voting_summary_message' => 'Podsumowanie głosowania SBO: {smsSummaryTable}',
     ]);
 
     expect(app(SmsConfigurationValidator::class)->validate(true))->toBe([]);

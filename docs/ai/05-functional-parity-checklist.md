@@ -72,6 +72,7 @@
 - [x] Administracyjne endpointy CSV dla bazowych raportów i eksportów z bramką `reports.export`.
 - [x] Dokumentacja kolumn, filtrów i PII dla publicznych i administracyjnych raportów CSV.
 - [x] Administracyjne raporty mają endpointy XLSX generowane z tych samych danych domenowych co CSV.
+- [x] Duże raporty administracyjne można zlecić do kolejki przez `ReportExport` i `GenerateAdminReportExportJob`.
 - [x] Import słowników imion, nazwisk i nazwisk matek z legacy.
 - [x] Import relacji `taskscategories` do pivotu kategorii projektów.
 - [x] Fixture import `authitem`, `authitemchild` i `authassignment` do Spatie Permission.

@@ -73,6 +73,17 @@ it('allows formal verification actions through granular permission', function ()
     expect(ProjectResource::canBeginFormalVerification($submitted))->toBeFalse();
 });
 
+it('uses legacy formal verification question labels', function (): void {
+    $labels = ProjectResource::formalVerificationFieldLabels();
+
+    expect($labels['has_leader_contact_data'])
+        ->toBe('Czy projekt zawiera dane kontaktowe do autora  i współautorów (imię i nazwisko, numer telefonu, adres e-mail oraz miejsce zamieszkania)?')
+        ->and($labels['has_support_attachment'])
+        ->toBe('Czy załączona została lista poparcia zawierająca podpisy minimum 10 osób popierających projekt, z wyłączeniem autora projektu?')
+        ->and($labels['is_in_budget'])
+        ->toBe('Czy wartość projektu określona przez autora mieści się w puli środków SBO przeznaczonych na projekty z danej kategorii i danego obszaru lokalnego?');
+});
+
 it('completes positive formal verification from filament form through domain action', function (): void {
     app(SyncSystemRolesAndPermissionsAction::class)->execute();
 

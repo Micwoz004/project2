@@ -17,6 +17,7 @@ use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Services\ProjectCostLimitService;
 use App\Domain\Projects\Services\PublicProjectCatalogQuery;
 use App\Domain\Projects\Services\PublicProjectMapQuery;
+use App\Domain\Projects\Support\LegacyProjectFormText;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StorePublicProjectRequest;
 use App\Http\Requests\Public\UpdatePublicProjectCorrectionRequest;
@@ -134,6 +135,7 @@ class PublicProjectController extends Controller
             'edition' => BudgetEdition::query()->latest('propose_start')->first(),
             'areas' => ProjectArea::query()->orderBy('name')->get(),
             'categories' => Category::query()->orderBy('name')->get(),
+            'legacyText' => LegacyProjectFormText::publicSubmissionStatements(),
         ]);
     }
 

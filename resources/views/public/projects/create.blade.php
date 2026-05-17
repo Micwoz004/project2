@@ -64,6 +64,8 @@
             <option value="2" @selected((int) old('contact_with') === 2)>Współautorem</option>
         </select>
 
+        <p><small>{{ $legacyText['contact_publication_hint'] }}</small></p>
+
         <label>
             <input name="author_email_agree" type="checkbox" value="1" @checked(old('author_email_agree'))>
             Publikowana forma kontaktu: adres e-mail autora.
@@ -74,14 +76,16 @@
             Publikowana forma kontaktu: numer telefonu autora.
         </label>
 
+        <p><small>{{ $legacyText['evaluation_consent_lead'] }}</small></p>
         <label>
             <input name="author_personal_data_agree" type="checkbox" value="1" @checked(old('author_personal_data_agree'))>
-            Zgoda na przetwarzanie danych autora na potrzeby ewaluacji konsultacji społecznych.
+            {{ $legacyText['evaluation_consent_checkbox'] }}
         </label>
+        <p><small>{{ $legacyText['evaluation_consent_note'] }}</small></p>
 
         <label>
             <input name="author_read_confirm" type="checkbox" value="1" @checked(old('author_read_confirm')) required>
-            Autor potwierdza zapoznanie się z regulaminem.
+            {{ $legacyText['regulation_confirmation'] }}
         </label>
 
         <label for="author_contact_details_public">Imię i nazwisko rodzica lub opiekuna prawnego autora</label>
@@ -231,7 +235,12 @@
 
                 <label>
                     <input name="coauthors[{{ $index }}][read_confirm]" type="checkbox" value="1" @checked(old("coauthors.$index.read_confirm"))>
-                    Współautor potwierdził zapoznanie się z informacją.
+                    {{ $legacyText['regulation_confirmation'] }}
+                </label>
+
+                <label>
+                    <input name="coauthors[{{ $index }}][data_evaluation_agree]" type="checkbox" value="1" @checked(old("coauthors.$index.data_evaluation_agree"))>
+                    {{ $legacyText['evaluation_consent_checkbox'] }}
                 </label>
 
                 <label>
@@ -253,17 +262,17 @@
 
         <label>
             <input name="consent_to_change" type="checkbox" value="1" @checked(old('consent_to_change'))>
-            Wyrażam zgodę na wprowadzanie zmian przez Urząd Miasta Szczecin w porozumieniu z liderem.
+            {{ $legacyText['consent_to_change'] }}
         </label>
 
         <label>
             <input name="attachments_anonymized" type="checkbox" value="1" @checked(old('attachments_anonymized')) required>
-            Posiadam prawa pozwalające na publikację załączników i potwierdzam ich anonimizację pod kątem danych osobowych.
+            {{ $legacyText['attachments_anonymized'] }}
         </label>
 
         <label>
             <input name="support_list" type="checkbox" value="1" @checked(old('support_list')) required>
-            Potwierdzam dołączenie listy poparcia zgodnie z regulaminem.
+            {{ $legacyText['support_list'] }}
         </label>
 
         <label for="support_list_file">Plik listy poparcia</label>

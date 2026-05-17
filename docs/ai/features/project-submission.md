@@ -38,3 +38,8 @@ Status: częściowo zaimplementowane; publiczne zgłoszenie zapisuje projekt, au
 - Lista poparcia z publicznego formularza jest prywatna (`is_private=true`), zgodnie z ostrożnym odwzorowaniem danych wrażliwych z legacy.
 - `StorePublicProjectRequest::coauthors()` filtruje puste sloty współautorów i przekazuje dane, także adresowe (`street`, `house_no`, `flat_no`, `post_code`, `city`), do `SyncProjectCoauthorsAction`, która wymusza reguły legacy `Cocreator`.
 - Widok `resources/views/public/projects/create.blade.php` korzysta ze wspólnego publicznego design systemu: czytelny nagłówek, jednolity panel formularza, spójne pola, checkboxy i sekcje kosztów/współautorów bez zmiany walidacji HTTP ani domenowej.
+- Teksty oświadczeń formularza publicznego są trzymane w `LegacyProjectFormText::publicSubmissionStatements()` i pochodzą z legacy `views/task/_updatePaper.php` oraz `Task::attributeLabels()`: zgoda ewaluacyjna, potwierdzenie regulaminu, oświadczenie o prawach do załączników, zgoda na zmiany z urzędem i informacja o publikowanej formie kontaktu.
+
+## Różnice i ryzyka
+
+- Teksty oświadczeń są wyrównane do legacy SBO 2025. Finalny przegląd z aktualną wersją urzędową pozostaje zadaniem przed wdrożeniem produkcyjnym, bo dokumenty urzędu mogą się zmienić niezależnie od kodu legacy.

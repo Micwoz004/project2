@@ -140,6 +140,7 @@
 - [x] Publiczne zgłoszenie projektu zapisuje bazowe dane mapy i współrzędne.
 - [x] Publiczne zgłoszenie projektu obsługuje uploady legacy: lista poparcia, zgody właściciela/rodzica, mapa i pozostałe załączniki.
 - [x] Publiczne zgłoszenie projektu zapisuje snapshot autora, wybór kontaktu, zgody autora, typ `local`, skrócony opis, koszt utrzymania i oświadczenie o anonimizacji załączników.
+- [x] Publiczne zgłoszenie projektu renderuje teksty oświadczeń i zgód z legacy SBO 2025 przez wspólną definicję `LegacyProjectFormText`.
 - [x] Publiczne zgłoszenie projektu obsługuje wielowierszowy kosztorys i agreguje go do pól zgodnych z legacy.
 - [x] Publiczne zgłoszenie projektu zapisuje adresowe pola współautorów z widoku Yii.
 - [x] Składanie projektu waliduje limit kosztu obszaru i rozwiązuje Zielone SBO do obszaru ogólnomiejskiego bez użycia stałego ID legacy.
@@ -148,6 +149,7 @@
 - [x] Publiczna korekta autora ignoruje i nie waliduje pól nieodblokowanych w `taskcorrection`, zgodnie z legacy whitelistą.
 - [x] Granularne permissions dla akcji Filament: weryfikacja formalna, merytoryczna i korekty projektu.
 - [x] Formularz formalnej weryfikacji w Filament zapisuje pełniejszą listę pytań i komentarzy legacy.
+- [x] Formularz formalnej weryfikacji w Filament używa etykiet pytań z legacy `TaskVerification::attributeLabels()`.
 - [x] Formularze wstępnej i końcowej weryfikacji merytorycznej w Filament zapisują pola i komentarze legacy w `answers` JSON.
 - [x] Końcowa weryfikacja merytoryczna pomija koszty przyszłe przy `hasAdditionalCosts=NO/N/A` zgodnie z legacy.
 - [x] Wielowierszowy kosztorys końcowej weryfikacji merytorycznej w UI zapisuje listy `correctedCost` i `futureCost`.

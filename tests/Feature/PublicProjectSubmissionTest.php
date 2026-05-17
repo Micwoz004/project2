@@ -8,9 +8,25 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Support\LegacyProjectFormText;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+
+it('renders legacy project submission statement texts', function (): void {
+    budgetEdition();
+    ProjectArea::query()->create(areaAttributes());
+    Category::query()->create(['name' => 'Zieleń']);
+
+    $statements = LegacyProjectFormText::publicSubmissionStatements();
+
+    $this->get(route('public.projects.create'))
+        ->assertOk()
+        ->assertSee($statements['contact_publication_hint'], false)
+        ->assertSee($statements['regulation_confirmation'], false)
+        ->assertSee($statements['attachments_anonymized'], false)
+        ->assertSee($statements['consent_to_change'], false);
+});
 
 it('validates public project submission at the request boundary', function (): void {
     $this->from(route('public.projects.create'))

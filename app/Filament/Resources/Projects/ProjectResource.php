@@ -11,6 +11,7 @@ use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCorrection;
+use App\Domain\Projects\Support\LegacyProjectFormText;
 use App\Domain\Users\Enums\SystemPermission;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Actions\AssignVerificationDepartmentAction;
@@ -75,76 +76,6 @@ class ProjectResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
     protected static ?string $recordTitleAttribute = 'title';
-
-    /**
-     * @var array<string, array{legacy: string, label: string}>
-     */
-    private const FORMAL_ANSWER_FIELDS = [
-        'was_sent_on_correct_form' => [
-            'legacy' => 'wasSentOnCorrectForm',
-            'label' => 'Czy projekt został złożony na właściwym formularzu?',
-        ],
-        'was_sent_in_time' => [
-            'legacy' => 'wasSentInTime',
-            'label' => 'Czy projekt przesłano we właściwym terminie?',
-        ],
-        'was_sent_in_compliance_with_rules' => [
-            'legacy' => 'wasSentInComplianceWithRules',
-            'label' => 'Czy projekt został złożony do Urzędu zgodnie z obowiązującymi zasadami SBO?',
-        ],
-        'has_leader_contact_data' => [
-            'legacy' => 'hasLeaderContactData',
-            'label' => 'Czy projekt zawiera dane kontaktowe do autora i współautorów?',
-        ],
-        'has_proper_attachments' => [
-            'legacy' => 'hasProperAttachments',
-            'label' => 'Czy załączono niezbędne załączniki i czy zostały zanonimizowane?',
-        ],
-        'has_support_attachment' => [
-            'legacy' => 'hasSupportAttachment',
-            'label' => 'Czy załączona została lista poparcia?',
-        ],
-        'is_data_correct' => [
-            'legacy' => 'isDataCorrect',
-            'label' => 'Czy projekt został wypełniony prawidłowo?',
-        ],
-        'is_description_valid' => [
-            'legacy' => 'isDescriptionValid',
-            'label' => 'Czy opis projektu jest jasny, konkretny i jednoznaczny?',
-        ],
-        'is_free_of_charge' => [
-            'legacy' => 'isFreeOfCharge',
-            'label' => 'Czy autor zawarł informacje o ogólnodostępności i nieodpłatności?',
-        ],
-        'is_correctly_assigned' => [
-            'legacy' => 'isCorrectlyAssigned',
-            'label' => 'Czy projekt przyporządkowano do odpowiedniej kategorii i obszaru?',
-        ],
-        'is_map_correct' => [
-            'legacy' => 'isMapCorrect',
-            'label' => 'Czy autor prawidłowo wskazał lokalizację projektu?',
-        ],
-        'has_required_consent' => [
-            'legacy' => 'hasRequiredConsent',
-            'label' => 'Czy złożono wszystkie wymagane oświadczenia?',
-        ],
-        'is_description_fair' => [
-            'legacy' => 'isDescriptionFair',
-            'label' => 'Czy opis nie wskazuje potencjalnego wykonawcy lub dostawcy?',
-        ],
-        'is_in_budget' => [
-            'legacy' => 'isInBudget',
-            'label' => 'Czy wartość projektu mieści się w puli środków?',
-        ],
-        'is_located_within_city' => [
-            'legacy' => 'isLocatedWithinCity',
-            'label' => 'Czy projekt jest zlokalizowany w granicach administracyjnych miasta?',
-        ],
-        'is_in_own_tasks' => [
-            'legacy' => 'isInOwnTasks',
-            'label' => 'Czy projekt mieści się w zadaniach własnych Gminy?',
-        ],
-    ];
 
     /**
      * @var array<int, string>
@@ -1466,13 +1397,33 @@ class ProjectResource extends Resource
     }
 
     /**
+     * @return array<string, string>
+     */
+    public static function formalVerificationFieldLabels(): array
+    {
+        return collect(self::formalAnswerFields())
+            ->mapWithKeys(fn (array $definition, string $fieldName): array => [
+                $fieldName => $definition['label'],
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array<string, array{legacy: string, label: string}>
+     */
+    private static function formalAnswerFields(): array
+    {
+        return LegacyProjectFormText::formalAnswerFields();
+    }
+
+    /**
      * @return array<int, mixed>
      */
     private static function formalVerificationAnswerSchema(): array
     {
         $schema = [];
 
-        foreach (self::FORMAL_ANSWER_FIELDS as $fieldName => $definition) {
+        foreach (self::formalAnswerFields() as $fieldName => $definition) {
             $schema[] = Toggle::make($fieldName)
                 ->label($definition['label']);
             $schema[] = Textarea::make($fieldName.'_comments')
@@ -1500,7 +1451,7 @@ class ProjectResource extends Resource
     {
         $answers = [];
 
-        foreach (self::FORMAL_ANSWER_FIELDS as $fieldName => $definition) {
+        foreach (self::formalAnswerFields() as $fieldName => $definition) {
             $legacyField = $definition['legacy'];
             $answers[$legacyField] = (bool) ($data[$fieldName] ?? false) ? 1 : 0;
 

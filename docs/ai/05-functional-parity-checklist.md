@@ -136,6 +136,7 @@
 - [x] Akcja Filament do edycji głosów na istniejącej karcie z domenową walidacją limitów i projektów.
 - [x] Bazowe szablony i kolejka powiadomień projektu z audytem w logach mailowych.
 - [x] Domenowe akcje publicznych komentarzy projektu: dodanie, edycja, ukrycie własne, akceptacja, ukrycie administracyjne i legacy visibility.
+- [x] Panel Filament udostępnia moderację publicznych komentarzy przez domenowe akcje akceptacji i ukrycia administracyjnego.
 - [x] Publiczny panel autora do zastosowania aktywnej korekty projektu z whitelistą pól legacy.
 - [x] Publiczne zgłoszenie projektu zapisuje współautorów przez domenowe reguły `Cocreator`.
 - [x] Publiczne zgłoszenie projektu zapisuje bazowe dane mapy i współrzędne.

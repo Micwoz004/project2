@@ -165,6 +165,7 @@
 - [x] Panel Filament `/admin/wyniki` prezentuje administracyjne agregaty wyników, statusy kart, remisy, kategorie i skróty do CSV chronione `reports.export`.
 - [x] Legacy “usunięcie” użytkownika działa jako anonimizacja konta, dezaktywacja i odebranie ról.
 - [x] Parser surowego dumpa `.sql` liczy rekordy `INSERT INTO` i porównuje liczności z docelowymi tabelami bez staging MySQL.
+- [x] Typowany odczyt ustawień legacy i fallback strony procesu `V` z `owner.pageProcessAbsence`.
 
 ## Do pełnego parytetu
 

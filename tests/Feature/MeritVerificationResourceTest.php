@@ -4,6 +4,7 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Domain\Users\Enums\SystemPermission;
 use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Actions\AssignVerificationDepartmentAction;
@@ -59,6 +60,24 @@ it('shows merit verification actions only to project verifiers for matching stat
         ->and(ProjectResource::canSubmitInitialMeritVerification($formallyVerified))->toBeFalse()
         ->and(ProjectResource::canSubmitFinalMeritVerification($sentForMerit))->toBeFalse()
         ->and(ProjectResource::canSubmitConsultationVerification($duringMerit))->toBeFalse();
+});
+
+it('allows merit verification actions through granular permission', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $meritVerifier = User::factory()->create();
+    $meritVerifier->givePermissionTo(SystemPermission::MeritVerificationManage->value);
+    $this->actingAs($meritVerifier);
+
+    $formallyVerified = meritResourceProject(ProjectStatus::FormallyVerified);
+
+    expect(ProjectResource::canAssignMeritDepartments($formallyVerified))->toBeTrue();
+
+    $formalOnly = User::factory()->create();
+    $formalOnly->givePermissionTo(SystemPermission::FormalVerificationManage->value);
+    $this->actingAs($formalOnly);
+
+    expect(ProjectResource::canAssignMeritDepartments($formallyVerified))->toBeFalse();
 });
 
 it('assigns merit departments from filament form through domain action', function (): void {

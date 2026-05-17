@@ -21,8 +21,13 @@ it('synchronizes legacy roles and canonical permissions', function (): void {
         ->and(Role::query()->where('name', SystemRole::AnalystOds->value)->exists())->toBeTrue()
         ->and(Role::query()->where('name', SystemRole::VerifierZod->value)->exists())->toBeTrue()
         ->and(Permission::query()->where('name', SystemPermission::AdminAccess->value)->exists())->toBeTrue()
+        ->and(Permission::query()->where('name', SystemPermission::FormalVerificationManage->value)->exists())->toBeTrue()
+        ->and(Permission::query()->where('name', SystemPermission::MeritVerificationManage->value)->exists())->toBeTrue()
+        ->and(Permission::query()->where('name', SystemPermission::ProjectCorrectionsManage->value)->exists())->toBeTrue()
         ->and(Permission::query()->where('name', 'manage task groups')->exists())->toBeTrue()
         ->and(Role::findByName(SystemRole::Admin->value)->hasPermissionTo(SystemPermission::UsersManage->value))->toBeTrue()
+        ->and(Role::findByName(SystemRole::Coordinator->value)->hasPermissionTo(SystemPermission::FormalVerificationManage->value))->toBeTrue()
+        ->and(Role::findByName(SystemRole::Coordinator->value)->hasPermissionTo(SystemPermission::ProjectCorrectionsManage->value))->toBeTrue()
         ->and(Role::findByName(SystemRole::Applicant->value)->hasPermissionTo(SystemPermission::AdminAccess->value))->toBeFalse();
 });
 

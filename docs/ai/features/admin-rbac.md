@@ -13,7 +13,7 @@
 
 ## Plan wdrożenia
 
-Status: częściowo zaimplementowane w etapie 2, rozszerzone dla głosowania i raportów.
+Status: częściowo zaimplementowane w etapie 2, rozszerzone dla głosowania, raportów i akcji weryfikacji/korekt.
 
 1. [x] Spisać role i permissions z `authitem*`.
 2. [x] Przygotować bazową synchronizację do Spatie Permission.
@@ -22,8 +22,8 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone dla głosowania i r
 5. [x] Pokryć testami synchronizację RBAC, dostęp do panelu i odmowy dla słowników/edycji.
 6. [ ] Dodać pełny import `authitemchild` i `authassignment` z dumpa legacy.
 7. [x] Dodać policies/bramki dla kart głosowania, wyników i raportów.
-8. [ ] Dodać policies dla weryfikacji po pełnym domknięciu paneli.
-9. [ ] Ograniczyć poszczególne akcje Filament przez permissions.
+8. [x] Dodać bazowe permissions dla weryfikacji po pełnym domknięciu paneli.
+9. [x] Ograniczyć poszczególne akcje Filament przez permissions.
 
 ## Rozpoznane legacy RBAC
 
@@ -31,7 +31,7 @@ Role z `authitem.type=2`: `admin`, `analyst ODS`, `applicant`, `checkVoter`, `co
 
 Operacje z `authitem.type=0`: `assign coordinator`, `assign verifier`, `back rejected`, `generate documents`, `generate propose`, `generate reports`, `manage pesel`, `manage settings`, `manage task groups`, `manage users`, `manage votecards`, `propose task`, `recommend W JO`, `update task`, `view tasks`.
 
-Nowy system zachowuje nazwy legacy jako role/uprawnienia Spatie, ale decyzje domenowe opiera na stabilnych permission keys: `admin.access`, `projects.view`, `projects.manage`, `projects.verify`, `budget_editions.manage`, `dictionaries.manage`, `users.manage`, `voting.manage`, `vote_cards.manage`, `results.view`, `reports.export`, `pesel.manage`, `settings.manage`.
+Nowy system zachowuje nazwy legacy jako role/uprawnienia Spatie, ale decyzje domenowe opiera na stabilnych permission keys: `admin.access`, `projects.view`, `projects.manage`, `projects.verify`, `verification.formal.manage`, `verification.merit.manage`, `project_corrections.manage`, `budget_editions.manage`, `dictionaries.manage`, `users.manage`, `voting.manage`, `vote_cards.manage`, `results.view`, `reports.export`, `pesel.manage`, `settings.manage`.
 
 ## Zaimplementowany odpowiednik Laravel
 
@@ -43,8 +43,11 @@ Nowy system zachowuje nazwy legacy jako role/uprawnienia Spatie, ale decyzje dom
 - `User::canAccessPanel()` dopuszcza tylko aktywnych użytkowników z `admin.access` albo rolą `admin`/`bdo`.
 - Policies dla `BudgetEdition`, `ProjectArea`, `Category` i `VoteCard` blokują operacje użytkownikom bez dedykowanych uprawnień.
 - Bramki `view-results` i `export-reports` używają `results.view` oraz `reports.export`.
+- Akcje Filament dla weryfikacji formalnej używają `verification.formal.manage` z kompatybilnością dla `projects.verify/projects.manage`.
+- Akcje Filament dla weryfikacji merytorycznej używają `verification.merit.manage` z kompatybilnością dla `projects.verify/projects.manage`.
+- Akcje Filament dla korekt projektu używają `project_corrections.manage` z kompatybilnością dla `projects.manage`.
 
 ## Zgodność do sprawdzenia
 
 - Porównać pełne przypisania `authitemchild` i `authassignment` w imporcie legacy.
-- Po dodaniu pełnych paneli weryfikacji dopisać szczegółowe permissions do ich akcji domenowych i Filament Actions.
+- Po docelowym imporcie z dumpa potwierdzić, czy granularne permission keys wymagają dodatkowego mapowania dla historycznych niestandardowych ról.

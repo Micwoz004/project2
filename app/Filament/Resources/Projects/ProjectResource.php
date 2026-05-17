@@ -11,6 +11,7 @@ use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCorrection;
+use App\Domain\Users\Enums\SystemPermission;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Actions\AssignVerificationDepartmentAction;
 use App\Domain\Verification\Actions\BeginFormalVerificationAction;
@@ -178,13 +179,13 @@ class ProjectResource extends Resource
 
     public static function canBeginFormalVerification(Project $project): bool
     {
-        return self::canVerifyProjects()
+        return self::canManageFormalVerification()
             && $project->status === ProjectStatus::Submitted;
     }
 
     public static function canCompleteFormalVerification(Project $project): bool
     {
-        return self::canVerifyProjects()
+        return self::canManageFormalVerification()
             && in_array($project->status, [
                 ProjectStatus::Submitted,
                 ProjectStatus::DuringFormalVerification,
@@ -193,7 +194,7 @@ class ProjectResource extends Resource
 
     public static function canRequestFormalCorrection(Project $project): bool
     {
-        return self::canVerifyProjects()
+        return self::canManageFormalVerification()
             && in_array($project->status, [
                 ProjectStatus::Submitted,
                 ProjectStatus::DuringFormalVerification,
@@ -202,13 +203,13 @@ class ProjectResource extends Resource
 
     public static function canForwardFormalVerification(Project $project): bool
     {
-        return self::canVerifyProjects()
+        return self::canManageFormalVerification()
             && $project->status === ProjectStatus::FormallyVerified;
     }
 
     public static function canAssignMeritDepartments(Project $project): bool
     {
-        return self::canVerifyProjects()
+        return self::canManageMeritVerification()
             && in_array($project->status, [
                 ProjectStatus::FormallyVerified,
                 ProjectStatus::DuringInitialVerification,
@@ -219,7 +220,7 @@ class ProjectResource extends Resource
 
     public static function canSubmitInitialMeritVerification(Project $project): bool
     {
-        return self::canVerifyProjects()
+        return self::canManageMeritVerification()
             && in_array($project->status, [
                 ProjectStatus::FormallyVerified,
                 ProjectStatus::DuringInitialVerification,
@@ -228,7 +229,7 @@ class ProjectResource extends Resource
 
     public static function canSubmitFinalMeritVerification(Project $project): bool
     {
-        return self::canVerifyProjects()
+        return self::canManageMeritVerification()
             && in_array($project->status, [
                 ProjectStatus::SentForMeritVerification,
                 ProjectStatus::DuringMeritVerification,
@@ -237,7 +238,7 @@ class ProjectResource extends Resource
 
     public static function canSubmitConsultationVerification(Project $project): bool
     {
-        return self::canVerifyProjects()
+        return self::canManageMeritVerification()
             && in_array($project->status, [
                 ProjectStatus::SentForMeritVerification,
                 ProjectStatus::DuringMeritVerification,
@@ -246,19 +247,19 @@ class ProjectResource extends Resource
 
     public static function canStartProjectCorrection(Project $project): bool
     {
-        return self::canManageProjects()
+        return self::canManageProjectCorrections()
             && $project->status !== ProjectStatus::WorkingCopy;
     }
 
     public static function canViewVerificationOverview(Project $project): bool
     {
-        return self::canVerifyProjects()
+        return (self::canManageFormalVerification() || self::canManageMeritVerification())
             && $project->status !== ProjectStatus::WorkingCopy;
     }
 
     public static function canApplyProjectCorrection(Project $project): bool
     {
-        return self::canManageProjects()
+        return self::canManageProjectCorrections()
             && $project->need_correction;
     }
 
@@ -992,7 +993,9 @@ class ProjectResource extends Resource
         $user = Auth::user();
 
         return $user instanceof User
-            && ($user->can('projects.verify') || $user->can('projects.manage') || $user->hasAnyRole(['admin', 'bdo']));
+            && ($user->can(SystemPermission::ProjectsVerify->value)
+                || $user->can(SystemPermission::ProjectsManage->value)
+                || $user->hasAnyRole(['admin', 'bdo']));
     }
 
     private static function canManageProjects(): bool
@@ -1000,7 +1003,31 @@ class ProjectResource extends Resource
         $user = Auth::user();
 
         return $user instanceof User
-            && ($user->can('projects.manage') || $user->hasAnyRole(['admin', 'bdo']));
+            && ($user->can(SystemPermission::ProjectsManage->value) || $user->hasAnyRole(['admin', 'bdo']));
+    }
+
+    private static function canManageFormalVerification(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User
+            && ($user->can(SystemPermission::FormalVerificationManage->value) || self::canVerifyProjects());
+    }
+
+    private static function canManageMeritVerification(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User
+            && ($user->can(SystemPermission::MeritVerificationManage->value) || self::canVerifyProjects());
+    }
+
+    private static function canManageProjectCorrections(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User
+            && ($user->can(SystemPermission::ProjectCorrectionsManage->value) || self::canManageProjects());
     }
 
     private static function authenticatedUser(string $rejectionLog): User

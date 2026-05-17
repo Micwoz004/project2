@@ -5,6 +5,7 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Domain\Users\Enums\SystemPermission;
 use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
@@ -52,6 +53,24 @@ it('shows formal verification actions only to project verifiers for matching sta
         ->and(ProjectResource::canCompleteFormalVerification($duringFormal))->toBeFalse()
         ->and(ProjectResource::canRequestFormalCorrection($duringFormal))->toBeFalse()
         ->and(ProjectResource::canForwardFormalVerification($formallyVerified))->toBeFalse();
+});
+
+it('allows formal verification actions through granular permission', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $formalVerifier = User::factory()->create();
+    $formalVerifier->givePermissionTo(SystemPermission::FormalVerificationManage->value);
+    $this->actingAs($formalVerifier);
+
+    $submitted = formalResourceProject(ProjectStatus::Submitted);
+
+    expect(ProjectResource::canBeginFormalVerification($submitted))->toBeTrue();
+
+    $meritOnly = User::factory()->create();
+    $meritOnly->givePermissionTo(SystemPermission::MeritVerificationManage->value);
+    $this->actingAs($meritOnly);
+
+    expect(ProjectResource::canBeginFormalVerification($submitted))->toBeFalse();
 });
 
 it('completes positive formal verification from filament form through domain action', function (): void {

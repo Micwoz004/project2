@@ -133,6 +133,7 @@
 - [x] Publiczne zgłoszenie projektu obsługuje uploady legacy: lista poparcia, zgody właściciela/rodzica, mapa i pozostałe załączniki.
 - [x] Korekta kosztorysu projektu podmienia pozycje kosztów i przelicza sumę.
 - [x] Publiczna korekta autora obsługuje odblokowane typy załączników legacy.
+- [x] Granularne permissions dla akcji Filament: weryfikacja formalna, merytoryczna i korekty projektu.
 
 ## Do pełnego parytetu
 
@@ -145,4 +146,4 @@
 - [ ] Pełna mapa wszystkich punktów wysyłki mail/SMS względem legacy.
 - [ ] Pełny import przypisań ról/uprawnień z dumpa legacy.
 - [ ] Pełny import użytkowników, departamentów i RBAC bezpośrednio z dumpa legacy.
-- [ ] Polityki Laravel dla każdej roli i operacji modułów weryfikacji/głosowania/raportów.
+- [ ] Finalny przegląd polityk Laravel dla każdej roli po pełnym imporcie dumpa.

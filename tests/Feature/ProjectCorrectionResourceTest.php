@@ -7,6 +7,7 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Domain\Users\Enums\SystemPermission;
 use App\Domain\Users\Enums\SystemRole;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\User;
@@ -68,6 +69,25 @@ it('shows correction actions only to project managers for matching project state
 
     expect(ProjectResource::canStartProjectCorrection($submitted))->toBeFalse()
         ->and(ProjectResource::canApplyProjectCorrection($activeCorrection))->toBeFalse();
+});
+
+it('allows correction actions through granular permission', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $operator = User::factory()->create();
+    $operator->givePermissionTo(SystemPermission::ProjectCorrectionsManage->value);
+    $this->actingAs($operator);
+
+    $submitted = correctionResourceProject($operator);
+    $activeCorrection = correctionResourceProject($operator);
+    $activeCorrection->forceFill([
+        'need_correction' => true,
+        'correction_start_time' => now()->subHour(),
+        'correction_end_time' => now()->addDay(),
+    ])->save();
+
+    expect(ProjectResource::canStartProjectCorrection($submitted))->toBeTrue()
+        ->and(ProjectResource::canApplyProjectCorrection($activeCorrection))->toBeTrue();
 });
 
 it('starts project correction from filament form through domain action', function (): void {

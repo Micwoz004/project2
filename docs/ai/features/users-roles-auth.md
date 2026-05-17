@@ -20,6 +20,7 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 3. [x] Dodać policies i guard dostępu Filament.
 4. [x] Zbudować panel użytkowników i ról.
 5. [x] Pokryć testami aktywność i uprawnienia dostępu do panelu.
+6. [x] Odtworzyć legacy “usunięcie” konta jako anonimizację danych i odebranie ról.
 
 ## Aktualny zakres
 
@@ -34,10 +35,13 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 - `LegacyPeselVerificationEntry` odwzorowuje whitelistę `verification`, którą legacy `User::verifyPeselAuthenticity` sprawdzało dla autentyczności PESEL.
 - `UserResource` w Filament daje listę, tworzenie i edycję użytkowników, status aktywności, departament oraz przypisania ról Spatie. Dostęp do resource wymaga `users.manage` albo roli `admin`/`bdo`.
 - Tworzenie i edycja kont synchronizują role przez `syncRoles`; puste hasło przy edycji nie nadpisuje istniejącego hasła.
+- `AnonymizeUserAction` odtwarza `User::anonymize()` z Yii: konto zostaje dezaktywowane, login zaczyna się od `deleted-`, dane osobowe i adresowe są maskowane, departament jest czyszczony, hasło staje się technicznie nieużywalne, a role Spatie są usuwane.
+- `EditUser` w Filament ma akcję “Anonimizuj konto” z potwierdzeniem; operacja wymaga `users.manage` albo roli `admin`/`bdo` i loguje tylko identyfikatory bez PII.
 
 ## Świadome różnice względem legacy
 
 - Nowy kod używa stabilnych permission keys zamiast wyłącznie operacji tekstowych z Yii RBAC. Operacje legacy są nadal tworzone w Spatie, aby import danych mógł zachować oryginalne nazwy.
 - Import użytkowników z fixture tworzy techniczny placeholder e-mail dla historycznych kont bez adresu, ponieważ Laravel wymaga unikalnego e-maila.
+- Anonimizacja używa unikalnego adresu `deleted-{id}@anonymous.local` zamiast legacy `*`, ponieważ kolumna `users.email` w Laravel ma constraint unikalności i jest używana przez auth.
 - Pełny import operacyjny wymaga odtworzenia dumpa do staging MySQL i uruchomienia `sbo:legacy-import-mysql`; parser surowego pliku `.sql` pozostaje opcjonalnym krokiem operacyjnym.
 - Panel nie odtwarza ekranów Yii 1:1; zachowuje operacje biznesowe: aktywność konta, przypisanie departamentu oraz role/uprawnienia.

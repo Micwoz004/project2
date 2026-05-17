@@ -160,6 +160,7 @@
 - [x] Komenda `sbo:sms-config-check --production` blokuje brak realnego operatora SMS, niepoprawny timeout i szablon bez tokenu.
 - [x] Potwierdzono w legacy, że anonimizacja załączników nie transformuje fizycznie plików; jest oświadczeniem autora i bramką publikacji.
 - [x] Panel Filament `/admin/wyniki` prezentuje administracyjne agregaty wyników, statusy kart, remisy, kategorie i skróty do CSV chronione `reports.export`.
+- [x] Legacy “usunięcie” użytkownika działa jako anonimizacja konta, dezaktywacja i odebranie ról.
 
 ## Do pełnego parytetu
 

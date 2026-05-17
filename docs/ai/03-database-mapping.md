@@ -77,4 +77,5 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 - Korekty projektów mają osobną tabelę `project_corrections`; pola `projects.need_correction`, `correction_no`, `correction_start_time`, `correction_end_time` pozostają szybką denormalizacją dla blokad edycji i kompatybilności z legacy `tasks`.
 - Dane autora składane w publicznym formularzu są utrzymywane jako snapshot JSON w `projects.authors`; `projects.creator_id` pozostaje relacją do `users`, gdy formularz jest składany w aktywnej sesji. To pozwala zachować wartości z formularza 1:1 bez wymuszania tworzenia konta użytkownika w baseline logiki.
 - Trzy słowniki imion/nazwisk są połączone w `dictionary_entries`, dlatego `legacy_id` jest unikalne tylko razem z `source_table`.
+- Anonimizacja użytkownika maskuje `users.email` unikalnym adresem technicznym zamiast legacy `*`, bo Laravel auth wymaga unikalności tej kolumny.
 - `legacy_id` jest unikalne i opcjonalne, co umożliwia import etapami.

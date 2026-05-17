@@ -2,14 +2,42 @@
 
 namespace App\Filament\Resources\Users\Pages;
 
+use App\Domain\Users\Actions\AnonymizeUserAction;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
+use DomainException;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class EditUser extends EditRecord
 {
     protected static string $resource = UserResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('anonymizeUser')
+                ->label('Anonimizuj konto')
+                ->color('danger')
+                ->requiresConfirmation()
+                ->action(function (): void {
+                    $operator = Auth::user();
+
+                    if (! $operator instanceof User) {
+                        Log::warning('user.anonymize.rejected_guest');
+
+                        throw new DomainException('Użytkownik musi być zalogowany.');
+                    }
+
+                    app(AnonymizeUserAction::class)->execute($this->getRecord(), $operator);
+
+                    $this->redirect(UserResource::getUrl('index'));
+                }),
+        ];
+    }
 
     /**
      * @param  array<string, mixed>  $data

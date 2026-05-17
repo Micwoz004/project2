@@ -34,6 +34,7 @@ use App\Domain\Voting\Models\Voter;
 use App\Domain\Voting\Models\VoterRegistryHash;
 use App\Domain\Voting\Models\VotingToken;
 use App\Domain\Voting\Services\CastVoteService;
+use App\Domain\Voting\Services\Sms\SmsProvider;
 use App\Domain\Voting\Services\VoterHashService;
 use App\Domain\Voting\Services\VotingTokenService;
 use App\Models\User;
@@ -227,6 +228,58 @@ it('issues six digit sms token and disables previous tokens for pesel', function
     expect($first->refresh()->disabled)->toBeTrue()
         ->and($second->token)->toMatch('/^[0-9]{6}$/')
         ->and($second->disabled)->toBeFalse();
+});
+
+it('sends generated sms token through configured provider', function (): void {
+    $provider = new class implements SmsProvider
+    {
+        public array $messages = [];
+
+        public function send(string $phone, string $message): void
+        {
+            $this->messages[] = [
+                'phone' => $phone,
+                'message' => $message,
+            ];
+        }
+    };
+    $this->app->instance(SmsProvider::class, $provider);
+
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+    );
+
+    $token = app(VotingTokenService::class)->issueSmsToken($identity, '500600700');
+
+    expect($provider->messages)->toHaveCount(1)
+        ->and($provider->messages[0]['phone'])->toBe('500600700')
+        ->and($provider->messages[0]['message'])->toContain($token->token);
+});
+
+it('disables sms token when provider rejects delivery', function (): void {
+    $provider = new class implements SmsProvider
+    {
+        public function send(string $phone, string $message): void
+        {
+            throw new DomainException('Bramka SMS odrzuciła wiadomość.');
+        }
+    };
+    $this->app->instance(SmsProvider::class, $provider);
+
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+    );
+
+    expect(fn () => app(VotingTokenService::class)->issueSmsToken($identity, '500600700'))
+        ->toThrow(DomainException::class, 'Bramka SMS odrzuciła wiadomość.');
+
+    expect(VotingToken::query()->firstOrFail()->disabled)->toBeTrue();
 });
 
 it('activates sms token by phone and code', function (): void {

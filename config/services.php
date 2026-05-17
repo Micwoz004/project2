@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'null'),
+        'url' => env('SMS_API_URL'),
+        'token' => env('SMS_API_TOKEN'),
+        'from' => env('SMS_FROM'),
+        'timeout' => env('SMS_TIMEOUT', 10),
+        'voting_token_message' => env('SMS_VOTING_TOKEN_MESSAGE', 'Kod SMS do głosowania SBO: {activationSmsToken}'),
+    ],
+
 ];

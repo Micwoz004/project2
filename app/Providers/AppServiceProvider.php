@@ -9,6 +9,9 @@ use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Voting\Models\VoteCard;
+use App\Domain\Voting\Services\Sms\HttpSmsProvider;
+use App\Domain\Voting\Services\Sms\NullSmsProvider;
+use App\Domain\Voting\Services\Sms\SmsProvider;
 use App\Models\User;
 use App\Policies\BudgetEditionPolicy;
 use App\Policies\CategoryPolicy;
@@ -25,7 +28,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(SmsProvider::class, function (): SmsProvider {
+            return config('services.sms.driver') === 'http'
+                ? new HttpSmsProvider
+                : new NullSmsProvider;
+        });
     }
 
     /**

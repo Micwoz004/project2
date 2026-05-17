@@ -5,6 +5,7 @@ namespace App\Domain\Voting\Services;
 use App\Domain\Voting\Data\VoterIdentityData;
 use App\Domain\Voting\Enums\VotingTokenType;
 use App\Domain\Voting\Models\VotingToken;
+use App\Domain\Voting\Services\Sms\SmsProvider;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -12,6 +13,10 @@ use Illuminate\Support\Facades\Log;
 class VotingTokenService
 {
     private const SMS_LIMIT_PER_PHONE = 5;
+
+    public function __construct(
+        private readonly SmsProvider $smsProvider,
+    ) {}
 
     public function issueSmsToken(VoterIdentityData $identity, string $phone): VotingToken
     {
@@ -34,7 +39,7 @@ class VotingTokenService
             throw new DomainException('Przekroczono limit kodów SMS dla numeru telefonu.');
         }
 
-        return DB::transaction(function () use ($identity, $phone): VotingToken {
+        $token = DB::transaction(function () use ($identity, $phone): VotingToken {
             VotingToken::query()
                 ->where('pesel', $identity->pesel)
                 ->where('type', VotingTokenType::Sms->value)
@@ -62,6 +67,21 @@ class VotingTokenService
 
             return $token;
         });
+
+        try {
+            $this->smsProvider->send($phone, $this->smsTokenMessage($token));
+        } catch (DomainException $exception) {
+            Log::warning('voting.token.sms.send_failed', [
+                'token_id' => $token->id,
+                'reason' => $exception->getMessage(),
+            ]);
+
+            $this->disableToken($token);
+
+            throw $exception;
+        }
+
+        return $token;
     }
 
     public function activateSmsToken(string $phone, string $token): VotingToken
@@ -130,5 +150,14 @@ class VotingTokenService
         ]);
 
         return $token->refresh();
+    }
+
+    private function smsTokenMessage(VotingToken $token): string
+    {
+        return str_replace(
+            '{activationSmsToken}',
+            $token->token,
+            (string) config('services.sms.voting_token_message'),
+        );
     }
 }

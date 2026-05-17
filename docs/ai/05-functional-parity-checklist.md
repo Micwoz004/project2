@@ -141,6 +141,7 @@
 - [x] Wielowierszowy kosztorys końcowej weryfikacji merytorycznej w UI zapisuje listy `correctedCost` i `futureCost`.
 - [x] Kodowa i dokumentacyjna mapa punktów wysyłki mail/SMS legacy w `LegacyCommunicationTrigger`.
 - [x] Formularz konsultacji merytorycznej w Filament zapisuje legacy `consultationInformation`.
+- [x] `VotingTokenService` ma adapter SMS: lokalny `null` provider i konfigurowalny HTTP provider dla realnej bramki.
 
 ## Do pełnego parytetu
 

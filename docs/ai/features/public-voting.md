@@ -16,7 +16,7 @@
 Status: baseline domenowy rozbudowany.
 
 1. [x] Dodać bazowy publiczny flow wyborcy, tokenu i wyboru projektów.
-2. Podpiąć `VotingTokenService` pod SMS provider lub adapter testowy.
+2. [x] Podpiąć `VotingTokenService` pod SMS provider lub adapter testowy.
 3. [x] Dodać weryfikację `newverification` i oświadczeń: hash legacy z fallbackiem nazwiska matki `BRAK DANYCH` i pustym stringiem, albo `CitizenConfirmation`.
 4. [x] Wymusić potwierdzenie braku jednej kategorii głosu przez `confirm_missing_category`.
 5. [x] Pokryć testami token, duplikat PESEL, limity i transakcję.
@@ -34,11 +34,13 @@ Status: baseline domenowy rozbudowany.
 - Jeżeli historyczny `votingtokens.type` jest pusty albo spoza enumu, importer traktuje rekord jako SMS, bo dump 2025 używa tej tabeli dla tokenów SMS.
 - Import fixture `voters` przenosi pełniejsze dane wyborcy z legacy: drugie imię, nazwisko matki, ojca, e-mail, adres, IP, user agent, telefon i datę utworzenia.
 - Publiczny endpoint `/glosowanie/kod-sms` tworzy token SMS przez `VotingTokenService`.
+- `VotingTokenService` wysyła wygenerowany kod przez `SmsProvider`. Domyślny `NullSmsProvider` obsługuje środowisko lokalne/testowe, a `HttpSmsProvider` pozwala podpiąć realną bramkę przez `SMS_DRIVER=http`, `SMS_API_URL`, `SMS_API_TOKEN`, `SMS_FROM` i `SMS_VOTING_TOKEN_MESSAGE`.
+- Jeśli provider odrzuci wysyłkę, nowo wygenerowany token jest natychmiast unieważniany, żeby nie został aktywny bez dostarczenia kodu.
 - Publiczny endpoint `POST /glosowanie` aktywuje token przez `phone + token`, przekazuje wybór projektów do `CastVoteService` i unieważnia token po skutecznym głosie.
 - Widok `/glosowanie` zawiera formularz uzyskania kodu i formularz oddania głosu na jeden projekt lokalny oraz jeden ogólnomiejski.
 
 ## Świadome braki na tym etapie
 
 - Flow publiczny jest w Blade jako baseline; docelowe Livewire może go zastąpić bez zmiany logiki domenowej.
-- Brak integracji z realnym operatorem SMS; `VotingTokenService` przygotowuje rekord domenowy.
+- Brak produkcyjnych danych operatora SMS w repo; adapter HTTP jest gotowy konfiguracyjnie, ale wymaga wartości env na środowisku.
 - Walidacja tokenu jest domenowo gotowa, ale nie jest jeszcze podpięta do pełnego UI formularza głosowania.

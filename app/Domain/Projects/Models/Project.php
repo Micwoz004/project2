@@ -5,6 +5,7 @@ namespace App\Domain\Projects\Models;
 use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Communications\Models\CorrespondenceMessage;
 use App\Domain\Communications\Models\ProjectComment;
+use App\Domain\Communications\Models\ProjectPublicComment;
 use App\Domain\Files\Models\ProjectFile;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Users\Models\Department;
@@ -170,6 +171,11 @@ class Project extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(ProjectComment::class);
+    }
+
+    public function publicComments(): HasMany
+    {
+        return $this->hasMany(ProjectPublicComment::class);
     }
 
     public function correspondenceMessages(): HasMany

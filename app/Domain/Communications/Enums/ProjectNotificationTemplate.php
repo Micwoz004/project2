@@ -11,6 +11,8 @@ enum ProjectNotificationTemplate: string
     case FormalCorrection = 'formal_correction';
     case VerificationPressure = 'verification_pressure';
     case ProjectStatusChanged = 'project_status_changed';
+    case PublicCommentAdded = 'public_comment_added';
+    case PublicCommentAdminHidden = 'public_comment_admin_hidden';
 
     /**
      * @param  array<string, mixed>  $context
@@ -22,6 +24,8 @@ enum ProjectNotificationTemplate: string
             self::FormalCorrection => 'Wezwanie do korekty projektu '.$this->projectNumber($project),
             self::VerificationPressure => 'Monit weryfikacyjny projektu '.$this->projectNumber($project),
             self::ProjectStatusChanged => 'Zmiana statusu projektu '.$this->projectNumber($project),
+            self::PublicCommentAdded => 'Nowy komentarz dotyczący projektu '.$this->projectNumber($project),
+            self::PublicCommentAdminHidden => 'Komentarz został ukryty przy projekcie '.$this->projectNumber($project),
         };
     }
 
@@ -53,6 +57,16 @@ enum ProjectNotificationTemplate: string
                 'Zmieniono status projektu:',
                 $project->title,
                 'Status: '.trim((string) Arr::get($context, 'status', $project->status->publicLabel())),
+            ]),
+            self::PublicCommentAdded => implode(PHP_EOL, [
+                'W systemie SBO dodano nowy komentarz dotyczący projektu:',
+                $project->title,
+                '',
+                trim((string) Arr::get($context, 'comment', '')),
+            ]),
+            self::PublicCommentAdminHidden => implode(PHP_EOL, [
+                'Administrator ukrył komentarz dotyczący projektu:',
+                $project->title,
             ]),
         };
     }

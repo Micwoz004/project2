@@ -70,7 +70,7 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 | `verification.document.with_attachment` | `DocumentController::sendNotificationEmailWithAttachment` | mail | `notification.notificationSubject`, `notification.notificationText`, PDF karty |
 | `verification.pressure.automatic` | `VerificationPressure::beforeValidate` / `send` | mail | `emailTitleTaskVerificationPressureType`, `emailBodyTaskVerificationPressureType` |
 | `verification.pressure.manual` | `VerificationPressureForm::sendManualPressure` | mail | treść ręczna operatora |
-| `public_comment.added` | `CommentsController::actionCreate` | mail | `emailTitleCommentAdded`, `emailBodyCommentAdded` |
+| `public_comment.added` | `CommentsController::actionAddComment` | mail | `emailTitleCommentAdded`, `emailBodyCommentAdded` |
 | `public_comment.admin_hidden` | `CommentsController::actionToggleAdminHideComment` | mail | `emailTitleCommentAdminHidden`, `emailBodyCommentAdminHidden` |
 | `cocreator.confirmation` | `Cocreator::sendConfirmation` | mail | `emailTitleConfirmCocreatorStatus`, `emailBodyConfirmCocreatorStatus` |
 | `project.contact_message` | `TaskProposeController::actionContact` / `ContactForm::sendMessage` | mail | temat i treść z formularza publicznego |
@@ -87,4 +87,6 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 
 - Kolejka obejmuje bazowe powiadomienia projektu; nie wszystkie triggery z `LegacyCommunicationTrigger` mają jeszcze osobne akcje domenowe.
 - Brak integracji z operatorem SMS dla powiadomień innych niż token głosowania.
-- Brak UI i akcji domenowych dla publicznego dodawania, ukrywania i moderowania komentarzy.
+- Publiczne komentarze mają domenowe akcje zgodne z `CommentsController`: dodanie przez rolę `applicant`, edycję i ukrycie własnego komentarza, akceptację administracyjną, ukrycie administracyjne oraz powiadomienia mailowe dla autora projektu/autora komentarza przez kolejkę Laravel.
+- `ProjectPublicCommentVisibilityService` odtwarza warunki widoczności z legacy `_comments.php`: komentarz zaakceptowany i nieukryty jest publiczny; oczekujący widzi autor komentarza, admin i autor projektu; ukryty przez użytkownika widzi autor komentarza i admin; ukryty administracyjnie widzi tylko admin.
+- Brak pełnego publicznego UI do dodawania i moderowania komentarzy; logika domenowa, import oraz testy są gotowe do podpięcia pod kontrolery/Livewire.

@@ -6,6 +6,7 @@ use App\Domain\Communications\Actions\AddProjectPublicCommentAction;
 use App\Domain\Communications\Actions\EditProjectPublicCommentAction;
 use App\Domain\Communications\Actions\MarkCorrespondenceMessageReadAction;
 use App\Domain\Communications\Actions\QueueProjectNotificationAction;
+use App\Domain\Communications\Actions\SendProjectCoauthorConfirmationAction;
 use App\Domain\Communications\Actions\SendProjectCorrespondenceMessageAction;
 use App\Domain\Communications\Actions\ToggleProjectPublicCommentAdminHiddenAction;
 use App\Domain\Communications\Actions\ToggleProjectPublicCommentHiddenAction;
@@ -16,7 +17,9 @@ use App\Domain\Communications\Models\MailLog;
 use App\Domain\Communications\Models\ProjectNotification;
 use App\Domain\Communications\Models\ProjectPublicComment;
 use App\Domain\Communications\Services\ProjectPublicCommentVisibilityService;
+use App\Domain\Projects\Actions\ConfirmProjectCoauthorAction;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemPermission;
 use App\Domain\Users\Enums\SystemRole;
@@ -261,6 +264,51 @@ it('sends queued project notifications and writes mail logs', function (): void 
         ->and(MailLog::query()->where('email', $recipient->email)->where('subject', $notification->subject)->count())->toBe(1);
 });
 
+it('sends coauthor confirmation and confirms through legacy activation route', function (): void {
+    Bus::fake();
+
+    $author = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'title' => 'Park kieszonkowy',
+    ]);
+    $coauthor = ProjectCoauthor::query()->create([
+        'project_id' => $project->id,
+        'first_name' => 'Anna',
+        'last_name' => 'Nowak',
+        'email' => 'anna@example.test',
+        'read_confirm' => true,
+        'email_agree' => true,
+    ]);
+
+    $notification = app(SendProjectCoauthorConfirmationAction::class)->execute($coauthor, $author);
+    $coauthor->refresh();
+
+    expect($notification)->toBeInstanceOf(ProjectNotification::class)
+        ->and($coauthor->hash)->not->toBeNull()
+        ->and($notification->subject)->toContain('Potwierdzenie współautorstwa projektu')
+        ->and($notification->body)->toContain(route('public.coauthors.confirm', [
+            'email' => $coauthor->email,
+            'hash' => $coauthor->hash,
+        ]));
+
+    $this->get(route('public.coauthors.confirm', [
+        'email' => $coauthor->email,
+        'hash' => $coauthor->hash,
+    ]))
+        ->assertOk()
+        ->assertSee('Potwierdzono status współautora.');
+
+    expect($coauthor->refresh()->confirm)->toBeTrue();
+    Bus::assertDispatched(SendProjectNotificationJob::class);
+});
+
+it('rejects invalid coauthor confirmation pairs', function (): void {
+    app(ConfirmProjectCoauthorAction::class)->execute('missing@example.test', 'bad-hash');
+})->throws(DomainException::class, 'Nie znaleziono współautora dla takiego e-maila oraz hashu');
+
 it('rejects queued project notifications without recipient email', function (): void {
     $author = User::factory()->create();
     $edition = budgetEdition();
@@ -291,6 +339,7 @@ it('keeps a legacy communication trigger map for mail and sms parity', function 
         ->and(LegacyCommunicationTrigger::TaskCorrespondence->projectTemplate())->toBe(ProjectNotificationTemplate::CorrespondenceMessage)
         ->and(LegacyCommunicationTrigger::PublicCommentAdded->projectTemplate())->toBe(ProjectNotificationTemplate::PublicCommentAdded)
         ->and(LegacyCommunicationTrigger::PublicCommentAdminHidden->projectTemplate())->toBe(ProjectNotificationTemplate::PublicCommentAdminHidden)
+        ->and(LegacyCommunicationTrigger::CocreatorConfirmation->projectTemplate())->toBe(ProjectNotificationTemplate::CoauthorConfirmation)
         ->and(LegacyCommunicationTrigger::VerificationPressureAutomatic->projectTemplate())->toBe(ProjectNotificationTemplate::VerificationPressure);
 });
 

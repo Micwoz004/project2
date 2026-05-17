@@ -182,6 +182,7 @@ enum LegacyCommunicationTrigger: string
             self::VerificationPressureManual => ProjectNotificationTemplate::VerificationPressure,
             self::PublicCommentAdded => ProjectNotificationTemplate::PublicCommentAdded,
             self::PublicCommentAdminHidden => ProjectNotificationTemplate::PublicCommentAdminHidden,
+            self::CocreatorConfirmation => ProjectNotificationTemplate::CoauthorConfirmation,
             self::TaskStatusRejectedFormal,
             self::TaskStatusRejectedWjo,
             self::TaskStatusRecommendedWjo,

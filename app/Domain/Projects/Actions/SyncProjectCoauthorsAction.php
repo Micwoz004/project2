@@ -2,8 +2,11 @@
 
 namespace App\Domain\Projects\Actions;
 
+use App\Domain\Communications\Actions\SendProjectCoauthorConfirmationAction;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Projects\Models\ProjectCoauthor;
 use App\Domain\Projects\Services\ProjectCoauthorValidator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -11,6 +14,7 @@ class SyncProjectCoauthorsAction
 {
     public function __construct(
         private readonly ProjectCoauthorValidator $validator,
+        private readonly SendProjectCoauthorConfirmationAction $sendProjectCoauthorConfirmation,
     ) {}
 
     /**
@@ -25,12 +29,16 @@ class SyncProjectCoauthorsAction
 
         $this->validator->assertValid($coauthors, $project->id);
 
-        DB::transaction(function () use ($project, $coauthors): void {
+        $createdCoauthors = DB::transaction(function () use ($project, $coauthors): Collection {
             $project->coauthors()->delete();
 
-            foreach ($coauthors as $coauthor) {
-                $project->coauthors()->create($coauthor);
-            }
+            return collect($coauthors)
+                ->map(fn (array $coauthor): ProjectCoauthor => $project->coauthors()->create($coauthor));
+        });
+
+        $project->loadMissing('creator');
+        $createdCoauthors->each(function (ProjectCoauthor $coauthor) use ($project): void {
+            $this->sendProjectCoauthorConfirmation->execute($coauthor, $project->creator);
         });
 
         Log::info('project.coauthor.sync.success', [

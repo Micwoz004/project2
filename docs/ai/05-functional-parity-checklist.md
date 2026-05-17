@@ -144,6 +144,7 @@
 - [x] Publiczne zgłoszenie projektu renderuje teksty oświadczeń i zgód z legacy SBO 2025 przez wspólną definicję `LegacyProjectFormText`.
 - [x] Publiczne zgłoszenie projektu obsługuje wielowierszowy kosztorys i agreguje go do pól zgodnych z legacy.
 - [x] Publiczne zgłoszenie projektu zapisuje adresowe pola współautorów z widoku Yii.
+- [x] Współautor otrzymuje mail z kompatybilnym linkiem `/activation/confirmCocreator`, a potwierdzenie email+hash ustawia `confirm=true`.
 - [x] Składanie projektu waliduje limit kosztu obszaru i rozwiązuje Zielone SBO do obszaru ogólnomiejskiego bez użycia stałego ID legacy.
 - [x] Korekta kosztorysu projektu podmienia pozycje kosztów i przelicza sumę.
 - [x] Publiczna korekta autora obsługuje odblokowane typy załączników legacy.

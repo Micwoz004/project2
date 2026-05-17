@@ -13,6 +13,7 @@ enum ProjectNotificationTemplate: string
     case ProjectStatusChanged = 'project_status_changed';
     case PublicCommentAdded = 'public_comment_added';
     case PublicCommentAdminHidden = 'public_comment_admin_hidden';
+    case CoauthorConfirmation = 'coauthor_confirmation';
 
     /**
      * @param  array<string, mixed>  $context
@@ -26,6 +27,7 @@ enum ProjectNotificationTemplate: string
             self::ProjectStatusChanged => 'Zmiana statusu projektu '.$this->projectNumber($project),
             self::PublicCommentAdded => 'Nowy komentarz dotyczący projektu '.$this->projectNumber($project),
             self::PublicCommentAdminHidden => 'Komentarz został ukryty przy projekcie '.$this->projectNumber($project),
+            self::CoauthorConfirmation => 'Potwierdzenie współautorstwa projektu '.$this->projectNumber($project),
         };
     }
 
@@ -67,6 +69,13 @@ enum ProjectNotificationTemplate: string
             self::PublicCommentAdminHidden => implode(PHP_EOL, [
                 'Administrator ukrył komentarz dotyczący projektu:',
                 $project->title,
+            ]),
+            self::CoauthorConfirmation => implode(PHP_EOL, [
+                'Zostałaś/-eś wskazana/-y jako współautor projektu:',
+                $project->title,
+                '',
+                'Potwierdź status współautora:',
+                trim((string) Arr::get($context, 'confirm_link', '')),
             ]),
         };
     }

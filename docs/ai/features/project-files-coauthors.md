@@ -21,6 +21,7 @@ Status: częściowo zaimplementowane w etapie 1.
 4. [x] Ustalić bazową bramkę publikacji załączników po anonimizacji.
 5. [x] Pokryć testami metadane plików, typy, limity i wymagane zgody.
 6. [x] Dodać import fixture dla `files`, `filesprivate` i `cocreators`.
+7. [x] Dodać potwierdzenie statusu współautora przez link email+hash zgodnie z `ActivationController::actionConfirmCocreator`.
 
 ## Rozpoznane reguły legacy
 
@@ -30,6 +31,7 @@ Status: częściowo zaimplementowane w etapie 1.
 - Legacy formularz obsługuje maksymalnie dwóch współautorów (`cocreator1`, `cocreator2`) i przyjmuje dla nich imię, nazwisko, e-mail, telefon, ulicę, numer domu, numer lokalu, kod pocztowy, miasto oraz zgody kontaktowe.
 - `Task::cocreatorValidate` wymaga imienia, nazwiska, e-maila lub telefonu oraz potwierdzenia zgody.
 - `Cocreator::validateContact` wymaga wybrania co najmniej jednej publicznej formy kontaktu: e-mail lub telefon.
+- `Cocreator::beforeSave` generuje `hash`, jeżeli jest pusty, a `Cocreator::sendConfirmation` wysyła link `/activation/confirmCocreator?email=...&hash=...` do współautora z adresem e-mail. `ActivationController::actionConfirmCocreator` znajduje rekord po parze email+hash i ustawia `confirm=1`; ponowne potwierdzenie nie jest błędem.
 - Legacy nie wykonuje fizycznej transformacji plików w ramach anonimizacji załączników. `Task::rules` wymaga `attachmentsAnonimized=1` przy scenariuszach `propose` i `update`, widoki pokazują instrukcję o anonimizacji materiałów graficznych, a `Task::saveFile()` zapisuje upload przez `saveAs()` do `webroot.assets.uploads` bez procesu maskowania lub konwersji.
 - Pole `attachmentsAnonimized` jest w legacy oświadczeniem autora o prawach do publikacji i przygotowaniu materiałów, a nie statusem zadania asynchronicznego. Dodatkowa wzmianka w `TaskVerification` dotyczy kontroli formalnej: urzędnik odpowiada, czy załączniki są niezbędne i zanonimizowane.
 
@@ -47,6 +49,9 @@ Status: częściowo zaimplementowane w etapie 1.
 - Publiczny formularz korekty autora zapisuje tylko te typy załączników, które zostały odblokowane w `project_corrections.allowed_fields`.
 - `ProjectCoauthorValidator` waliduje limit dwóch współautorów, wymagane dane kontaktowe, potwierdzenie przeczytania i zgodę na co najmniej jedną formę kontaktu.
 - `SyncProjectCoauthorsAction` wymienia listę współautorów projektu transakcyjnie.
+- `SendProjectCoauthorConfirmationAction` generuje brakujący hash współautora algorytmem zgodnym z legacy (`md5(time + taskId + email)`), kolejkuje mail z linkiem potwierdzającym i pomija wysyłkę, gdy współautor nie ma e-maila.
+- `ConfirmProjectCoauthorAction` odtwarza `ActivationController::actionConfirmCocreator`: przyjmuje email+hash, ustawia `confirm=true`, a dla braku dopasowania zwraca błąd domenowy o treści legacy.
+- Publiczna ścieżka `/activation/confirmCocreator` pozostaje dostępna jako kompatybilny endpoint potwierdzania współautora.
 - Publiczny formularz zgłoszenia projektu przyjmuje maksymalnie dwóch współautorów, pomija puste sloty formularza i zapisuje dane przez `SyncProjectCoauthorsAction` przed złożeniem projektu.
 - Współautorzy mają teraz w PostgreSQL pola adresowe `street`, `house_no`, `flat_no`, `post_code`, `city`, żeby zachować dane z formularza Yii i przyszły pełny import `cocreators`.
 - `LegacyFixtureImportService` rozdziela `files` i `filesprivate` flagą `is_private` oraz przenosi współautorów z `cocreators`.

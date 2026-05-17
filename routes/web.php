@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Public\PublicCoauthorConfirmationController;
 use App\Http\Controllers\Public\PublicProjectController;
 use App\Http\Controllers\Public\PublicReportController;
 use App\Http\Controllers\Public\PublicResultsController;
@@ -12,6 +13,7 @@ Route::redirect('/', '/projekty');
 Route::get('/projekty', [PublicProjectController::class, 'index'])->name('public.projects.index');
 Route::get('/projekt/{project}', [PublicProjectController::class, 'show'])->name('public.projects.show');
 Route::get('/projekty-mapa', [PublicProjectController::class, 'map'])->name('public.projects.map');
+Route::get('/activation/confirmCocreator', PublicCoauthorConfirmationController::class)->name('public.coauthors.confirm');
 Route::get('/projekty/zglos', [PublicProjectController::class, 'create'])->name('public.projects.create');
 Route::post('/projekty/zglos', [PublicProjectController::class, 'store'])->name('public.projects.store');
 Route::middleware('auth')->group(function (): void {

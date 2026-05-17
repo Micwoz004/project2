@@ -4,6 +4,7 @@ use App\Domain\Communications\Actions\AddProjectCommentAction;
 use App\Domain\Communications\Actions\MarkCorrespondenceMessageReadAction;
 use App\Domain\Communications\Actions\QueueProjectNotificationAction;
 use App\Domain\Communications\Actions\SendProjectCorrespondenceMessageAction;
+use App\Domain\Communications\Enums\LegacyCommunicationTrigger;
 use App\Domain\Communications\Enums\ProjectNotificationTemplate;
 use App\Domain\Communications\Jobs\SendProjectNotificationJob;
 use App\Domain\Communications\Models\MailLog;
@@ -127,3 +128,24 @@ it('rejects queued project notifications without recipient email', function (): 
         ProjectNotificationTemplate::ProjectStatusChanged,
     );
 })->throws(DomainException::class, 'Adres e-mail odbiorcy jest wymagany.');
+
+it('keeps a legacy communication trigger map for mail and sms parity', function (): void {
+    expect(LegacyCommunicationTrigger::cases())->toHaveCount(35)
+        ->and(LegacyCommunicationTrigger::TaskStatusRejectedFormal->settingsKeys())->toBe([
+            'subject' => 'emailTitleVerificationNegativeFormal',
+            'body' => 'emailBodyVerificationNegativeFormal',
+        ])
+        ->and(LegacyCommunicationTrigger::VotingTokenSms->channel())->toBe('sms')
+        ->and(LegacyCommunicationTrigger::VotingTokenSms->settingsKeys())->toBe([
+            'body' => 'smsVotingToken',
+        ])
+        ->and(LegacyCommunicationTrigger::TaskCorrespondence->projectTemplate())->toBe(ProjectNotificationTemplate::CorrespondenceMessage)
+        ->and(LegacyCommunicationTrigger::VerificationPressureAutomatic->projectTemplate())->toBe(ProjectNotificationTemplate::VerificationPressure);
+});
+
+it('documents the legacy source for every communication trigger', function (): void {
+    foreach (LegacyCommunicationTrigger::cases() as $trigger) {
+        expect($trigger->legacySource())->not->toBe('')
+            ->and($trigger->recipient())->not->toBe('');
+    }
+});

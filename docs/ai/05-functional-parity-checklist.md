@@ -139,6 +139,7 @@
 - [x] Formularze wstępnej i końcowej weryfikacji merytorycznej w Filament zapisują pola i komentarze legacy w `answers` JSON.
 - [x] Końcowa weryfikacja merytoryczna pomija koszty przyszłe przy `hasAdditionalCosts=NO/N/A` zgodnie z legacy.
 - [x] Wielowierszowy kosztorys końcowej weryfikacji merytorycznej w UI zapisuje listy `correctedCost` i `futureCost`.
+- [x] Kodowa i dokumentacyjna mapa punktów wysyłki mail/SMS legacy w `LegacyCommunicationTrigger`.
 
 ## Do pełnego parytetu
 
@@ -148,7 +149,6 @@
 - [ ] Konsultacje z pełną listą pól legacy w UI, jeśli analiza widoków jednostek wykaże pola poza `TaskConsultation`.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
-- [ ] Pełna mapa wszystkich punktów wysyłki mail/SMS względem legacy.
 - [ ] Pełny import przypisań ról/uprawnień z dumpa legacy.
 - [ ] Pełny import użytkowników, departamentów i RBAC bezpośrednio z dumpa legacy.
 - [ ] Finalny przegląd polityk Laravel dla każdej roli po pełnym imporcie dumpa.

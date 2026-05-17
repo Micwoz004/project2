@@ -13,7 +13,7 @@
 
 ## Plan wdrożenia
 
-Status: baseline fixture i import ze staging MySQL zaimplementowane.
+Status: baseline fixture, import ze staging MySQL i parser liczności surowego dumpa SQL zaimplementowane.
 
 1. [x] Przygotować staging MySQL z profilem `legacy-import`.
 2. [x] Dodać komendę Artisan importującą znormalizowany fixture w kolejności zależności.
@@ -22,6 +22,7 @@ Status: baseline fixture i import ze staging MySQL zaimplementowane.
 5. [x] Porównać liczność, `legacy_id`, statusy i relacje dla baseline modułów.
 6. [x] Dodać komendę importującą bezpośrednio z połączenia MySQL/staging przez istniejące mapowania domenowe.
 7. [x] Dodać komendę audytu liczności po imporcie staging MySQL względem tabel docelowych.
+8. [x] Dodać parser surowego pliku `.sql` do audytu liczności bez staging MySQL.
 
 ## Implementacja Laravel
 
@@ -29,6 +30,9 @@ Status: baseline fixture i import ze staging MySQL zaimplementowane.
 - `sbo:legacy-import {path} {--source=}` czyta znormalizowany JSON, waliduje kształt na granicy systemu, uruchamia `LegacyFixtureImportService` i zapisuje batch ze statystykami bez logowania payloadu ani PII.
 - `sbo:legacy-import-mysql {--connection=legacy_mysql} {--source=legacy-mysql} {--guard=web}` czyta tabele legacy z połączenia skonfigurowanego w Laravel, normalizuje różnice nazw kolumn i uruchamia kolejno import użytkowników/departamentów, domeny oraz RBAC.
 - `sbo:legacy-import-counts {--connection=legacy_mysql} {--fail-on-mismatch} {--json}` porównuje liczności bezpośrednio mapowanych tabel legacy ze staging MySQL z docelowymi tabelami PostgreSQL po imporcie; konsolidacje takie jak `files/filesprivate`, `zkvotes/otvotes/atvotes`, rekomendacje i zakresy departamentów są rozdzielane filtrami docelowymi.
+- `sbo:legacy-dump-counts {path} {--compare-target} {--fail-on-mismatch} {--json}` strumieniowo liczy rekordy z `INSERT INTO` w surowym dumpie MySQL bez odtwarzania staging DB i bez logowania wartości rekordów. Tryb `--compare-target` używa tych samych mapowań liczności co `sbo:legacy-import-counts`.
+- `LegacySqlDumpTableCounter` rozpoznaje `CREATE TABLE`, wielowierszowe `INSERT INTO ... VALUES` oraz nawiasy/średniki wewnątrz stringów, żeby liczność nie zależała od pełnego parsowania PII z payloadu.
+- Parser został uruchomiony na `sbo2025_prod.sql`: rozpoznał 61 tabel i 602134 rekordy z `INSERT INTO`. Wynik zawiera wyłącznie liczności tabel, bez wartości rekordów.
 - `legacy_mysql` jest osobnym połączeniem DB skonfigurowanym przez `LEGACY_DB_*`, żeby staging dumpa nie mieszał się z docelowym PostgreSQL.
 - `LegacyMysqlSourceReader` normalizuje znane różnice dumpa MySQL: `users.firstname/lastname`, `users.houseno/homeno/postcode`, `users.name`, `tasktypes.nameshortcut` oraz analogiczne pola współautorów.
 - `LegacyUserImportService` importuje `departments` i `users`.
@@ -55,5 +59,5 @@ Status: baseline fixture i import ze staging MySQL zaimplementowane.
 
 ## Świadome braki na tym etapie
 
-- To nie jest parser pliku `.sql`; plik dumpa musi zostać wczytany do staging MySQL/MariaDB, a następnie importowany przez połączenie `legacy_mysql`.
-- Import nie obejmuje jeszcze parsera bezpośrednio z dumpa MySQL ani rzadkich tabel pomocniczych poza głównym przepływem projektów, weryfikacji i głosowania.
+- Parser `.sql` jest parserem liczności/audytu, nie pełnym importerem rekordów. Import danych nadal powinien iść przez staging MySQL, bo tam MySQL rozwiązuje typy, kodowanie i edge case'y składni dumpa.
+- Import nie obejmuje jeszcze rzadkich tabel pomocniczych poza głównym przepływem projektów, weryfikacji i głosowania.

@@ -139,12 +139,73 @@ class LegacyImportCountComparator
     }
 
     /**
+     * @param  array<string, int>  $sourceCounts
+     * @return array{summary: array<string, int>, rows: list<array<string, mixed>>}
+     */
+    public function compareSourceCounts(array $sourceCounts, string $source): array
+    {
+        Log::info('legacy_import_counts.compare_source_counts.start', [
+            'source' => $source,
+            'tables_count' => count(self::DIRECT_MAPPINGS) + count(self::SKIPPED_SOURCE_TABLES),
+        ]);
+
+        $rows = [];
+
+        foreach (self::DIRECT_MAPPINGS as $legacyTable => $mapping) {
+            $rows[] = $this->compareDirectMappingSourceCount($sourceCounts, $legacyTable, $mapping);
+        }
+
+        foreach (self::SKIPPED_SOURCE_TABLES as $legacyTable => $reason) {
+            $rows[] = $this->skippedSourceCountRow($sourceCounts, $legacyTable, $reason);
+        }
+
+        $summary = $this->summary($rows);
+
+        Log::info('legacy_import_counts.compare_source_counts.success', [
+            'source' => $source,
+            'matched_count' => $summary['matched'],
+            'mismatched_count' => $summary['mismatched'],
+            'missing_source_count' => $summary['missing_source'],
+            'missing_target_count' => $summary['missing_target'],
+            'skipped_count' => $summary['skipped'],
+        ]);
+
+        return [
+            'summary' => $summary,
+            'rows' => $rows,
+        ];
+    }
+
+    /**
      * @param  array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>}  $mapping
      * @return array<string, mixed>
      */
     private function compareDirectMapping(string $connection, string $legacyTable, array $mapping): array
     {
         $sourceCount = $this->sourceCount($connection, $legacyTable);
+
+        return $this->compareDirectMappingCounts($legacyTable, $mapping, $sourceCount);
+    }
+
+    /**
+     * @param  array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>}  $mapping
+     * @return array<string, mixed>
+     */
+    private function compareDirectMappingSourceCount(array $sourceCounts, string $legacyTable, array $mapping): array
+    {
+        return $this->compareDirectMappingCounts(
+            $legacyTable,
+            $mapping,
+            $sourceCounts[$legacyTable] ?? null,
+        );
+    }
+
+    /**
+     * @param  array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>}  $mapping
+     * @return array<string, mixed>
+     */
+    private function compareDirectMappingCounts(string $legacyTable, array $mapping, ?int $sourceCount): array
+    {
         $targetTable = $mapping['target_table'];
 
         if ($sourceCount === null) {
@@ -237,6 +298,23 @@ class LegacyImportCountComparator
             'legacy_table' => $legacyTable,
             'target_table' => null,
             'source_count' => $this->sourceCount($connection, $legacyTable),
+            'target_count' => null,
+            'difference' => null,
+            'status' => 'skipped',
+            'reason' => $reason,
+        ];
+    }
+
+    /**
+     * @param  array<string, int>  $sourceCounts
+     * @return array<string, mixed>
+     */
+    private function skippedSourceCountRow(array $sourceCounts, string $legacyTable, string $reason): array
+    {
+        return [
+            'legacy_table' => $legacyTable,
+            'target_table' => null,
+            'source_count' => $sourceCounts[$legacyTable] ?? null,
             'target_count' => null,
             'difference' => null,
             'status' => 'skipped',

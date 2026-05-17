@@ -161,6 +161,7 @@
 - [x] Potwierdzono w legacy, że anonimizacja załączników nie transformuje fizycznie plików; jest oświadczeniem autora i bramką publikacji.
 - [x] Panel Filament `/admin/wyniki` prezentuje administracyjne agregaty wyników, statusy kart, remisy, kategorie i skróty do CSV chronione `reports.export`.
 - [x] Legacy “usunięcie” użytkownika działa jako anonimizacja konta, dezaktywacja i odebranie ról.
+- [x] Parser surowego dumpa `.sql` liczy rekordy `INSERT INTO` i porównuje liczności z docelowymi tabelami bez staging MySQL.
 
 ## Do pełnego parytetu
 
@@ -168,5 +169,4 @@
 - [ ] Finalny przegląd etykiet formularza formalnego z aktualną wersją urzędową.
 - [ ] Produkcyjna konfiguracja realnego operatora SMS na środowisku.
 - [ ] Próbny pełny przebieg importu na odtworzonym stagingu z `sbo2025_prod.sql` i porównanie liczności tabel.
-- [ ] Parser pliku `.sql` bez pośredniego staging MySQL, jeśli będzie wymagany operacyjnie.
 - [ ] Finalny przegląd polityk Laravel dla każdej roli po pełnym imporcie dumpa.

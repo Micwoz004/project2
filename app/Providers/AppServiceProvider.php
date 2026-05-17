@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Dictionaries\Models\DictionaryEntry;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
@@ -15,6 +16,7 @@ use App\Domain\Voting\Services\Sms\SmsProvider;
 use App\Models\User;
 use App\Policies\BudgetEditionPolicy;
 use App\Policies\CategoryPolicy;
+use App\Policies\DictionaryEntryPolicy;
 use App\Policies\ProjectAreaPolicy;
 use App\Policies\ProjectPolicy;
 use App\Policies\VoteCardPolicy;
@@ -42,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(BudgetEdition::class, BudgetEditionPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(DictionaryEntry::class, DictionaryEntryPolicy::class);
         Gate::policy(Project::class, ProjectPolicy::class);
         Gate::policy(ProjectArea::class, ProjectAreaPolicy::class);
         Gate::policy(VoteCard::class, VoteCardPolicy::class);

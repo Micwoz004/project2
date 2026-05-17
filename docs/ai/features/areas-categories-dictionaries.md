@@ -13,13 +13,14 @@
 
 ## Plan wdrożenia
 
-Status: częściowo zaimplementowane.
+Status: zaimplementowany baseline domenowy i administracyjny.
 
-1. Dodać Filament Resources dla obszarów i kategorii. Wykonane: `ProjectAreaResource`, `CategoryResource`.
-2. Dodać walidacje limitów i typu obszaru. Wykonane w formularzach Filament zgodnie z legacy `TaskType::rules` i `Category::rules`: wymagane `name`, `symbol`, limity `64`, `8`, `50`.
+1. [x] Dodać Filament Resources dla obszarów i kategorii: `ProjectAreaResource`, `CategoryResource`.
+2. [x] Dodać walidacje limitów i typu obszaru w formularzach Filament zgodnie z legacy `TaskType::rules` i `Category::rules`: wymagane `name`, `symbol`, limity `64`, `8`, `50`.
 3. [x] Dodać import słowników imion/nazwisk.
-4. Podpiąć kategorie do formularza projektu.
-5. Pokryć testami limity kategorii i filtry. Częściowo wykonane: testy listy obszarów lokalnych, OGM, pivotu kategorii i rejestracji zasobów admina.
+4. [x] Podpiąć kategorie do formularza projektu.
+5. [x] Pokryć testami limity kategorii, filtry i zasoby administracyjne.
+6. [x] Dodać administracyjny resource dla słowników legacy.
 
 ## Implementacja
 
@@ -28,6 +29,7 @@ Status: częściowo zaimplementowane.
 - Logika listy obszarów: `App\Domain\Projects\Services\ProjectAreaCatalog`.
 - Słowniki legacy: `DictionaryEntry` konsoliduje `firstnamedictionary`, `lastnamedictionary`, `motherlastnamedictionary`.
 - Import słowników: `LegacyDictionaryImportService` jest idempotentny po `source_table + legacy_id`, ponieważ legacy tabele mają niezależne identyfikatory.
+- Panel Filament udostępnia `DictionaryEntryResource` dla `dictionary_entries`; dostęp i CRUD są chronione przez `DictionaryEntryPolicy` oraz `dictionaries.manage` albo role `admin`/`bdo`.
 - Import fixture przenosi `taskscategories` do pivotu `category_project`, zachowując wiele kategorii projektu.
 - `ProjectCostLimitService` wykorzystuje limity obszaru przy składaniu projektu i rozwiązuje `local=2` do obszaru ogólnomiejskiego bez opierania się na historycznym ID `35`.
 - Testy: `AreasCategoriesDictionariesTest`, `LegacyDictionaryImportTest`.

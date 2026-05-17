@@ -31,6 +31,7 @@
 - [x] Publiczna mapa projektów używa tych samych filtrów co katalog i rozpoznaje współrzędne z `lat/lng`, `map_data` oraz `map_lng_lat`.
 - [x] Publiczny layout ma wspólny responsywny design system dla katalogu, szczegółów projektu, mapy, formularza zgłoszenia, głosowania, wyników i raportów.
 - [x] Filament Resources dla obszarów i kategorii.
+- [x] Filament Resource dla słowników legacy imion, nazwisk i nazwisk matek.
 - [x] Testy listy obszarów lokalnych/OGM i relacji kategorii.
 - [x] Bazowa mapa ról legacy i canonical permissions.
 - [x] Synchronizacja Spatie Permission dla ról/uprawnień.

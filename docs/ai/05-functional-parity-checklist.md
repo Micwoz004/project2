@@ -106,6 +106,7 @@
 - [x] Import fixture rejestrów PESEL z tabel `pesel` i `verification`.
 - [x] Import fixture historycznych logów administracyjnych z tabeli `logs`.
 - [x] Komenda Artisan `sbo:legacy-import` do importu znormalizowanego JSON fixture.
+- [x] Komenda Artisan `sbo:legacy-import-mysql` do importu ze staging MySQL przez istniejące mapowania domenowe, użytkowników i RBAC.
 - [x] Fizyczny zapis załączników projektu do publicznego/prywatnego storage z walidacją legacy przed zapisem.
 - [x] Publiczna widoczność załączników dopiero po oznaczeniu projektu jako zanonimizowanego i tylko dla plików nieprywatnych.
 - [x] Publiczny formularz zgłoszenia zapisuje realny prywatny upload listy poparcia.
@@ -154,7 +155,6 @@
 - [ ] Potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Finalny przegląd etykiet formularza formalnego z aktualną wersją urzędową.
 - [ ] Produkcyjna konfiguracja realnego operatora SMS na środowisku.
-- [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
-- [ ] Pełny import przypisań ról/uprawnień z dumpa legacy.
-- [ ] Pełny import użytkowników, departamentów i RBAC bezpośrednio z dumpa legacy.
+- [ ] Próbny pełny przebieg importu na odtworzonym stagingu z `sbo2025_prod.sql` i porównanie liczności tabel.
+- [ ] Parser pliku `.sql` bez pośredniego staging MySQL, jeśli będzie wymagany operacyjnie.
 - [ ] Finalny przegląd polityk Laravel dla każdej roli po pełnym imporcie dumpa.

@@ -13,18 +13,22 @@
 
 ## Plan wdrożenia
 
-Status: baseline fixture zaimplementowany.
+Status: baseline fixture i import ze staging MySQL zaimplementowane.
 
-1. Przygotować staging MySQL z profilem `legacy-import`.
+1. [x] Przygotować staging MySQL z profilem `legacy-import`.
 2. [x] Dodać komendę Artisan importującą znormalizowany fixture w kolejności zależności.
 3. [x] Zapisywać statystyki w `legacy_import_batches`.
 4. [x] Dodać fixture z małym wycinkiem dumpa do testów.
 5. [x] Porównać liczność, `legacy_id`, statusy i relacje dla baseline modułów.
+6. [x] Dodać komendę importującą bezpośrednio z połączenia MySQL/staging przez istniejące mapowania domenowe.
 
 ## Implementacja Laravel
 
 - `LegacyFixtureImportService` importuje podstawowy wycinek danych w transakcji: `taskgroups`, `settings`, `pages`, `statuses`, `activations`, `pesel`, `verification`, `tasktypes`, `categories`, `tasks`, `logs`, `taskscategories`, `taskcosts`, `files`, `filesprivate`, `cocreators`, `taskverification`, `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation`, `detailedverification`, `locationverification`, `verificationversion`, `taskadvancedverification`, `prerecommendations`, `recommendationswjo`, `tasksinitialverification`, `tasksdepartments`, `coordinatorassignment`, `verifierassignment`, `taskdepartmentassignment`, `verificationpressure`, `zkvotes`, `atvotes`, `otvotes`, `atotvotesrejection`, `taskappealagainstdecision`, `correspondence`, `taskcomments`, `comments`, `notification`, `maillogs`, `taskcorrection`, `taskchangessuggestion`, `versions`, `newverification`, `votingtokens`, `voters`, `smslogs`, `votecards`, `votes`.
 - `sbo:legacy-import {path} {--source=}` czyta znormalizowany JSON, waliduje kształt na granicy systemu, uruchamia `LegacyFixtureImportService` i zapisuje batch ze statystykami bez logowania payloadu ani PII.
+- `sbo:legacy-import-mysql {--connection=legacy_mysql} {--source=legacy-mysql} {--guard=web}` czyta tabele legacy z połączenia skonfigurowanego w Laravel, normalizuje różnice nazw kolumn i uruchamia kolejno import użytkowników/departamentów, domeny oraz RBAC.
+- `legacy_mysql` jest osobnym połączeniem DB skonfigurowanym przez `LEGACY_DB_*`, żeby staging dumpa nie mieszał się z docelowym PostgreSQL.
+- `LegacyMysqlSourceReader` normalizuje znane różnice dumpa MySQL: `users.firstname/lastname`, `users.houseno/homeno/postcode`, `users.name`, `tasktypes.nameshortcut` oraz analogiczne pola współautorów.
 - `LegacyUserImportService` importuje `departments` i `users`.
 - Import jest idempotentny po `legacy_id` przez `updateOrCreate`.
 - Ustawienia aplikacji zachowują surową wartość z legacy `settings.value`, także jeśli jest to serializowany format Yii/PHP; typizacja ustawień będzie osobnym etapem po potwierdzeniu wszystkich kluczy z dumpa.
@@ -48,6 +52,5 @@ Status: baseline fixture zaimplementowany.
 
 ## Świadome braki na tym etapie
 
-- To jeszcze nie jest parser pełnego dumpa MySQL; serwis przyjmuje znormalizowany fixture.
-- Brak komendy Artisan czytającej bezpośrednio staging MySQL; aktualna komenda przyjmuje znormalizowany JSON.
+- To nie jest parser pliku `.sql`; plik dumpa musi zostać wczytany do staging MySQL/MariaDB, a następnie importowany przez połączenie `legacy_mysql`.
 - Import nie obejmuje jeszcze parsera bezpośrednio z dumpa MySQL ani rzadkich tabel pomocniczych poza głównym przepływem projektów, weryfikacji i głosowania.

@@ -40,6 +40,7 @@ Nowy system zachowuje nazwy legacy jako role/uprawnienia Spatie, ale decyzje dom
 - `SyncSystemRolesAndPermissionsAction` tworzy role i uprawnienia Spatie bez kasowania nieznanych historycznych ról.
 - `LegacyRbacImportService` przenosi relacje `authitemchild` oraz przypisania `authassignment` dla użytkowników z `legacy_id`.
 - Import RBAC rozwiązuje graf relacji legacy rekurencyjnie: `role -> role -> permission`, `role -> permission -> permission` oraz bezpośredne `authassignment` do operacji są spłaszczane do uprawnień Spatie, bo Spatie nie ma natywnej hierarchii permissionów jak Yii RBAC.
+- `sbo:legacy-import-mysql` używa tego samego importera RBAC po odczycie tabel `authitem`, `authitemchild` i `authassignment` ze staging MySQL.
 - `LegacyAuditLog` zachowuje historyczną tabelę `logs`: operatora, opcjonalny projekt, treść audytu, kontroler, akcję i czas operacji.
 - `User::canAccessPanel()` dopuszcza tylko aktywnych użytkowników z `admin.access` albo rolą `admin`/`bdo`.
 - Policies dla `BudgetEdition`, `ProjectArea`, `Category` i `VoteCard` blokują operacje użytkownikom bez dedykowanych uprawnień.

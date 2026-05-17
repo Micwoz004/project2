@@ -156,6 +156,7 @@
 - [x] Formularz konsultacji merytorycznej w Filament zapisuje legacy `consultationInformation`.
 - [x] `VotingTokenService` ma adapter SMS: lokalny `null` provider i konfigurowalny HTTP provider dla realnej bramki.
 - [x] Publiczne `/glosowanie` renderuje Livewire flow wydania kodu SMS i oddania głosu przez usługi domenowe.
+- [x] Komenda `sbo:sms-config-check --production` blokuje brak realnego operatora SMS, niepoprawny timeout i szablon bez tokenu.
 
 ## Do pełnego parytetu
 

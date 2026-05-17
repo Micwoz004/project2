@@ -27,6 +27,7 @@ Status: baseline domenowy i publiczny flow Livewire rozbudowane.
 10. [x] Unieważnić aktywny token SMS po skutecznym oddaniu głosu.
 11. [x] Rejestrować papierowe karty głosowania z tą samą walidacją projektów i wyborcy.
 12. [x] Importować fixture `newverification`, `votingtokens` i `smslogs`.
+13. [x] Dodać walidator i komendę kontroli konfiguracji operatora SMS przed uruchomieniem produkcyjnym.
 
 ## Implementacja Laravel
 
@@ -35,11 +36,12 @@ Status: baseline domenowy i publiczny flow Livewire rozbudowane.
 - Import fixture `voters` przenosi pełniejsze dane wyborcy z legacy: drugie imię, nazwisko matki, ojca, e-mail, adres, IP, user agent, telefon i datę utworzenia.
 - Publiczny endpoint `/glosowanie/kod-sms` tworzy token SMS przez `VotingTokenService`.
 - `VotingTokenService` wysyła wygenerowany kod przez `SmsProvider`. Domyślny `NullSmsProvider` obsługuje środowisko lokalne/testowe, a `HttpSmsProvider` pozwala podpiąć realną bramkę przez `SMS_DRIVER=http`, `SMS_API_URL`, `SMS_API_TOKEN`, `SMS_FROM` i `SMS_VOTING_TOKEN_MESSAGE`.
+- `sbo:sms-config-check {--production} {--json}` waliduje konfigurację SMS: produkcja wymaga `SMS_DRIVER=http`, adresu API, tokenu, nadawcy, dodatniego timeoutu i szablonu zawierającego `{activationSmsToken}`.
 - Jeśli provider odrzuci wysyłkę, nowo wygenerowany token jest natychmiast unieważniany, żeby nie został aktywny bez dostarczenia kodu.
 - Publiczny endpoint `POST /glosowanie` aktywuje token przez `phone + token`, przekazuje wybór projektów do `CastVoteService` i unieważnia token po skutecznym głosie.
 - Widok `/glosowanie` renderuje komponent Livewire `PublicVotingFlow`, który obsługuje wydanie kodu SMS i oddanie głosu na jeden projekt lokalny oraz jeden ogólnomiejski przez te same usługi domenowe co endpointy POST.
 
 ## Świadome braki na tym etapie
 
-- Brak produkcyjnych danych operatora SMS w repo; adapter HTTP jest gotowy konfiguracyjnie, ale wymaga wartości env na środowisku.
+- Brak produkcyjnych danych operatora SMS w repo; adapter HTTP i komenda walidacyjna są gotowe, ale realne wartości env muszą zostać ustawione na środowisku.
 - Flow Livewire zachowuje prostą prezentację formularza; finalny UX może być dopracowany wizualnie bez zmiany logiki domenowej.

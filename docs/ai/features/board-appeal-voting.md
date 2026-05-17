@@ -55,6 +55,7 @@ Status: częściowo zaimplementowane w etapie 4.
 - Gate `cast-board-vote` dopuszcza role `president/vicepresident/verifier ZK` do ZK oraz `president/vicepresident/verifier ZOD` do OT/AT; `manage-board-voting` jest dla ról z `projects.manage` oraz admin/BDO.
 - `ProjectResource` w Filament pokazuje akcje zamknięcia/restartu OT albo AT tylko dla projektów w pasujących statusach i tylko użytkownikom przechodzącym `manage-board-voting`.
 - `ProjectResource` pokazuje akcje oddania głosu ZK/OT/AT tylko członkom właściwych ról, w statusach aktywnego głosowania i tylko do momentu oddania własnego głosu.
+- `ProjectResource` pokazuje akcje administracyjnego dodania odwołania, decyzji wstępnej i odpowiedzi komisji, korzystając z domenowych akcji odwoławczych.
 - `BoardDecisionResolver` liczy decyzje zgodnie z akcjami `actionProcessZKVote`, `actionProcessOTVote`, `actionProcessATVote`.
 - Dla ZK resolver zachowuje szczególną regułę `Task::zkAccepted()`: przy wyniku 4:4 głos użytkownika z rolą `president ZK` rozstrzyga akceptację albo odrzucenie.
 - `LegacyFixtureImportService` konsoliduje historyczne głosy rad/komisji w `project_board_votes` i uzasadnienia odrzuceń w `board_vote_rejections`.

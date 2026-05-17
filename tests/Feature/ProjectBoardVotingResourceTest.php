@@ -8,6 +8,7 @@ use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\OtVoteChoice;
+use App\Domain\Verification\Enums\ProjectAppealFirstDecision;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\User;
 
@@ -116,4 +117,41 @@ it('hides board vote action after current user has already voted', function (): 
     app(CastProjectBoardVoteAction::class)->execute($project, $verifier, BoardType::Ot, OtVoteChoice::Accepted->value);
 
     expect(ProjectResource::canCastBoardVote($project, BoardType::Ot))->toBeFalse();
+});
+
+it('handles project appeals from filament actions through domain logic', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $coordinator = User::factory()->create();
+    $coordinator->assignRole(SystemRole::Coordinator->value);
+    $this->actingAs($coordinator);
+
+    $project = boardVotingResourceProject(ProjectStatus::TeamRejectedWithRecall);
+
+    expect(ProjectResource::canSubmitProjectAppeal($project))->toBeTrue()
+        ->and(ProjectResource::canDecideProjectAppeal($project))->toBeFalse()
+        ->and(ProjectResource::canRespondProjectAppeal($project))->toBeFalse();
+
+    $appeal = ProjectResource::submitProjectAppealFromAdminForm($project, [
+        'appeal_message' => 'Odwołanie administratora.',
+    ]);
+
+    expect($appeal->appeal_message)->toBe('Odwołanie administratora.')
+        ->and(ProjectResource::canSubmitProjectAppeal($project->refresh()))->toBeFalse()
+        ->and(ProjectResource::canDecideProjectAppeal($project))->toBeTrue()
+        ->and(ProjectResource::canRespondProjectAppeal($project))->toBeTrue();
+
+    $decided = ProjectResource::decideProjectAppealFromAdminForm($project, [
+        'first_decision' => ProjectAppealFirstDecision::Accepted->value,
+    ]);
+
+    expect($decided->first_decision)->toBe(ProjectAppealFirstDecision::Accepted->value)
+        ->and($project->refresh()->status)->toBe(ProjectStatus::FormallyVerified);
+
+    $responded = ProjectResource::respondProjectAppealFromAdminForm($project, [
+        'response_to_appeal' => 'Odpowiedź komisji.',
+    ]);
+
+    expect($responded->response_to_appeal)->toBe('Odpowiedź komisji.')
+        ->and($responded->response_created_at)->not->toBeNull();
 });

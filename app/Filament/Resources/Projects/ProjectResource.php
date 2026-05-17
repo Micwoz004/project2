@@ -18,16 +18,20 @@ use App\Domain\Verification\Actions\BeginFormalVerificationAction;
 use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
 use App\Domain\Verification\Actions\CloseBoardVotingAction;
 use App\Domain\Verification\Actions\CompleteFormalVerificationAction;
+use App\Domain\Verification\Actions\DecideProjectAppealAction;
 use App\Domain\Verification\Actions\ForwardFormalVerificationToInitialVerificationAction;
 use App\Domain\Verification\Actions\RequestFormalCorrectionAction;
+use App\Domain\Verification\Actions\RespondProjectAppealAction;
 use App\Domain\Verification\Actions\RestartBoardVotingAction;
 use App\Domain\Verification\Actions\ReturnVerificationCardAction;
 use App\Domain\Verification\Actions\SubmitConsultationVerificationAction;
 use App\Domain\Verification\Actions\SubmitFinalMeritVerificationAction;
 use App\Domain\Verification\Actions\SubmitInitialMeritVerificationAction;
+use App\Domain\Verification\Actions\SubmitProjectAppealAction;
 use App\Domain\Verification\Enums\AtVoteChoice;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\OtVoteChoice;
+use App\Domain\Verification\Enums\ProjectAppealFirstDecision;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
 use App\Domain\Verification\Enums\VerificationCardStatus;
 use App\Domain\Verification\Enums\ZkVoteChoice;
@@ -35,6 +39,7 @@ use App\Domain\Verification\Models\ConsultationVerification;
 use App\Domain\Verification\Models\FinalMeritVerification;
 use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
+use App\Domain\Verification\Models\ProjectAppeal;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Domain\Verification\Services\VerificationOverviewService;
 use App\Filament\Resources\Projects\Pages\CreateProject;
@@ -513,6 +518,9 @@ class ProjectResource extends Resource
                 self::castBoardVoteAction(BoardType::Zk),
                 self::castBoardVoteAction(BoardType::Ot),
                 self::castBoardVoteAction(BoardType::At),
+                self::submitProjectAppealAction(),
+                self::decideProjectAppealAction(),
+                self::respondProjectAppealAction(),
                 self::closeBoardVotingAction(BoardType::Ot),
                 self::restartBoardVotingAction(BoardType::Ot),
                 self::closeBoardVotingAction(BoardType::At),
@@ -847,6 +855,64 @@ class ProjectResource extends Resource
         };
     }
 
+    public static function canSubmitProjectAppeal(Project $project): bool
+    {
+        return self::canManageProjects()
+            && $project->status->isRejected()
+            && ! $project->appeal()->exists();
+    }
+
+    public static function canDecideProjectAppeal(Project $project): bool
+    {
+        return self::canManageProjects()
+            && $project->appeal()
+                ->where('first_decision', ProjectAppealFirstDecision::Pending->value)
+                ->exists();
+    }
+
+    public static function canRespondProjectAppeal(Project $project): bool
+    {
+        return self::canManageProjects()
+            && $project->appeal()->exists();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function submitProjectAppealFromAdminForm(Project $project, array $data): ProjectAppeal
+    {
+        return app(SubmitProjectAppealAction::class)->execute(
+            $project,
+            self::authenticatedUser('project.appeal.submit.rejected_guest'),
+            (string) ($data['appeal_message'] ?? ''),
+            true,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function decideProjectAppealFromAdminForm(Project $project, array $data): ProjectAppeal
+    {
+        return app(DecideProjectAppealAction::class)->execute(
+            self::appealFromProject($project),
+            self::authenticatedUser('project.appeal.decision.rejected_guest'),
+            ProjectAppealFirstDecision::from((int) $data['first_decision']),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function respondProjectAppealFromAdminForm(Project $project, array $data): ProjectAppeal
+    {
+        return app(RespondProjectAppealAction::class)->execute(
+            self::appealFromProject($project),
+            self::authenticatedUser('project.appeal.response.rejected_guest'),
+            (string) ($data['response_to_appeal'] ?? ''),
+        );
+    }
+
     public static function getRelations(): array
     {
         return [];
@@ -1113,6 +1179,52 @@ class ProjectResource extends Resource
             ->modalSubmitAction(false)
             ->modalCancelActionLabel('Zamknij')
             ->visible(fn (Project $record): bool => self::canViewVerificationOverview($record));
+    }
+
+    private static function submitProjectAppealAction(): Action
+    {
+        return Action::make('submit_project_appeal')
+            ->label('Dodaj odwołanie')
+            ->schema([
+                Textarea::make('appeal_message')
+                    ->label('Treść odwołania')
+                    ->required()
+                    ->maxLength(5000)
+                    ->columnSpanFull(),
+            ])
+            ->visible(fn (Project $record): bool => self::canSubmitProjectAppeal($record))
+            ->action(fn (array $data, Project $record): ProjectAppeal => self::submitProjectAppealFromAdminForm($record, $data));
+    }
+
+    private static function decideProjectAppealAction(): Action
+    {
+        return Action::make('decide_project_appeal')
+            ->label('Decyzja wstępna odwołania')
+            ->schema([
+                Select::make('first_decision')
+                    ->label('Decyzja')
+                    ->options([
+                        ProjectAppealFirstDecision::Rejected->value => 'Odrzuć odwołanie',
+                        ProjectAppealFirstDecision::Accepted->value => 'Przyjmij do ponownej oceny',
+                    ])
+                    ->required(),
+            ])
+            ->visible(fn (Project $record): bool => self::canDecideProjectAppeal($record))
+            ->action(fn (array $data, Project $record): ProjectAppeal => self::decideProjectAppealFromAdminForm($record, $data));
+    }
+
+    private static function respondProjectAppealAction(): Action
+    {
+        return Action::make('respond_project_appeal')
+            ->label('Odpowiedz na odwołanie')
+            ->schema([
+                Textarea::make('response_to_appeal')
+                    ->label('Odpowiedź komisji')
+                    ->required()
+                    ->columnSpanFull(),
+            ])
+            ->visible(fn (Project $record): bool => self::canRespondProjectAppeal($record))
+            ->action(fn (array $data, Project $record): ProjectAppeal => self::respondProjectAppealFromAdminForm($record, $data));
     }
 
     private static function closeBoardVotingAction(BoardType $boardType): Action
@@ -1483,6 +1595,21 @@ class ProjectResource extends Resource
     private static function departmentFromData(array $data): Department
     {
         return Department::query()->findOrFail((int) $data['department_id']);
+    }
+
+    private static function appealFromProject(Project $project): ProjectAppeal
+    {
+        $appeal = $project->appeal()->first();
+
+        if (! $appeal instanceof ProjectAppeal) {
+            Log::warning('project.appeal.admin.rejected_missing_appeal', [
+                'project_id' => $project->id,
+            ]);
+
+            throw new DomainException('Nie znaleziono odwołania dla projektu.');
+        }
+
+        return $appeal;
     }
 
     private static function returnableVerification(

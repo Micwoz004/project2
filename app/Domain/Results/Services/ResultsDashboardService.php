@@ -5,6 +5,7 @@ namespace App\Domain\Results\Services;
 use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Reports\Services\VoteCardReportService;
+use App\Domain\Results\Models\ResultPublication;
 use App\Domain\Results\Models\ResultTieDecision;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use Illuminate\Support\Collection;
@@ -41,17 +42,20 @@ class ResultsDashboardService
             ->categoryComparisonTotals($edition)
             ->filter(fn (object $row): bool => (int) $row->difference !== 0)
             ->values();
+        $projectRows = $this->projectTotals($projectTotals, $projects);
 
         $summary = [
             'published' => $this->publicationService->canPublishPublicResults($edition),
             'total_points' => (int) $projectTotals->sum('points'),
             'projects_count' => $projectTotals->count(),
             'status_counts' => $this->statusCounts($statusCounts),
-            'top_projects' => $this->topProjects($projectTotals, $projects),
+            'project_totals' => $projectRows,
+            'top_projects' => array_slice($projectRows, 0, 10),
             'area_totals' => $this->areaTotals($edition),
             'category_totals' => $this->categoryTotals($edition),
             'tie_groups' => $this->tieGroups($tieGroups, $projects),
             'category_differences' => $this->categoryDifferences($categoryDifferences),
+            'latest_publication' => $this->latestPublication($edition),
         ];
 
         Log::info('results_dashboard.summary.success', [
@@ -81,10 +85,9 @@ class ResultsDashboardService
      * @param  Collection<int, Project>  $projects
      * @return list<array<string, mixed>>
      */
-    private function topProjects(Collection $projectTotals, Collection $projects): array
+    private function projectTotals(Collection $projectTotals, Collection $projects): array
     {
         return $projectTotals
-            ->take(10)
             ->map(function (object $row) use ($projects): array {
                 $project = $projects->get($row->project_id);
 
@@ -98,6 +101,28 @@ class ResultsDashboardService
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function latestPublication(BudgetEdition $edition): ?array
+    {
+        $publication = ResultPublication::query()
+            ->where('budget_edition_id', $edition->id)
+            ->latest('version')
+            ->first();
+
+        if (! $publication instanceof ResultPublication) {
+            return null;
+        }
+
+        return [
+            'id' => $publication->id,
+            'version' => $publication->version,
+            'published_at' => $publication->published_at?->toDateTimeString(),
+            'published_by_id' => $publication->published_by_id,
+        ];
     }
 
     /**

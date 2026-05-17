@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Results\Actions\PublishResultSnapshotAction;
 use App\Domain\Results\Actions\ResolveResultTieDecisionAction;
 use App\Domain\Results\Services\ResultsDashboardService;
 use App\Models\User;
@@ -240,11 +241,80 @@ class ResultsDashboard extends Page
         ]);
     }
 
+    public function publishResultSnapshot(): void
+    {
+        Log::info('admin_results_dashboard.publish_snapshot.start', [
+            'user_id' => Auth::id(),
+            'budget_edition_id' => $this->budgetEditionId,
+        ]);
+
+        $operator = Auth::user();
+        $edition = BudgetEdition::query()->find((int) $this->budgetEditionId);
+
+        if (! $edition instanceof BudgetEdition || ! $operator instanceof User) {
+            Log::warning('admin_results_dashboard.publish_snapshot.rejected_invalid_context', [
+                'user_id' => Auth::id(),
+                'budget_edition_id' => $this->budgetEditionId,
+            ]);
+
+            Notification::make()
+                ->danger()
+                ->title('Nie można utrwalić wyników dla aktualnych danych.')
+                ->send();
+
+            return;
+        }
+
+        try {
+            $publication = app(PublishResultSnapshotAction::class)->execute($edition, $operator);
+        } catch (DomainException $exception) {
+            Log::warning('admin_results_dashboard.publish_snapshot.rejected_domain', [
+                'user_id' => Auth::id(),
+                'budget_edition_id' => $this->budgetEditionId,
+                'reason' => $exception->getMessage(),
+            ]);
+
+            Notification::make()
+                ->danger()
+                ->title($exception->getMessage())
+                ->send();
+
+            return;
+        } catch (Throwable $exception) {
+            Log::error('admin_results_dashboard.publish_snapshot.failed', [
+                'user_id' => Auth::id(),
+                'budget_edition_id' => $this->budgetEditionId,
+                'exception' => $exception,
+            ]);
+
+            throw $exception;
+        }
+
+        $this->loadDashboard();
+
+        Notification::make()
+            ->success()
+            ->title('Snapshot wyników został zapisany jako wersja '.$publication->version.'.')
+            ->send();
+
+        Log::info('admin_results_dashboard.publish_snapshot.success', [
+            'user_id' => Auth::id(),
+            'budget_edition_id' => $this->budgetEditionId,
+            'result_publication_id' => $publication->id,
+            'version' => $publication->version,
+        ]);
+    }
+
     public function canResolveResultTies(): bool
     {
         $user = Auth::user();
 
         return $user instanceof User && ($user->can('reports.export') || $user->hasAnyRole(['admin', 'bdo']));
+    }
+
+    public function canPublishResultSnapshot(): bool
+    {
+        return $this->canResolveResultTies();
     }
 
     /**

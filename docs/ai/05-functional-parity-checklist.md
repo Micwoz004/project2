@@ -175,6 +175,8 @@
 - [x] Potwierdzono w legacy, że anonimizacja załączników nie transformuje fizycznie plików; jest oświadczeniem autora i bramką publikacji.
 - [x] Panel Filament `/admin/wyniki` prezentuje administracyjne agregaty wyników, statusy kart, remisy, kategorie i skróty do CSV chronione `reports.export`.
 - [x] Panel Filament `/admin/wyniki` zapisuje manualną decyzję remisu przez `ResolveResultTieDecisionAction`, bez automatycznego zgadywania zwycięzcy.
+- [x] Panel Filament `/admin/wyniki` zapisuje wersjonowany snapshot publikowanych wyników przez `PublishResultSnapshotAction`.
+- [x] Snapshot publikowanych wyników utrwala pełny ranking, agregaty obszarów/kategorii, statusy kart, remisy i różnice kategorii na potrzeby audytu.
 - [x] Legacy “usunięcie” użytkownika działa jako anonimizacja konta, dezaktywacja i odebranie ról.
 - [x] Linki aktywacji konta i resetu hasła respektują `system.activationLinkLifetime`; aktywacja nadaje rolę `applicant`, a reset kasuje token po użyciu.
 - [x] Parser surowego dumpa `.sql` liczy rekordy `INSERT INTO` i porównuje liczności z docelowymi tabelami bez staging MySQL.

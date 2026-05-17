@@ -3,6 +3,7 @@
 namespace App\Domain\BudgetEditions\Models;
 
 use App\Domain\Projects\Models\Project;
+use App\Domain\Results\Models\ResultPublication;
 use App\Domain\Settings\Models\ContentPage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -33,5 +34,10 @@ class BudgetEdition extends Model
     public function contentPages(): HasMany
     {
         return $this->hasMany(ContentPage::class);
+    }
+
+    public function resultPublications(): HasMany
+    {
+        return $this->hasMany(ResultPublication::class);
     }
 }

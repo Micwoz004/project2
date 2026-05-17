@@ -5,6 +5,7 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Results\Models\ResultPublication;
 use App\Domain\Results\Models\ResultTieDecision;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemPermission;
@@ -78,6 +79,32 @@ it('stores manual result tie decision from administrative dashboard', function (
         ->and($decision->decided_by_id)->toBe($user->id)
         ->and($updatedSummary['tie_groups'][0]['requires_manual_decision'])->toBeFalse()
         ->and($updatedSummary['tie_groups'][0]['decision']['winner_project_id'])->toBe($projectA->id);
+});
+
+it('stores result publication snapshot from administrative dashboard', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    [$edition] = createDashboardResultsFixture();
+    $user = User::factory()->create(['status' => true]);
+    $user->givePermissionTo(SystemPermission::AdminAccess->value);
+    $user->givePermissionTo(SystemPermission::ResultsView->value);
+    $user->givePermissionTo(SystemPermission::ReportsExport->value);
+
+    $this->actingAs($user);
+
+    $component = Livewire::test(ResultsDashboard::class)
+        ->set('budgetEditionId', $edition->id)
+        ->call('loadDashboard')
+        ->call('publishResultSnapshot')
+        ->assertHasNoErrors();
+
+    $publication = ResultPublication::query()->firstOrFail();
+    $summary = $component->get('summary');
+
+    expect($publication->budget_edition_id)->toBe($edition->id)
+        ->and($publication->published_by_id)->toBe($user->id)
+        ->and($publication->project_totals)->toHaveCount(2)
+        ->and($summary['latest_publication']['version'])->toBe(1);
 });
 
 function createDashboardResultsFixture(): array

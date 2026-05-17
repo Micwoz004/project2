@@ -20,6 +20,14 @@
                 @if ($budgetEditionId)
                     @can('export-reports')
                     <div class="flex flex-wrap gap-2">
+                        @if (! empty($summary) && $summary['published'])
+                            <x-filament::button
+                                type="button"
+                                wire:click="publishResultSnapshot"
+                            >
+                                Utrwal wyniki
+                            </x-filament::button>
+                        @endif
                         <x-filament::button
                             tag="a"
                             :href="route('admin.reports.vote-cards', $budgetEditionId)"
@@ -38,6 +46,13 @@
                     @endcan
                 @endif
             </div>
+
+            @if (! empty($summary['latest_publication']))
+                <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+                    Ostatni snapshot: wersja {{ $summary['latest_publication']['version'] }},
+                    {{ $summary['latest_publication']['published_at'] }}.
+                </p>
+            @endif
         </x-filament::section>
 
         @if (empty($summary))

@@ -13,21 +13,23 @@
 
 ## Plan wdrożenia
 
-Status: częściowo zaimplementowane.
+Status: zaimplementowany baseline katalogu i mapy publicznej.
 
 1. Dodać policy widoczności projektu. Wykonane przez `ProjectPolicy` i `ProjectLifecycleService`.
 2. Dodać filtry edycji, kategorii, obszaru i statusu publicznego. Wykonane w `PublicProjectCatalogQuery`.
 3. Odtworzyć kolejność legacy po `numberDrawn`. Wykonane: projekty sortują się po `number_drawn`, potem `number`, potem `title`, z pustymi numerami na końcu.
-4. Dodać widok mapy po potwierdzeniu danych `mapData`.
+4. [x] Dodać widok mapy po potwierdzeniu danych `mapData`.
 5. Pokryć testami ukryte projekty i zgodność filtrów. Wykonane dla widoczności, edycji, obszaru, kategorii i wyszukiwania.
 
 ## Implementacja
 
 - Query: `App\Domain\Projects\Services\PublicProjectCatalogQuery`.
+- Mapa: `App\Domain\Projects\Services\PublicProjectMapQuery`, która korzysta z tych samych filtrów co katalog i pokazuje tylko publiczne projekty z lokalizacją.
 - Kontroler: `PublicProjectController@index`.
-- Widok: `resources/views/public/projects/index.blade.php`.
+- Widoki: `resources/views/public/projects/index.blade.php`, `resources/views/public/projects/map.blade.php`.
 - Testy: `PublicProjectCatalogTest`.
+- Źródła współrzędnych mapy są sprawdzane w kolejności: `lat/lng`, pierwszy punkt z legacy `map_data`, a na końcu tekstowe `map_lng_lat` w formacie używanym przez formularz.
 
 ## Pozostałe różnice
 
-- `/projekty-mapa` korzysta jeszcze z tej samej listy co `/projekty`; osobny widok mapy zostanie wdrożony po potwierdzeniu pełnego znaczenia legacy `mapData`, `mapLngLat`, `lat` i `lng`.
+- Aktualny widok mapy udostępnia dane projektów w JSON i tabeli z koordynatami; docelowa warstwa wizualna może podpiąć bibliotekę mapową bez zmiany logiki wyboru projektów i źródeł współrzędnych.

@@ -11,7 +11,7 @@ Route::redirect('/', '/projekty');
 
 Route::get('/projekty', [PublicProjectController::class, 'index'])->name('public.projects.index');
 Route::get('/projekt/{project}', [PublicProjectController::class, 'show'])->name('public.projects.show');
-Route::get('/projekty-mapa', [PublicProjectController::class, 'index'])->name('public.projects.map');
+Route::get('/projekty-mapa', [PublicProjectController::class, 'map'])->name('public.projects.map');
 Route::get('/projekty/zglos', [PublicProjectController::class, 'create'])->name('public.projects.create');
 Route::post('/projekty/zglos', [PublicProjectController::class, 'store'])->name('public.projects.store');
 Route::middleware('auth')->group(function (): void {

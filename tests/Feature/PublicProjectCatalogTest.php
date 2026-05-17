@@ -130,3 +130,47 @@ it('shows only public files after project attachments are anonymized', function 
         ->assertSee('publiczny.pdf')
         ->assertDontSee('prywatny.pdf');
 });
+
+it('shows map view only for public projects with coordinates', function (): void {
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+
+    $withLatLng = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'title' => 'Projekt z punktem',
+        'status' => ProjectStatus::Picked,
+        'lat' => 53.4285432,
+        'lng' => 14.5528116,
+        'number_drawn' => 1,
+    ]));
+    $withMapData = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'title' => 'Projekt z mapData',
+        'status' => ProjectStatus::Picked,
+        'map_data' => [[
+            'type' => 'marker',
+            'coords' => ['lat' => 53.4, 'lng' => 14.6],
+        ]],
+        'number_drawn' => 2,
+    ]));
+    Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'title' => 'Projekt bez mapy',
+        'status' => ProjectStatus::Picked,
+        'number_drawn' => 3,
+    ]));
+    Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'title' => 'Projekt ukryty na mapie',
+        'status' => ProjectStatus::Picked,
+        'lat' => 53.5,
+        'lng' => 14.7,
+        'is_hidden' => true,
+    ]));
+
+    $response = $this->get(route('public.projects.map'));
+
+    $response->assertOk()
+        ->assertSee($withLatLng->title)
+        ->assertSee($withMapData->title)
+        ->assertSee('53.4285432, 14.5528116')
+        ->assertSee('53.4000000, 14.6000000')
+        ->assertDontSee('Projekt bez mapy')
+        ->assertDontSee('Projekt ukryty na mapie');
+});

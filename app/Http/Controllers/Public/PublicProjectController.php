@@ -16,6 +16,7 @@ use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Projects\Services\ProjectCostLimitService;
 use App\Domain\Projects\Services\PublicProjectCatalogQuery;
+use App\Domain\Projects\Services\PublicProjectMapQuery;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StorePublicProjectRequest;
 use App\Http\Requests\Public\UpdatePublicProjectCorrectionRequest;
@@ -33,6 +34,21 @@ class PublicProjectController extends Controller
     {
         return view('public.projects.index', [
             'projects' => $catalogQuery->paginate($request->only([
+                'q',
+                'budget_edition_id',
+                'area_id',
+                'category_id',
+            ])),
+            'budgetEditions' => BudgetEdition::query()->orderByDesc('propose_start')->get(),
+            'areas' => ProjectArea::query()->orderBy('name')->get(),
+            'categories' => Category::query()->orderBy('name')->get(),
+        ]);
+    }
+
+    public function map(Request $request, PublicProjectMapQuery $mapQuery): View
+    {
+        return view('public.projects.map', [
+            'mapProjects' => $mapQuery->get($request->only([
                 'q',
                 'budget_edition_id',
                 'area_id',

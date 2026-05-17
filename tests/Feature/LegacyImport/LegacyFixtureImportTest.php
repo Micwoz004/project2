@@ -133,14 +133,32 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
             'numberDrawn' => 11,
             'title' => 'Park kieszonkowy',
             'localization' => 'Szczecin Pogodno',
+            'address' => 'Plac Andersa 1',
+            'lat' => 53.4285432,
+            'lng' => 14.5528116,
+            'mapLngLat' => '14.5528116,53.4285432',
+            'mapData' => [[
+                'type' => 'marker',
+                'coords' => ['lat' => 53.4285432, 'lng' => 14.5528116],
+            ]],
             'description' => 'Opis',
             'goal' => 'Cel',
             'argumentation' => 'Uzasadnienie',
+            'availability' => 'Dostępność',
+            'recipients' => 'Mieszkańcy',
+            'freeOfCharge' => 'Tak',
+            'shortDescription' => 'Krótki opis',
+            'additionalCost' => 'Koszt utrzymania',
+            'local' => 1,
+            'contactWith' => 1,
+            'attachmentsAnonimized' => 1,
             'status' => ProjectStatus::Picked->value,
             'cost' => '1000',
             'costFormatted' => 1000,
             'isSupportList' => true,
             'isPicked' => true,
+            'authors' => ['first_name' => 'Jan'],
+            'submitted' => '2025-03-20 10:00:00',
         ]],
         'logs' => [[
             'id' => 126,
@@ -656,6 +674,15 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         ->and(LegacyPeselVerificationEntry::query()->where('pesel', '44051401458')->exists())->toBeTrue()
         ->and($project->status)->toBe(ProjectStatus::Picked)
         ->and($project->budget_edition_id)->toBe($edition->id)
+        ->and($project->address)->toBe('Plac Andersa 1')
+        ->and($project->lat)->toBe('53.4285432')
+        ->and($project->lng)->toBe('14.5528116')
+        ->and($project->map_lng_lat)->toBe('14.5528116,53.4285432')
+        ->and($project->map_data[0]['coords']['lat'])->toBe(53.4285432)
+        ->and($project->short_description)->toBe('Krótki opis')
+        ->and($project->additional_cost)->toBe('Koszt utrzymania')
+        ->and($project->attachments_anonymized)->toBeTrue()
+        ->and($project->authors['first_name'])->toBe('Jan')
         ->and(LegacyAuditLog::query()->where('legacy_id', 126)->firstOrFail()->project_id)->toBe($project->id)
         ->and(LegacyAuditLog::query()->where('legacy_id', 126)->firstOrFail()->controller)->toBe('task')
         ->and($project->categories()->pluck('categories.id')->sort()->values()->all())

@@ -9,16 +9,9 @@ use Illuminate\Support\Facades\Log;
 
 class PublicProjectCatalogQuery
 {
-    public function paginate(array $filters, int $perPage = 20): LengthAwarePaginator
+    public function query(array $filters): Builder
     {
-        Log::info('public_project_catalog.query.start', [
-            'budget_edition_id' => $filters['budget_edition_id'] ?? null,
-            'area_id' => $filters['area_id'] ?? null,
-            'category_id' => $filters['category_id'] ?? null,
-            'has_query' => filled($filters['q'] ?? null),
-        ]);
-
-        $projects = Project::query()
+        return Project::query()
             ->with(['area', 'budgetEdition', 'categories'])
             ->publiclyVisible()
             ->when($this->positiveInteger($filters, 'budget_edition_id'), function (Builder $query, int $editionId): void {
@@ -39,7 +32,19 @@ class PublicProjectCatalogQuery
                         ->orWhere('number', $term)
                         ->orWhere('number_drawn', $term);
                 });
-            })
+            });
+    }
+
+    public function paginate(array $filters, int $perPage = 20): LengthAwarePaginator
+    {
+        Log::info('public_project_catalog.query.start', [
+            'budget_edition_id' => $filters['budget_edition_id'] ?? null,
+            'area_id' => $filters['area_id'] ?? null,
+            'category_id' => $filters['category_id'] ?? null,
+            'has_query' => filled($filters['q'] ?? null),
+        ]);
+
+        $projects = $this->query($filters)
             ->orderByRaw('number_drawn IS NULL')
             ->orderBy('number_drawn')
             ->orderByRaw('number IS NULL')

@@ -13,7 +13,7 @@
 
 ## Plan wdrożenia
 
-Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RBAC.
+Status: zaimplementowany baseline administracyjny i importowy.
 
 1. [x] Dodać mapę ról legacy do Spatie.
 2. [x] Dodać import użytkowników i departamentów.
@@ -38,6 +38,7 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 - `LegacyPeselRecord` odwzorowuje administrowany rejestr `pesel` dostępny w legacy przez permission `manage pesel`.
 - `LegacyPeselVerificationEntry` odwzorowuje whitelistę `verification`, którą legacy `User::verifyPeselAuthenticity` sprawdzało dla autentyczności PESEL.
 - `UserResource` w Filament daje listę, tworzenie i edycję użytkowników, status aktywności, departament oraz przypisania ról Spatie. Dostęp do resource wymaga `users.manage` albo roli `admin`/`bdo`.
+- `DepartmentResource` w Filament daje CRUD departamentów importowanych z legacy i pokazuje liczbę przypisanych użytkowników. Dostęp wymaga `users.manage` albo roli `admin`/`bdo`.
 - Tworzenie i edycja kont synchronizują role przez `syncRoles`; puste hasło przy edycji nie nadpisuje istniejącego hasła.
 - `AnonymizeUserAction` odtwarza `User::anonymize()` z Yii: konto zostaje dezaktywowane, login zaczyna się od `deleted-`, dane osobowe i adresowe są maskowane, departament jest czyszczony, hasło staje się technicznie nieużywalne, a role Spatie są usuwane.
 - `EditUser` w Filament ma akcję “Anonimizuj konto” z potwierdzeniem; operacja wymaga `users.manage` albo roli `admin`/`bdo` i loguje tylko identyfikatory bez PII.

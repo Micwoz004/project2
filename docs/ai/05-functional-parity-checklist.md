@@ -84,6 +84,7 @@
 - [x] Fixture import użytkowników i departamentów legacy.
 - [x] Policy/bramki dla kart głosowania, wyników i eksportów raportów.
 - [x] Filament Resource dla użytkowników, departamentów użytkownika i przypisań ról Spatie.
+- [x] Filament Resource dla departamentów legacy z bramką `users.manage`.
 - [x] Baseline importu fixture legacy: `legacy_id`, relacje, statusy, głosy i statystyki partii.
 - [x] Import fixture załączników publicznych/prywatnych i współautorów projektu.
 - [x] Import fixture weryfikacji formalnej, merytorycznej i przydziałów departamentów.

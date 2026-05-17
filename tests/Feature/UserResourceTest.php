@@ -3,6 +3,7 @@
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Users\Models\Department;
+use App\Filament\Resources\Departments\DepartmentResource;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\UserResource;
@@ -25,6 +26,34 @@ it('registers user filament resource pages and gates access by users permission'
     $this->actingAs($applicant);
     expect(UserResource::canViewAny())->toBeFalse()
         ->and(UserResource::canCreate())->toBeFalse();
+});
+
+it('registers department resource and gates access by users permission', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $department = Department::query()->create([
+        'legacy_id' => 15,
+        'name' => 'Biuro Dialogu Obywatelskiego',
+    ]);
+    $admin = User::factory()->create([
+        'department_id' => $department->id,
+        'status' => true,
+    ]);
+    $admin->assignRole(SystemRole::Admin->value);
+    $applicant = User::factory()->create(['status' => true]);
+    $applicant->assignRole(SystemRole::Applicant->value);
+
+    $this->actingAs($admin)
+        ->get(DepartmentResource::getUrl(panel: 'admin'))
+        ->assertOk()
+        ->assertSee('Biuro Dialogu Obywatelskiego')
+        ->assertSee('15');
+
+    $this->actingAs($applicant)
+        ->get(DepartmentResource::getUrl(panel: 'admin'))
+        ->assertForbidden();
+
+    expect(array_keys(DepartmentResource::getPages()))->toBe(['index', 'create', 'edit']);
 });
 
 it('creates user from filament form and syncs roles', function (): void {

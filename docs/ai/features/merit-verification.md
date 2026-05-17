@@ -59,13 +59,13 @@ Status: częściowo zaimplementowane w etapie 3.
 - `ProjectResource` w Filament udostępnia przydzielanie jednostek do typów `MeritInitial`, `MeritFinish` i `Consultation` oraz wysyłkę kart wstępnych, końcowych i konsultacyjnych. Widoczność akcji wymaga uprawnień weryfikacyjnych i statusów pasujących do etapu.
 - Formularz wstępnej oceny merytorycznej w Filament zapisuje klucze legacy z `TaskInitialMeritVerification`: bloki BDO, Prezydenta, środowiska, zarządzania projektami, majątku, mieszkalnictwa, urbanistyki i zabytków wraz z komentarzami oraz polami tekstowymi rekomendacji/właściciela/informacji.
 - Formularz końcowej oceny merytorycznej w Filament zapisuje klucze legacy z `TaskFinishMeritVerification`: pytania prawne, dostępnościowe, wykonalnościowe, budżetowe, kosztów przyszłych, gospodarności, dostępności/nieodpłatności, modyfikacji i opinii jednostek wraz z komentarzami oraz dodatkowymi informacjami.
-- Bazowe formularze UI zapisują wynik, treść opinii, uzasadnienie negatywne oraz pojedynczą pozycję kosztu szacunkowego/przyszłego; kosztorys wielopozycyjny pozostaje w domenie i imporcie JSON, a UI ma aktualnie po jednym wierszu na typ kosztu.
+- Bazowe formularze UI zapisują wynik, treść opinii, uzasadnienie negatywne oraz wielowierszowe pozycje kosztu szacunkowego/przyszłego zgodne z legacy `correctedCostJson` i `futureCostJson`.
 - `VerificationOverviewService` buduje administracyjny podgląd przydziałów, kart i wersji `verification_versions`; `ProjectResource` pokazuje go jako modal `Historia weryfikacji` dla użytkowników z uprawnieniami weryfikacyjnymi.
 
 ## Świadome uproszczenia na tym etapie
 
 - Konsultacje nadal mają prosty formularz opinii/wyniku; pełne specjalistyczne ekrany konsultacyjne można rozbudować, jeśli w legacy widok konkretnej jednostki wymaga osobnych pól poza `TaskConsultation`.
-- UI końcowej oceny obsługuje pojedynczą pozycję kosztu szacunkowego i przyszłego; domena oraz importer nadal zachowują listy wielu pozycji.
+- Układ wielowierszowego kosztorysu w Filament jest technicznie inny niż legacy Yii, ale zachowuje te same dane: opis i sumę każdej składowej.
 - Podgląd historii weryfikacji jest tekstowym modalem administracyjnym; docelowo można go rozbudować do tabel zależnych, jeśli będzie potrzebny pełny ekran analityczny.
 
 ## Zgodność do sprawdzenia

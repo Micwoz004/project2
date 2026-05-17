@@ -137,6 +137,7 @@
 - [x] Formularz formalnej weryfikacji w Filament zapisuje pełniejszą listę pytań i komentarzy legacy.
 - [x] Formularze wstępnej i końcowej weryfikacji merytorycznej w Filament zapisują pola i komentarze legacy w `answers` JSON.
 - [x] Końcowa weryfikacja merytoryczna pomija koszty przyszłe przy `hasAdditionalCosts=NO/N/A` zgodnie z legacy.
+- [x] Wielowierszowy kosztorys końcowej weryfikacji merytorycznej w UI zapisuje listy `correctedCost` i `futureCost`.
 
 ## Do pełnego parytetu
 
@@ -144,7 +145,6 @@
 - [ ] Potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Finalny przegląd etykiet formularza formalnego z aktualną wersją urzędową.
 - [ ] Konsultacje z pełną listą pól legacy w UI, jeśli analiza widoków jednostek wykaże pola poza `TaskConsultation`.
-- [ ] Wielowierszowy kosztorys końcowej weryfikacji merytorycznej w UI.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
 - [ ] Pełna mapa wszystkich punktów wysyłki mail/SMS względem legacy.

@@ -46,6 +46,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -1001,16 +1002,20 @@ class ProjectResource extends Resource
             ->label('Wyślij końcową')
             ->schema([
                 ...self::finalMeritVerificationSchema(),
-                TextInput::make('corrected_cost_description')
-                    ->label('Opis kosztu szacunkowego'),
-                TextInput::make('corrected_cost_sum')
-                    ->label('Koszt szacunkowy')
-                    ->numeric(),
-                TextInput::make('future_cost_description')
-                    ->label('Opis kosztu przyszłego'),
-                TextInput::make('future_cost_sum')
-                    ->label('Koszt przyszły')
-                    ->numeric(),
+                Repeater::make('corrected_costs')
+                    ->label('Koszty szacunkowe')
+                    ->schema(self::verificationCostRowSchema())
+                    ->defaultItems(0)
+                    ->addActionLabel('Dodaj koszt szacunkowy')
+                    ->columns(2)
+                    ->columnSpanFull(),
+                Repeater::make('future_costs')
+                    ->label('Koszty w kolejnych latach')
+                    ->schema(self::verificationCostRowSchema())
+                    ->defaultItems(0)
+                    ->addActionLabel('Dodaj koszt przyszły')
+                    ->columns(2)
+                    ->columnSpanFull(),
             ])
             ->visible(fn (Project $record): bool => self::canSubmitFinalMeritVerification($record))
             ->action(fn (array $data, Project $record): FinalMeritVerification => self::submitFinalMeritVerificationFromAdminForm($record, $data));
@@ -1192,6 +1197,21 @@ class ProjectResource extends Resource
                 ->label('Uzasadnienie wyniku negatywnego')
                 ->maxLength(5000)
                 ->columnSpanFull(),
+        ];
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private static function verificationCostRowSchema(): array
+    {
+        return [
+            TextInput::make('description')
+                ->label('Opis')
+                ->maxLength(1000),
+            TextInput::make('sum')
+                ->label('Kwota')
+                ->numeric(),
         ];
     }
 
@@ -1435,6 +1455,12 @@ class ProjectResource extends Resource
      */
     private static function costRowsFromData(array $data, string $prefix): array
     {
+        $rows = $data[$prefix.'_costs'] ?? null;
+
+        if (is_array($rows)) {
+            return self::costRowsFromRepeater($rows);
+        }
+
         $description = trim((string) ($data[$prefix.'_cost_description'] ?? ''));
         $sum = $data[$prefix.'_cost_sum'] ?? null;
 
@@ -1446,6 +1472,35 @@ class ProjectResource extends Resource
             'description' => $description,
             'sum' => $sum ?? '',
         ]];
+    }
+
+    /**
+     * @param  array<int, mixed>  $rows
+     * @return list<array{description: string, sum: int|float|string}>
+     */
+    private static function costRowsFromRepeater(array $rows): array
+    {
+        $costs = [];
+
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $description = trim((string) ($row['description'] ?? ''));
+            $sum = $row['sum'] ?? null;
+
+            if ($description === '' && ($sum === null || $sum === '')) {
+                continue;
+            }
+
+            $costs[] = [
+                'description' => $description,
+                'sum' => $sum ?? '',
+            ];
+        }
+
+        return $costs;
     }
 
     private static function optionalDateTime(mixed $value): ?Carbon

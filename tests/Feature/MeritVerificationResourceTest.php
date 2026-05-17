@@ -160,10 +160,14 @@ it('submits final merit verification with costs from filament form through domai
         'is_law_compliant_comments' => 'Zgodny z zakresem jednostki.',
         'has_additional_costs' => 1,
         'additional_information' => 'Może trafić pod głosowanie.',
-        'corrected_cost_description' => 'Prace budowlane',
-        'corrected_cost_sum' => '1500.50',
-        'future_cost_description' => 'Utrzymanie',
-        'future_cost_sum' => 250,
+        'corrected_costs' => [
+            ['description' => 'Prace budowlane', 'sum' => '1500.50'],
+            ['description' => 'Nadzór', 'sum' => 300],
+        ],
+        'future_costs' => [
+            ['description' => 'Utrzymanie', 'sum' => 250],
+            ['description' => '', 'sum' => ''],
+        ],
     ]);
 
     expect($verification->result)->toBeTrue()
@@ -176,6 +180,7 @@ it('submits final merit verification with costs from filament form through domai
         ])
         ->and($verification->answers['correctedCost'])->toBe([
             ['description' => 'Prace budowlane', 'sum' => 1500.5],
+            ['description' => 'Nadzór', 'sum' => 300],
         ])
         ->and($verification->answers['futureCost'])->toBe([
             ['description' => 'Utrzymanie', 'sum' => 250],

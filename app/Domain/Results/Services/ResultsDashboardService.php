@@ -143,6 +143,7 @@ class ResultsDashboardService
             ->map(fn (array $group): array => [
                 'points' => $group['points'],
                 'requires_manual_decision' => $group['requires_manual_decision'],
+                'decision' => $group['decision'],
                 'projects' => collect($group['ranking_order'])
                     ->map(function (array $row) use ($projects): array {
                         $project = $projects->get($row['project_id']);

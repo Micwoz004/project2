@@ -81,4 +81,5 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 - `tasks.categoryId = NULL/0` i `tasks.taskTypeId = 0` są odwzorowane jako nullable relacje (`category_id`, `project_area_id`), bo dump zawiera historyczne projekty bez prawidłowego słownika.
 - Osierocone rekordy `taskfinishmeritverification`, `otvotes`, `atvotes` i `authassignment` bez istniejącego projektu/użytkownika nie mają bezpiecznego odpowiednika relacyjnego. Importer pomija je z `WARN`, a audyt liczności filtruje źródło do rekordów możliwych do odwzorowania.
 - `atotvotesrejection` mapuje legacy `votesType` na `board_type` i `createdBy` na `created_by_id`.
+- `result_tie_decisions` nie ma odpowiednika legacy. Tabela zapisuje ręczną decyzję remisu, ponieważ w legacy nie znaleziono automatycznej reguły rozstrzygania zwycięzcy przy identycznej liczbie punktów.
 - `legacy_id` jest unikalne i opcjonalne, co umożliwia import etapami.

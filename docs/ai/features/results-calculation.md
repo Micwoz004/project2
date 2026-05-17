@@ -22,6 +22,7 @@ Status: baseline domenowy rozbudowany.
 5. [x] Pokryć testami accepted/rejected/verifying i agregacje.
 6. [x] Dodać jawne wykrywanie remisów wymagających decyzji manualnej.
 7. [x] Dodać porównanie wyników liczonych po kategorii głównej projektu i po wielu kategoriach.
+8. [x] Dodać domenowy zapis ręcznej decyzji remisu bez automatycznego zgadywania zwycięzcy.
 
 ## Implementacja Laravel
 
@@ -31,6 +32,8 @@ Status: baseline domenowy rozbudowany.
 - `ResultsCalculator::categoryComparisonTotals()` zwraca raport różnic między legacy kategorią główną `projects.category_id` i nowym przypisaniem wielu kategorii z pivotu.
 - `ResultsPublicationService` pozwala publicznie pokazać wyniki tylko w stanie edycji `ResultAnnouncement`.
 - `ResultTieBreakerService` wykrywa grupy projektów z tą samą liczbą punktów i oznacza je jako wymagające decyzji manualnej; nie wybiera zwycięzcy automatycznie, bo w legacy nie znaleziono takiej reguły.
+- `ResolveResultTieDecisionAction` zapisuje ręczną decyzję remisu w `result_tie_decisions`: edycję, stabilny klucz grupy, punkty, listę projektów, zwycięski projekt, operatora, czas decyzji i notatkę. Akcja wymaga `reports.export` albo roli `admin`/`bdo`, sprawdza istnienie aktualnej grupy remisowej i odrzuca projekt spoza grupy.
+- `ResultTieBreakerService` dołącza istniejącą decyzję do wykrytej grupy remisowej i wtedy `requires_manual_decision=false`; nadal nie podejmuje decyzji automatycznej.
 - `/wyniki` nie liczy ani nie pokazuje punktów przed oknem publikacji wyników.
 - `ResultsDashboardService` buduje administracyjne podsumowanie wyników dla edycji: statusy kart, ranking projektów, punkty po obszarach i kategoriach, remisy wymagające decyzji oraz różnice między kategorią główną i wieloma kategoriami.
 - Filament page `/admin/wyniki` pokazuje administracyjny dashboard wyników dla operatorów z uprawnieniem `results.view`; linki do raportów CSV pozostają za `reports.export`.
@@ -38,4 +41,4 @@ Status: baseline domenowy rozbudowany.
 ## Świadome braki na tym etapie
 
 - Nie znaleziono w legacy automatycznej procedury wyboru zwycięzcy przy remisie. Nowy system wykrywa remisy i wymaga decyzji manualnej, zachowując deterministyczną kolejność rankingu/raportu.
-- Brak formularza administracyjnej decyzji remisu; baseline pokazuje grupy remisowe do ręcznej decyzji zgodnie z udokumentowaną niepewnością legacy.
+- Brak pełnego formularza UI decyzji remisu; domenowy zapis decyzji i dane dla dashboardu są gotowe, a UI może zostać dopracowane bez zmiany logiki.

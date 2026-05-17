@@ -21,6 +21,7 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 4. [x] Zbudować panel użytkowników i ról.
 5. [x] Pokryć testami aktywność i uprawnienia dostępu do panelu.
 6. [x] Odtworzyć legacy “usunięcie” konta jako anonimizację danych i odebranie ról.
+7. [x] Odtworzyć ważność linków aktywacji/resetu hasła z `system.activationLinkLifetime`.
 
 ## Aktualny zakres
 
@@ -31,7 +32,9 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 - Import użytkowników normalizuje legacy `email='*'` do `deleted-{legacy_id}@anonymous.local`, braki lub niepoprawne adresy do `legacy-user-{legacy_id}@invalid.local`, a duplikaty do `legacy-user-{legacy_id}@duplicate.local`, żeby zachować dane historyczne i spełnić unikalność Laravel auth.
 - `LegacyRbacImportService` importuje `authitem`, `authitemchild` i `authassignment` do Spatie Permission, przypisując użytkowników przez `users.legacy_id`; ten sam graf RBAC działa dla fixture i bezpośredniego staging MySQL.
 - `UserActivationToken` odwzorowuje legacy `activations` z typami: `1` aktywacja e-mail, `2` aktywacja SMS, `3` reset hasła.
-- Legacy linki aktywacyjne i resetu hasła są ważne przez `system.activationLinkLifetime`; docelowa akcja auth UI musi zachować tę regułę.
+- `ResolveUserActivationTokenAction` waliduje tokeny `activations` po `id`, `hash`, `type` i czasie `system.activationLinkLifetime`, zgodnie z `ActivationController`.
+- `ActivateUserAccountAction` odtwarza `ActivationController::actionActivate`: aktywuje konto, nadaje rolę `applicant` i usuwa token aktywacyjny.
+- `ResetUserPasswordAction` odtwarza finalny krok `UserController::actionNewPassword`: zapisuje nowe hasło i usuwa token resetu.
 - `LegacyPeselRecord` odwzorowuje administrowany rejestr `pesel` dostępny w legacy przez permission `manage pesel`.
 - `LegacyPeselVerificationEntry` odwzorowuje whitelistę `verification`, którą legacy `User::verifyPeselAuthenticity` sprawdzało dla autentyczności PESEL.
 - `UserResource` w Filament daje listę, tworzenie i edycję użytkowników, status aktywności, departament oraz przypisania ról Spatie. Dostęp do resource wymaga `users.manage` albo roli `admin`/`bdo`.

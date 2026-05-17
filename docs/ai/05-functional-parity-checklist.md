@@ -146,6 +146,7 @@
 - [x] Formularze wstępnej i końcowej weryfikacji merytorycznej w Filament zapisują pola i komentarze legacy w `answers` JSON.
 - [x] Końcowa weryfikacja merytoryczna pomija koszty przyszłe przy `hasAdditionalCosts=NO/N/A` zgodnie z legacy.
 - [x] Wielowierszowy kosztorys końcowej weryfikacji merytorycznej w UI zapisuje listy `correctedCost` i `futureCost`.
+- [x] Karty weryfikacji merytorycznej i konsultacyjnej można cofnąć do kopii roboczej z `is_returned=true`, zgodnie z `TaskDepartmentAssignment::setAsReturned`.
 - [x] Kodowa i dokumentacyjna mapa punktów wysyłki mail/SMS legacy w `LegacyCommunicationTrigger`.
 - [x] Formularz konsultacji merytorycznej w Filament zapisuje legacy `consultationInformation`.
 - [x] `VotingTokenService` ma adapter SMS: lokalny `null` provider i konfigurowalny HTTP provider dla realnej bramki.

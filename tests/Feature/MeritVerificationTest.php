@@ -5,6 +5,7 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Actions\AssignVerificationDepartmentAction;
+use App\Domain\Verification\Actions\ReturnVerificationCardAction;
 use App\Domain\Verification\Actions\SubmitConsultationVerificationAction;
 use App\Domain\Verification\Actions\SubmitFinalMeritVerificationAction;
 use App\Domain\Verification\Actions\SubmitInitialMeritVerificationAction;
@@ -91,6 +92,30 @@ it('waits for all initial merit departments before moving project forward', func
     expect($project->refresh()->status)->toBe(ProjectStatus::SentForMeritVerification);
 });
 
+it('returns sent initial merit verification card to working copy like legacy', function (): void {
+    $actor = User::factory()->create();
+    $project = meritProject(ProjectStatus::FormallyVerified);
+    $department = verificationDepartment();
+
+    app(AssignVerificationDepartmentAction::class)->execute($project, $department, VerificationAssignmentType::MeritInitial);
+    $verification = app(SubmitInitialMeritVerificationAction::class)->execute($project, $department, $actor, true);
+
+    $returned = app(ReturnVerificationCardAction::class)->execute($verification, $actor);
+    $assignment = $project->verificationAssignments()
+        ->where('department_id', $department->id)
+        ->where('type', VerificationAssignmentType::MeritInitial->value)
+        ->firstOrFail();
+
+    expect($returned->status)->toBe(VerificationCardStatus::WorkingCopy)
+        ->and($returned->sent_at)->toBeNull()
+        ->and($assignment->sent_at)->toBeNull()
+        ->and($assignment->is_returned)->toBeTrue()
+        ->and(VerificationVersion::query()
+            ->where('verification_legacy_id', $verification->id)
+            ->where('type', VerificationAssignmentType::MeritInitial->value)
+            ->count())->toBe(2);
+});
+
 it('requires assignment before sending initial merit verification', function (): void {
     $actor = User::factory()->create();
     $project = meritProject(ProjectStatus::FormallyVerified);
@@ -161,6 +186,22 @@ it('stores final merit corrected and future costs like legacy json fields', func
             ->where('type', VerificationAssignmentType::MeritFinish->value)
             ->count())->toBe(1);
 });
+
+it('rejects returning a verification card when assignment is missing', function (): void {
+    $actor = User::factory()->create();
+    $project = meritProject(ProjectStatus::SentForMeritVerification);
+    $department = verificationDepartment();
+
+    $verification = app(SubmitFinalMeritVerificationAction::class)->execute(
+        $project,
+        $department,
+        $actor,
+        true,
+        sent: false,
+    );
+
+    app(ReturnVerificationCardAction::class)->execute($verification, $actor);
+})->throws(DomainException::class, 'Nie znaleziono przydziału dla cofanej karty weryfikacji.');
 
 it('ignores future costs when final card says there are no additional costs', function (): void {
     $actor = User::factory()->create();

@@ -56,6 +56,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `ProjectDepartmentRecommendation` konsoliduje legacy `prerecommendations` i `recommendationswjo`, zachowując opinię, notatki, koszt, datę wysłania i odpowiedzi formularza WJO.
 - `ProjectDepartmentScope` konsoliduje legacy `tasksinitialverification` i `tasksdepartments`, odtwarzając listę jednostek uprawnionych do opiniowania projektu.
 - `VerificationPressureLog` zachowuje legacy `verificationpressure`: tytuł/treść monitu, odbiorców, typ (`2` dyrektor, `3` ręczny), jednostkę i legacy ID przydziału.
+- `ReturnVerificationCardAction` odtwarza `MeritVerificationController::*Return()` i `TaskDepartmentAssignment::setAsReturned()`: cofa kartę wstępną/końcową/konsultacyjną do kopii roboczej, czyści `sent_at`, ustawia `verification_assignments.is_returned=true` i zapisuje kolejną wersję karty.
 - `ProjectResource` w Filament udostępnia przydzielanie jednostek do typów `MeritInitial`, `MeritFinish` i `Consultation` oraz wysyłkę kart wstępnych, końcowych i konsultacyjnych. Widoczność akcji wymaga uprawnień weryfikacyjnych i statusów pasujących do etapu.
 - Formularz wstępnej oceny merytorycznej w Filament zapisuje klucze legacy z `TaskInitialMeritVerification`: bloki BDO, Prezydenta, środowiska, zarządzania projektami, majątku, mieszkalnictwa, urbanistyki i zabytków wraz z komentarzami oraz polami tekstowymi rekomendacji/właściciela/informacji.
 - Formularz końcowej oceny merytorycznej w Filament zapisuje klucze legacy z `TaskFinishMeritVerification`: pytania prawne, dostępnościowe, wykonalnościowe, budżetowe, kosztów przyszłych, gospodarności, dostępności/nieodpłatności, modyfikacji i opinii jednostek wraz z komentarzami oraz dodatkowymi informacjami.
@@ -72,5 +73,4 @@ Status: częściowo zaimplementowane w etapie 3.
 ## Zgodność do sprawdzenia
 
 - Porównać pełne payloady `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation` w imporcie legacy z wartościami zapisywanymi z nowych formularzy.
-- Dopisać wersjonowanie kart i logikę zwrotu do kopii roboczej (`setAsReturned`).
 - Uzupełnić reguły przejść statusów na poziomie koordynatora, gdy wiele departamentów ma przydziały równolegle.

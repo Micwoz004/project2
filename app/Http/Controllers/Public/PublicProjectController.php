@@ -8,6 +8,7 @@ use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Projects\Actions\ApplyCorrectionAction;
 use App\Domain\Projects\Actions\SubmitProjectAction;
 use App\Domain\Projects\Actions\SyncProjectCoauthorsAction;
+use App\Domain\Projects\Enums\ProjectCorrectionField;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
@@ -75,6 +76,7 @@ class PublicProjectController extends Controller
         UpdatePublicProjectCorrectionRequest $request,
         Project $project,
         ApplyCorrectionAction $applyCorrection,
+        StoreProjectFileAction $storeProjectFile,
     ): RedirectResponse {
         Log::info('project.public_correction.start', [
             'project_id' => $project->id,
@@ -82,7 +84,13 @@ class PublicProjectController extends Controller
         ]);
 
         try {
-            $updated = $applyCorrection->execute($project, $request->actor(), $request->validated());
+            $data = $request->validated();
+            $correction = $this->activeOpenCorrection($project);
+            if ($this->storeCorrectionFilesFromAllowedInputs($request, $storeProjectFile, $project, $correction)) {
+                $data['attachments_changed'] = true;
+            }
+
+            $updated = $applyCorrection->execute($project, $request->actor(), $data);
         } catch (DomainException $exception) {
             Log::warning('project.public_correction.rejected', [
                 'project_id' => $project->id,
@@ -202,13 +210,15 @@ class PublicProjectController extends Controller
     }
 
     private function storeProjectFilesFromInput(
-        StorePublicProjectRequest $request,
+        Request $request,
         StoreProjectFileAction $storeProjectFile,
         Project $project,
         string $inputName,
         ProjectFileType $type,
         bool $isPrivate = false,
-    ): void {
+    ): int {
+        $storedCount = 0;
+
         foreach ($this->uploadedFiles($request, $inputName) as $uploadedFile) {
             $file = $storeProjectFile->execute(
                 $project,
@@ -221,13 +231,17 @@ class PublicProjectController extends Controller
             $file->forceFill([
                 'is_task_form_attachment' => true,
             ])->save();
+
+            $storedCount++;
         }
+
+        return $storedCount;
     }
 
     /**
      * @return list<UploadedFile>
      */
-    private function uploadedFiles(StorePublicProjectRequest $request, string $inputName): array
+    private function uploadedFiles(Request $request, string $inputName): array
     {
         $files = $request->file($inputName, []);
 
@@ -243,5 +257,53 @@ class PublicProjectController extends Controller
             $files,
             static fn (mixed $file): bool => $file instanceof UploadedFile,
         ));
+    }
+
+    private function activeOpenCorrection(Project $project): ?ProjectCorrection
+    {
+        $correction = $project->corrections()
+            ->where('correction_done', false)
+            ->where('correction_deadline', '>', now())
+            ->latest()
+            ->first();
+
+        return $correction instanceof ProjectCorrection ? $correction : null;
+    }
+
+    private function storeCorrectionFilesFromAllowedInputs(
+        UpdatePublicProjectCorrectionRequest $request,
+        StoreProjectFileAction $storeProjectFile,
+        Project $project,
+        ?ProjectCorrection $correction,
+    ): bool {
+        if (! $correction instanceof ProjectCorrection) {
+            return false;
+        }
+
+        $storedCount = 0;
+        $storedCount += $this->storeCorrectionFilesIfAllowed($request, $storeProjectFile, $project, $correction, ProjectCorrectionField::SupportAttachment, 'support_list_files', ProjectFileType::SupportList, true);
+        $storedCount += $this->storeCorrectionFilesIfAllowed($request, $storeProjectFile, $project, $correction, ProjectCorrectionField::AgreementAttachment, 'owner_agreement_files', ProjectFileType::OwnerAgreement, true);
+        $storedCount += $this->storeCorrectionFilesIfAllowed($request, $storeProjectFile, $project, $correction, ProjectCorrectionField::MapAttachment, 'map_files', ProjectFileType::Map);
+        $storedCount += $this->storeCorrectionFilesIfAllowed($request, $storeProjectFile, $project, $correction, ProjectCorrectionField::ParentAgreementAttachment, 'parent_agreement_files', ProjectFileType::ParentAgreement, true);
+        $storedCount += $this->storeCorrectionFilesIfAllowed($request, $storeProjectFile, $project, $correction, ProjectCorrectionField::Attachments, 'attachment_files', ProjectFileType::Other);
+
+        return $storedCount > 0;
+    }
+
+    private function storeCorrectionFilesIfAllowed(
+        UpdatePublicProjectCorrectionRequest $request,
+        StoreProjectFileAction $storeProjectFile,
+        Project $project,
+        ProjectCorrection $correction,
+        ProjectCorrectionField $field,
+        string $inputName,
+        ProjectFileType $type,
+        bool $isPrivate = false,
+    ): int {
+        if (! in_array($field->value, $correction->allowed_fields, true)) {
+            return 0;
+        }
+
+        return $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, $inputName, $type, $isPrivate);
     }
 }

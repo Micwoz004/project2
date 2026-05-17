@@ -118,6 +118,31 @@
             @endforeach
         @endif
 
+        @if (in_array('support_attachment', $allowed, true))
+            <label for="support_list_files">Listy poparcia</label>
+            <input id="support_list_files" name="support_list_files[]" type="file" multiple>
+        @endif
+
+        @if (in_array('agreement_attachment', $allowed, true))
+            <label for="owner_agreement_files">Zgody właściciela</label>
+            <input id="owner_agreement_files" name="owner_agreement_files[]" type="file" multiple>
+        @endif
+
+        @if (in_array('map_attachment', $allowed, true))
+            <label for="map_files">Załączniki mapy</label>
+            <input id="map_files" name="map_files[]" type="file" multiple>
+        @endif
+
+        @if (in_array('parent_agreement_attachment', $allowed, true))
+            <label for="parent_agreement_files">Zgody rodzica lub opiekuna</label>
+            <input id="parent_agreement_files" name="parent_agreement_files[]" type="file" multiple>
+        @endif
+
+        @if (in_array('attachments', $allowed, true))
+            <label for="attachment_files">Pozostałe załączniki</label>
+            <input id="attachment_files" name="attachment_files[]" type="file" multiple>
+        @endif
+
         <p><button type="submit">Zapisz korektę</button></p>
     </form>
 </x-public.layout>

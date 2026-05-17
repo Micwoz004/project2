@@ -21,7 +21,7 @@ Status: częściowo zaimplementowane; domena, Filament i publiczny panel autora 
 4. [x] Udostępnić administracyjne korekty w Filament.
 5. [x] Udostępnić korekty w publicznym panelu autora.
 6. [x] Pokryć testami okno korekty, statusy i whitelistę pól.
-7. [ ] Dopisać obsługę załączników w korektach po implementacji pełnych uploadów.
+7. [x] Dopisać obsługę załączników w korektach po implementacji pełnych uploadów.
 
 ## Rozpoznane reguły legacy
 
@@ -48,9 +48,9 @@ Status: częściowo zaimplementowane; domena, Filament i publiczny panel autora 
 - `UpdatePublicProjectCorrectionRequest` waliduje poprawiane pola na granicy HTTP i opiera decyzję dostępu na `ProjectPolicy::update`.
 - Korekta kategorii synchronizuje także pivot `category_project`, żeby publiczna kategoria główna i wielokategorie nie rozjechały się po poprawce.
 - Korekta kosztu przez pole legacy `cost` podmienia pozycje `project_cost_items`, przelicza `projects.cost_formatted`, aktualizuje tekstowe `projects.cost` i nadal wymaga co najmniej jednej pozycji kosztorysu.
+- Korekty załączników obsługują pola legacy `support_attachment`, `agreement_attachment`, `map_attachment`, `parent_agreement_attachment` i `attachments`; pliki są zapisywane przez `StoreProjectFileAction`, a sama korekta może zostać zamknięta nawet bez zmiany pól tekstowych.
 
 ## Zgodność do sprawdzenia
 
 - Porównać pełne liczności `taskcorrection` z `project_corrections` po docelowym imporcie z dumpa MySQL.
 - Rozszerzyć publiczny panel autora po pełnym module formularza o mapę i układ pól 1:1 względem widoków Yii.
-- Po pełnym module plików dopisać obsługę korekty załączników: lista poparcia, zgoda właściciela, mapa, zgoda rodzica i inne załączniki.

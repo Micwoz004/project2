@@ -41,6 +41,7 @@ Status: częściowo zaimplementowane w etapie 1.
 - `ProjectFile::publiclyVisible()` udostępnia publicznie wyłącznie pliki `is_private=false` oraz tylko wtedy, gdy projekt ma `attachments_anonymized=true`.
 - Publiczny formularz zgłoszenia projektu zapisuje plik listy poparcia w prywatnym storage i oznacza go jako załącznik formularza.
 - Publiczny formularz obsługuje dodatkowe uploady legacy: zgody właściciela i rodzica jako prywatne, załączniki mapy oraz pozostałe załączniki jako publiczne dopiero po anonimizacji projektu.
+- Publiczny formularz korekty autora zapisuje tylko te typy załączników, które zostały odblokowane w `project_corrections.allowed_fields`.
 - `ProjectCoauthorValidator` waliduje limit dwóch współautorów, wymagane dane kontaktowe, potwierdzenie przeczytania i zgodę na co najmniej jedną formę kontaktu.
 - `SyncProjectCoauthorsAction` wymienia listę współautorów projektu transakcyjnie.
 - Publiczny formularz zgłoszenia projektu przyjmuje maksymalnie dwóch współautorów, pomija puste sloty formularza i zapisuje dane przez `SyncProjectCoauthorsAction` przed złożeniem projektu.

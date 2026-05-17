@@ -220,6 +220,53 @@ it('lets the project author apply an active correction through the public endpoi
         ->and($project->versions()->count())->toBe(1);
 });
 
+it('lets the project author apply an attachment-only correction through the public endpoint', function (): void {
+    Storage::fake('public');
+    $author = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'status' => ProjectStatus::Submitted,
+        'is_support_list' => true,
+        'submitted_at' => now()->subDay(),
+    ]));
+    $project->costItems()->create([
+        'description' => 'Prace projektowe',
+        'amount' => 1000,
+    ]);
+    ProjectFile::query()->create([
+        'project_id' => $project->id,
+        'stored_name' => 'support.pdf',
+        'original_name' => 'support.pdf',
+        'type' => ProjectFileType::SupportList,
+    ]);
+
+    app(StartCorrectionAction::class)->execute(
+        $project,
+        $author,
+        [ProjectCorrectionField::MapAttachment],
+        'Uzupełnij mapę.',
+        now()->addDay(),
+    );
+
+    $this->actingAs($author)
+        ->put(route('public.projects.corrections.update', $project), [
+            'map_files' => [
+                UploadedFile::fake()->create('mapa.png', 64, 'image/png'),
+            ],
+        ])
+        ->assertRedirect(route('public.projects.index'));
+
+    $mapFile = $project->refresh()->files()->where('type', ProjectFileType::Map)->firstOrFail();
+
+    Storage::disk('public')->assertExists($mapFile->stored_name);
+
+    expect($mapFile->is_task_form_attachment)->toBeTrue()
+        ->and($project->need_correction)->toBeFalse()
+        ->and($project->versions()->count())->toBe(1);
+});
+
 it('forbids public correction access for other users', function (): void {
     $author = User::factory()->create();
     $otherUser = User::factory()->create();

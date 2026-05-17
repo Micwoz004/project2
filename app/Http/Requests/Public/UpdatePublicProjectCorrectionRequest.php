@@ -50,6 +50,16 @@ class UpdatePublicProjectCorrectionRequest extends FormRequest
             'cost_items' => ['sometimes', 'array'],
             'cost_items.*.description' => ['required_with:cost_items', 'string', 'max:1000'],
             'cost_items.*.amount' => ['required_with:cost_items', 'numeric', 'min:0'],
+            'support_list_files' => ['sometimes', 'array', 'max:5'],
+            'support_list_files.*' => ['file'],
+            'owner_agreement_files' => ['sometimes', 'array', 'max:5'],
+            'owner_agreement_files.*' => ['file'],
+            'map_files' => ['sometimes', 'array', 'max:5'],
+            'map_files.*' => ['file'],
+            'parent_agreement_files' => ['sometimes', 'array', 'max:5'],
+            'parent_agreement_files.*' => ['file'],
+            'attachment_files' => ['sometimes', 'array', 'max:10'],
+            'attachment_files.*' => ['file'],
         ];
     }
 
@@ -68,6 +78,11 @@ class UpdatePublicProjectCorrectionRequest extends FormRequest
             'cost_items' => 'kosztorys',
             'cost_items.*.description' => 'opis pozycji kosztorysu',
             'cost_items.*.amount' => 'kwota pozycji kosztorysu',
+            'support_list_files' => 'listy poparcia',
+            'owner_agreement_files' => 'zgody właściciela',
+            'map_files' => 'załączniki mapy',
+            'parent_agreement_files' => 'zgody rodzica lub opiekuna',
+            'attachment_files' => 'pozostałe załączniki',
         ];
     }
 }

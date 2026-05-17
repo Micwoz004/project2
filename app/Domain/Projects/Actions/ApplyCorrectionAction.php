@@ -44,8 +44,9 @@ class ApplyCorrectionAction
         $correction = $this->activeCorrection($project);
         $allowedAttributes = $this->filterAllowedAttributes($attributes, $correction);
         $costItems = $this->filterAllowedCostItems($attributes, $correction);
+        $attachmentsChanged = $this->attachmentsChanged($attributes, $correction);
 
-        if ($allowedAttributes === [] && $costItems === null) {
+        if ($allowedAttributes === [] && $costItems === null && ! $attachmentsChanged) {
             Log::warning('project.correction.apply.rejected_no_allowed_fields', [
                 'project_id' => $project->id,
                 'actor_id' => $actor->id,
@@ -121,6 +122,24 @@ class ApplyCorrectionAction
         );
 
         return array_intersect_key($attributes, array_flip($allowedColumns));
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function attachmentsChanged(array $attributes, ProjectCorrection $correction): bool
+    {
+        if (($attributes['attachments_changed'] ?? false) !== true) {
+            return false;
+        }
+
+        return array_intersect($correction->allowed_fields, [
+            ProjectCorrectionField::SupportAttachment->value,
+            ProjectCorrectionField::AgreementAttachment->value,
+            ProjectCorrectionField::MapAttachment->value,
+            ProjectCorrectionField::ParentAgreementAttachment->value,
+            ProjectCorrectionField::Attachments->value,
+        ]) !== [];
     }
 
     /**

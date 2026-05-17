@@ -5,6 +5,11 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Reports\Enums\AdminReportType;
+use App\Domain\Reports\Enums\ReportExportFormat;
+use App\Domain\Reports\Enums\ReportExportStatus;
+use App\Domain\Reports\Jobs\GenerateAdminReportExportJob;
+use App\Domain\Reports\Models\ReportExport;
 use App\Domain\Results\Models\ResultPublication;
 use App\Domain\Results\Models\ResultTieDecision;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
@@ -14,6 +19,7 @@ use App\Domain\Voting\Models\VoteCard;
 use App\Domain\Voting\Models\Voter;
 use App\Filament\Pages\ResultsDashboard;
 use App\Models\User;
+use Illuminate\Support\Facades\Bus;
 use Livewire\Livewire;
 
 it('shows administrative results dashboard for users with results permission', function (): void {
@@ -105,6 +111,34 @@ it('stores result publication snapshot from administrative dashboard', function 
         ->and($publication->published_by_id)->toBe($user->id)
         ->and($publication->project_totals)->toHaveCount(2)
         ->and($summary['latest_publication']['version'])->toBe(1);
+});
+
+it('queues administrative report export from results dashboard', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+    Bus::fake();
+
+    [$edition] = createDashboardResultsFixture();
+    $user = User::factory()->create(['status' => true]);
+    $user->givePermissionTo(SystemPermission::AdminAccess->value);
+    $user->givePermissionTo(SystemPermission::ResultsView->value);
+    $user->givePermissionTo(SystemPermission::ReportsExport->value);
+
+    $this->actingAs($user);
+
+    Livewire::test(ResultsDashboard::class)
+        ->set('budgetEditionId', $edition->id)
+        ->call('queueReportExport', 'admin_vote_cards', 'xlsx')
+        ->assertHasNoErrors();
+
+    $export = ReportExport::query()->firstOrFail();
+
+    expect($export->requested_by_id)->toBe($user->id)
+        ->and($export->report)->toBe(AdminReportType::AdminVoteCards)
+        ->and($export->format)->toBe(ReportExportFormat::Xlsx)
+        ->and($export->status)->toBe(ReportExportStatus::Queued)
+        ->and($export->context['budget_edition_id'])->toBe($edition->id);
+
+    Bus::assertDispatched(GenerateAdminReportExportJob::class);
 });
 
 function createDashboardResultsFixture(): array

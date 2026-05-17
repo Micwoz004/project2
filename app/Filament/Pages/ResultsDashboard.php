@@ -4,6 +4,9 @@ namespace App\Filament\Pages;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Reports\Actions\QueueAdminReportExportAction;
+use App\Domain\Reports\Enums\AdminReportType;
+use App\Domain\Reports\Enums\ReportExportFormat;
 use App\Domain\Results\Actions\PublishResultSnapshotAction;
 use App\Domain\Results\Actions\ResolveResultTieDecisionAction;
 use App\Domain\Results\Services\ResultsDashboardService;
@@ -302,6 +305,98 @@ class ResultsDashboard extends Page
             'budget_edition_id' => $this->budgetEditionId,
             'result_publication_id' => $publication->id,
             'version' => $publication->version,
+        ]);
+    }
+
+    public function queueReportExport(string $report, string $format): void
+    {
+        Log::info('admin_results_dashboard.report_export.queue.start', [
+            'user_id' => Auth::id(),
+            'budget_edition_id' => $this->budgetEditionId,
+            'report' => $report,
+            'format' => $format,
+        ]);
+
+        $operator = Auth::user();
+        $reportType = AdminReportType::tryFrom($report);
+        $exportFormat = ReportExportFormat::tryFrom($format);
+
+        if (! $operator instanceof User || ! $reportType instanceof AdminReportType || ! $exportFormat instanceof ReportExportFormat) {
+            Log::warning('admin_results_dashboard.report_export.queue.rejected_invalid_context', [
+                'user_id' => Auth::id(),
+                'budget_edition_id' => $this->budgetEditionId,
+                'report' => $report,
+                'format' => $format,
+            ]);
+
+            Notification::make()
+                ->danger()
+                ->title('Nie można zlecić eksportu dla aktualnych danych.')
+                ->send();
+
+            return;
+        }
+
+        $context = [];
+
+        if ($reportType->requiresBudgetEdition()) {
+            if ($this->budgetEditionId === null) {
+                Log::warning('admin_results_dashboard.report_export.queue.rejected_missing_edition', [
+                    'user_id' => Auth::id(),
+                    'report' => $reportType->value,
+                ]);
+
+                Notification::make()
+                    ->danger()
+                    ->title('Ten raport wymaga wybranej edycji SBO.')
+                    ->send();
+
+                return;
+            }
+
+            $context['budget_edition_id'] = (int) $this->budgetEditionId;
+        }
+
+        try {
+            $export = app(QueueAdminReportExportAction::class)->execute($operator, $reportType, $exportFormat, $context);
+        } catch (DomainException $exception) {
+            Log::warning('admin_results_dashboard.report_export.queue.rejected_domain', [
+                'user_id' => Auth::id(),
+                'budget_edition_id' => $this->budgetEditionId,
+                'report' => $reportType->value,
+                'format' => $exportFormat->value,
+                'reason' => $exception->getMessage(),
+            ]);
+
+            Notification::make()
+                ->danger()
+                ->title($exception->getMessage())
+                ->send();
+
+            return;
+        } catch (Throwable $exception) {
+            Log::error('admin_results_dashboard.report_export.queue.failed', [
+                'user_id' => Auth::id(),
+                'budget_edition_id' => $this->budgetEditionId,
+                'report' => $reportType->value,
+                'format' => $exportFormat->value,
+                'exception' => $exception,
+            ]);
+
+            throw $exception;
+        }
+
+        Notification::make()
+            ->success()
+            ->title('Eksport #'.$export->id.' został zlecony.')
+            ->send();
+
+        Log::info('admin_results_dashboard.report_export.queue.success', [
+            'user_id' => Auth::id(),
+            'budget_edition_id' => $this->budgetEditionId,
+            'report_export_id' => $export->id,
+            'report' => $reportType->value,
+            'format' => $exportFormat->value,
         ]);
     }
 

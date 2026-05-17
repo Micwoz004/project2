@@ -23,6 +23,7 @@ Status: baseline domenowy rozpoczęty.
 6. [x] Dodać administracyjne endpointy CSV z uprawnieniem `reports.export`.
 7. [x] Dodać administracyjne endpointy XLSX generowane z tych samych danych domenowych co CSV.
 8. [x] Dodać kolejkowane zlecenia dużych eksportów administracyjnych z zapisem pliku do storage.
+9. [x] Udostępnić zlecanie i pobieranie kolejkowanych eksportów w panelu administracyjnym.
 
 ## Implementacja Laravel
 
@@ -44,6 +45,8 @@ Status: baseline domenowy rozpoczęty.
 - `AdminReportController` udostępnia CSV za `auth` i `reports.export`: karty głosowania z PII, projekty złożone, niewysłane weryfikacje jednostek, korekty projektów, historię projektów, manifest wyników weryfikacji i porównanie kategorii.
 - `XlsxFromCsvExporter` generuje administracyjne XLSX z tych samych strumieni danych co CSV, bez oddzielnej logiki raportowej. Endpointy `.xlsx` zachowują tę samą bramkę `reports.export` i te same reguły PII co odpowiadające im CSV.
 - `QueueAdminReportExportAction`, `ReportExport` i `GenerateAdminReportExportJob` obsługują asynchroniczne zlecenia eksportów administracyjnych. Zlecenie wymaga `reports.export`, zapisuje status `queued/processing/completed/failed`, kontekst raportu bez PII w logach oraz plik w `storage/app/report-exports/{id}`.
+- `/admin/wyniki` pozwala operatorowi z `reports.export` zlecić cięższe eksporty XLSX do kolejki, w tym karty głosowania i porównanie kategorii dla wybranej edycji.
+- `ReportExportResource` pokazuje listę zleconych eksportów, statusy, format, plik, operatora i daty. Gotowe pliki są pobierane przez `AdminReportExportDownloadController`, który wymaga `reports.export`, statusu `completed` i istniejącego pliku w storage.
 - Filament `/admin/wyniki` udostępnia operatorowi z `results.view` dashboard wyników; skróty do eksportów CSV kart głosowania, kategorii, projektów złożonych, manifestu weryfikacji i historii projektów są widoczne tylko przy `reports.export`.
 
 ## Inwentaryzacja legacy
@@ -133,5 +136,5 @@ Status: baseline domenowy rozpoczęty.
 
 ## Świadome braki na tym etapie
 
-- Kolejkowany generator dużych raportów jest gotowy w domenie; obecne linki HTTP nadal mogą korzystać z trybu synchronicznego dla małych eksportów.
+- Synchroniczne linki HTTP pozostają dla małych eksportów CSV/XLSX; cięższe eksporty można równolegle zlecać do kolejki z panelu administracyjnego.
 - Brak pełnych graficznych szablonów XLSX z katalogu `raporty_sbo`; obecny baseline udostępnia XLSX tabelaryczne z tymi samymi danymi domenowymi co CSV.

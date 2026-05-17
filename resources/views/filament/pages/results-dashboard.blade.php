@@ -42,6 +42,20 @@
                         >
                             Kategorie CSV
                         </x-filament::button>
+                        <x-filament::button
+                            type="button"
+                            wire:click="queueReportExport('admin_vote_cards', 'xlsx')"
+                            color="gray"
+                        >
+                            Zleć karty XLSX
+                        </x-filament::button>
+                        <x-filament::button
+                            type="button"
+                            wire:click="queueReportExport('category_comparison', 'xlsx')"
+                            color="gray"
+                        >
+                            Zleć kategorie XLSX
+                        </x-filament::button>
                     </div>
                     @endcan
                 @endif
@@ -134,6 +148,12 @@
                                 </x-filament::button>
                                 <x-filament::button tag="a" :href="route('admin.reports.project-history')" color="gray">
                                     Historia projektów CSV
+                                </x-filament::button>
+                                <x-filament::button type="button" wire:click="queueReportExport('submitted_projects', 'xlsx')" color="gray">
+                                    Zleć projekty XLSX
+                                </x-filament::button>
+                                <x-filament::button type="button" wire:click="queueReportExport('project_history', 'xlsx')" color="gray">
+                                    Zleć historię XLSX
                                 </x-filament::button>
                             </div>
                         </x-filament::section>

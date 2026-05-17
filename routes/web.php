@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminReportExportDownloadController;
 use App\Http\Controllers\Public\PublicCoauthorConfirmationController;
 use App\Http\Controllers\Public\PublicProjectCommentController;
 use App\Http\Controllers\Public\PublicProjectController;
@@ -33,6 +34,7 @@ Route::get('/wyniki/export.csv', [PublicResultsController::class, 'export'])->na
 Route::get('/raporty-publiczne', [PublicReportController::class, 'index'])->name('public.reports.index');
 
 Route::middleware('auth')->prefix('admin/reports')->name('admin.reports.')->group(function (): void {
+    Route::get('/exports/{reportExport}/download', AdminReportExportDownloadController::class)->name('exports.download');
     Route::get('/vote-cards/{budgetEdition}.csv', [AdminReportController::class, 'voteCards'])->name('vote-cards');
     Route::get('/vote-cards/{budgetEdition}.xlsx', [AdminReportController::class, 'voteCardsXlsx'])->name('vote-cards.xlsx');
     Route::get('/submitted-projects.csv', [AdminReportController::class, 'submittedProjects'])->name('submitted-projects');

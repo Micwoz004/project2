@@ -104,3 +104,70 @@ it('generates queued administrative xlsx export into local storage', function ()
         'Data złożenia',
     ]);
 });
+
+it('downloads completed queued administrative export for report exporters', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+    Storage::fake('local');
+
+    $user = User::factory()->create(['status' => true]);
+    $user->givePermissionTo(SystemPermission::ReportsExport->value);
+    $export = ReportExport::query()->create([
+        'requested_by_id' => $user->id,
+        'report' => AdminReportType::SubmittedProjects,
+        'format' => ReportExportFormat::Csv,
+        'status' => ReportExportStatus::Completed,
+        'file_name' => 'projekty-zlozone.csv',
+        'storage_path' => 'report-exports/1/projekty-zlozone.csv',
+        'context' => [],
+        'completed_at' => now(),
+    ]);
+
+    Storage::disk('local')->put($export->storage_path, "Numer wniosku,Tytuł\n");
+
+    $this->actingAs($user)
+        ->get(route('admin.reports.exports.download', $export))
+        ->assertOk()
+        ->assertDownload('projekty-zlozone.csv');
+});
+
+it('rejects queued administrative export download without report permission', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+    Storage::fake('local');
+
+    $user = User::factory()->create(['status' => true]);
+    $export = ReportExport::query()->create([
+        'requested_by_id' => $user->id,
+        'report' => AdminReportType::SubmittedProjects,
+        'format' => ReportExportFormat::Csv,
+        'status' => ReportExportStatus::Completed,
+        'file_name' => 'projekty-zlozone.csv',
+        'storage_path' => 'report-exports/1/projekty-zlozone.csv',
+        'context' => [],
+        'completed_at' => now(),
+    ]);
+
+    Storage::disk('local')->put($export->storage_path, "Numer wniosku,Tytuł\n");
+
+    $this->actingAs($user)
+        ->get(route('admin.reports.exports.download', $export))
+        ->assertForbidden();
+});
+
+it('rejects queued administrative export download before file is ready', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $user = User::factory()->create(['status' => true]);
+    $user->givePermissionTo(SystemPermission::ReportsExport->value);
+    $export = ReportExport::query()->create([
+        'requested_by_id' => $user->id,
+        'report' => AdminReportType::SubmittedProjects,
+        'format' => ReportExportFormat::Csv,
+        'status' => ReportExportStatus::Queued,
+        'file_name' => 'projekty-zlozone.csv',
+        'context' => [],
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('admin.reports.exports.download', $export))
+        ->assertNotFound();
+});

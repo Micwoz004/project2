@@ -135,6 +135,7 @@
 - [x] Publiczne zgłoszenie projektu zapisuje snapshot autora, wybór kontaktu, zgody autora, typ `local`, skrócony opis, koszt utrzymania i oświadczenie o anonimizacji załączników.
 - [x] Publiczne zgłoszenie projektu obsługuje wielowierszowy kosztorys i agreguje go do pól zgodnych z legacy.
 - [x] Publiczne zgłoszenie projektu zapisuje adresowe pola współautorów z widoku Yii.
+- [x] Składanie projektu waliduje limit kosztu obszaru i rozwiązuje Zielone SBO do obszaru ogólnomiejskiego bez użycia stałego ID legacy.
 - [x] Korekta kosztorysu projektu podmienia pozycje kosztów i przelicza sumę.
 - [x] Publiczna korekta autora obsługuje odblokowane typy załączników legacy.
 - [x] Granularne permissions dla akcji Filament: weryfikacja formalna, merytoryczna i korekty projektu.

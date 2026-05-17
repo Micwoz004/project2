@@ -11,6 +11,7 @@ class ProjectSubmissionValidator
 {
     public function __construct(
         private readonly ProjectLifecycleService $lifecycle,
+        private readonly ProjectCostLimitService $costLimitService,
     ) {}
 
     public function assertCanSubmit(Project $project): void
@@ -31,6 +32,8 @@ class ProjectSubmissionValidator
 
             throw new DomainException('Projekt musi mieć co najmniej jedną pozycję kosztorysu.');
         }
+
+        $this->costLimitService->assertWithinLimit($project);
 
         $hasSupportListFile = $project->files()
             ->where('type', ProjectFileType::SupportList->value)

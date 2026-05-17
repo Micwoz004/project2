@@ -5,7 +5,7 @@
 3. Dane wejściowe: tytuł, lokalizacja, opis, cel, uzasadnienie, dostępność, odbiorcy, bezpłatność, obszar, kategorie, autor, koszty, załączniki, zgody.
 4. Dane zapisywane: projekt, kosztorys, załączniki, współautorzy, wersja i status.
 5. Statusy: start `WorkingCopy=1`, po złożeniu `Submitted=2`.
-6. Walidacje: wymagane pola z `Task::rules`, zakaz URL w polach opisowych, limity długości, lista poparcia, minimum jeden koszt, typy/limity plików.
+6. Walidacje: wymagane pola z `Task::rules`, zakaz URL w polach opisowych, limity długości, lista poparcia, minimum jeden koszt, limit kosztów obszaru, typy/limity plików.
 7. Role: publiczny autor/wnioskodawca; administracja widzi i obsługuje zgłoszenie po złożeniu.
 8. Edge case: projekt z URL, brak kosztu, brak listy poparcia, projekt poza oknem składania, duże pliki, brak zgód.
 9. Laravel: `SubmitProjectAction`, `Project`, `ProjectCostItem`, `ProjectFile`, publiczne `/projekty/zglos`.
@@ -30,6 +30,8 @@ Status: częściowo zaimplementowane; publiczne zgłoszenie zapisuje projekt, au
 - `map_data` jest wymagane przy złożeniu zgodnie z `Task::rules` dla scenariusza `propose`.
 - Formularz zapisuje `short_description`, `additional_cost`, `local`, `contact_with`, `consent_to_change`, `attachments_anonymized` i `show_task_coauthors`.
 - Kosztorys publiczny przyjmuje listę `cost_items[]`, zapisuje pozycje w `project_cost_items`, a w `projects.cost` i `projects.cost_formatted` utrzymuje zagregowany odpowiednik pól legacy `cost`/`costFormatted`.
+- `ProjectCostLimitService` odtwarza serwerowo regułę z formularza Yii: koszt projektu nie może przekroczyć limitu obszaru (`cost_limit`, z fallbackiem na `cost_limit_big`), a mały projekt bez limitu szczegółowego przyjmuje historyczne `10 000`.
+- Przy `local=2` (`Projekt Zielonego SBO`) zgłoszenie jest rozwiązywane do obszaru ogólnomiejskiego (`is_local=false` albo symbol `OGM`), co odpowiada legacy `Task::beforeValidate()` ustawiającemu `TaskType::CITY_WIDE_TASK_ID`.
 - `PublicProjectController::store()` zapisuje dodatkowe uploady przez `StoreProjectFileAction`: zgody właściciela, mapy, zgody rodzica/opiekuna oraz pozostałe załączniki z limitem i listą rozszerzeń z legacy.
 - `StorePublicProjectRequest` wymaga kategorii projektu; `PublicProjectController::store()` zapisuje ją w `projects.category_id` i synchronizuje pivot `category_project`, żeby zachować zgodność z raportami po kategoriach.
 - `PublicProjectController::store()` zapisuje listę poparcia przez `StoreProjectFileAction` przed złożeniem projektu i oznacza plik jako `is_task_form_attachment`.

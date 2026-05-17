@@ -14,6 +14,7 @@ use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Domain\Projects\Models\ProjectCorrection;
+use App\Domain\Projects\Services\ProjectCostLimitService;
 use App\Domain\Projects\Services\PublicProjectCatalogQuery;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StorePublicProjectRequest;
@@ -125,16 +126,21 @@ class PublicProjectController extends Controller
         StoreProjectFileAction $storeProjectFile,
         SyncProjectCoauthorsAction $syncProjectCoauthors,
         SubmitProjectAction $submitProject,
+        ProjectCostLimitService $costLimitService,
     ): RedirectResponse {
         Log::info('project.public_store.start', [
             'ip' => $request->ip(),
         ]);
 
         $data = $request->validated();
+        $projectArea = $costLimitService->resolveSubmissionArea(
+            ProjectArea::query()->findOrFail($data['project_area_id']),
+            (int) $data['local'],
+        );
 
         $project = Project::query()->create([
             'budget_edition_id' => $data['budget_edition_id'],
-            'project_area_id' => $data['project_area_id'],
+            'project_area_id' => $projectArea->id,
             'category_id' => $data['category_id'],
             'creator_id' => $request->user()?->id,
             'title' => $data['title'],

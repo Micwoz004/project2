@@ -29,9 +29,11 @@ Status: częściowo zaimplementowane.
 - Słowniki legacy: `DictionaryEntry` konsoliduje `firstnamedictionary`, `lastnamedictionary`, `motherlastnamedictionary`.
 - Import słowników: `LegacyDictionaryImportService` jest idempotentny po `source_table + legacy_id`, ponieważ legacy tabele mają niezależne identyfikatory.
 - Import fixture przenosi `taskscategories` do pivotu `category_project`, zachowując wiele kategorii projektu.
+- `ProjectCostLimitService` wykorzystuje limity obszaru przy składaniu projektu i rozwiązuje `local=2` do obszaru ogólnomiejskiego bez opierania się na historycznym ID `35`.
 - Testy: `AreasCategoriesDictionariesTest`, `LegacyDictionaryImportTest`.
 
 ## Uwagi legacy
 
 - `TaskType::CITY_WIDE_TASK_ID = 35` zostaje udokumentowane jako historyczny identyfikator, ale nowy system wykrywa obszar ogólnomiejski przez `is_local=false` albo symbol `OGM`.
+- Legacy `TaskType::returnCostLimit()` i JS formularza używały limitu kosztów obszaru jako blokady złożenia. Nowy system wykonuje tę walidację domenowo w `ProjectSubmissionValidator`.
 - Słowniki imion/nazwisk są normalizowane do wielkich liter tak jak porównania legacy dla danych wyborców.

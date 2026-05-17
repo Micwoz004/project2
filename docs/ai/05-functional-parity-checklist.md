@@ -169,4 +169,4 @@
 - [ ] Finalny przegląd etykiet formularza formalnego z aktualną wersją urzędową.
 - [ ] Produkcyjna konfiguracja realnego operatora SMS na środowisku.
 - [x] Próbny pełny przebieg importu na odtworzonym stagingu z `sbo2025_prod.sql` i porównanie liczności tabel.
-- [ ] Finalny przegląd polityk Laravel dla każdej roli po pełnym imporcie dumpa.
+- [x] Finalny przegląd polityk Laravel dla każdej roli po pełnym imporcie dumpa.

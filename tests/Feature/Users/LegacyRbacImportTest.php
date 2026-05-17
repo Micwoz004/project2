@@ -30,6 +30,34 @@ it('imports legacy rbac items children and user assignments', function (): void 
         ->and($user->can('custom operation'))->toBeTrue();
 });
 
+it('maps legacy rbac operations to canonical laravel permissions', function (): void {
+    $roleUser = User::factory()->create([
+        'legacy_id' => 110,
+    ]);
+    $directPermissionUser = User::factory()->create([
+        'legacy_id' => 111,
+    ]);
+
+    app(LegacyRbacImportService::class)->import([
+        'authitem' => [
+            ['name' => 'custom manager', 'type' => 2],
+            ['name' => 'manage users', 'type' => 0],
+            ['name' => 'generate reports', 'type' => 0],
+        ],
+        'authitemchild' => [
+            ['parent' => 'custom manager', 'child' => 'manage users'],
+        ],
+        'authassignment' => [
+            ['itemname' => 'custom manager', 'userid' => 110],
+            ['itemname' => 'generate reports', 'userid' => 111],
+        ],
+    ]);
+
+    expect($roleUser->refresh()->can('users.manage'))->toBeTrue()
+        ->and($directPermissionUser->refresh()->can('reports.export'))->toBeTrue()
+        ->and($directPermissionUser->can('results.view'))->toBeTrue();
+});
+
 it('flattens nested legacy rbac role and permission children', function (): void {
     $roleUser = User::factory()->create([
         'legacy_id' => 101,

@@ -2,6 +2,8 @@
 
 namespace App\Domain\Users\Services;
 
+use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Domain\Users\Enums\SystemPermission;
 use App\Models\User;
 use DomainException;
 use Illuminate\Support\Arr;
@@ -13,6 +15,7 @@ use Spatie\Permission\PermissionRegistrar;
 class LegacyRbacImportService
 {
     public function __construct(
+        private readonly SyncSystemRolesAndPermissionsAction $syncSystemRolesAndPermissions,
         private readonly PermissionRegistrar $permissionRegistrar,
     ) {}
 
@@ -25,6 +28,8 @@ class LegacyRbacImportService
         Log::info('legacy_rbac_import.start', [
             'guard' => $guardName,
         ]);
+
+        $this->syncSystemRolesAndPermissions->execute($guardName);
 
         $childrenByParent = $this->childrenByParent($payload['authitemchild'] ?? []);
 
@@ -120,6 +125,7 @@ class LegacyRbacImportService
 
             $user->givePermissionTo(array_values(array_unique([
                 $itemName,
+                ...$this->canonicalPermissionNamesFor($itemName),
                 ...$this->permissionsForItem($itemName, $childrenByParent, $guardName),
             ])));
 
@@ -170,6 +176,10 @@ class LegacyRbacImportService
 
             if ($this->permissionExists($childName, $guardName)) {
                 $permissions[] = $childName;
+                $permissions = [
+                    ...$permissions,
+                    ...$this->canonicalPermissionNamesFor($childName),
+                ];
             }
 
             $permissions = [
@@ -209,5 +219,16 @@ class LegacyRbacImportService
             ->where('name', $permissionName)
             ->where('guard_name', $guardName)
             ->exists();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function canonicalPermissionNamesFor(string $legacyPermission): array
+    {
+        return array_map(
+            static fn (SystemPermission $permission): string => $permission->value,
+            SystemPermission::legacyPermissionMap()[$legacyPermission] ?? [],
+        );
     }
 }

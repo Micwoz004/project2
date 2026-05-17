@@ -13,7 +13,7 @@
 
 ## Plan wdrożenia
 
-Status: częściowo zaimplementowane w etapie 2, rozszerzone dla głosowania, raportów i akcji weryfikacji/korekt.
+Status: zaimplementowane i zweryfikowane po pełnym imporcie staging `sbo2025_prod.sql`.
 
 1. [x] Spisać role i permissions z `authitem*`.
 2. [x] Przygotować bazową synchronizację do Spatie Permission.
@@ -24,6 +24,7 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone dla głosowania, ra
 7. [x] Dodać policies/bramki dla kart głosowania, wyników i raportów.
 8. [x] Dodać bazowe permissions dla weryfikacji po pełnym domknięciu paneli.
 9. [x] Ograniczyć poszczególne akcje Filament przez permissions.
+10. [x] Po pełnym imporcie dumpa potwierdzić mapowanie legacy RBAC na canonical permission keys używane przez policies/Filament.
 
 ## Rozpoznane legacy RBAC
 
@@ -39,8 +40,10 @@ Nowy system zachowuje nazwy legacy jako role/uprawnienia Spatie, ale decyzje dom
 - `SystemPermission` opisuje docelowe uprawnienia i mapę operacji legacy do nowych permission keys.
 - `SyncSystemRolesAndPermissionsAction` tworzy role i uprawnienia Spatie bez kasowania nieznanych historycznych ról.
 - `LegacyRbacImportService` przenosi relacje `authitemchild` oraz przypisania `authassignment` dla użytkowników z `legacy_id`.
+- `LegacyRbacImportService` przed importem uruchamia synchronizację canonical ról/uprawnień, a potem rozszerza legacy operacje o stabilne permission keys z `SystemPermission::legacyPermissionMap()`. Dzięki temu użytkownik z legacy `manage users` ma także `users.manage`, a `generate reports` daje `reports.export` i `results.view`.
 - Import RBAC rozwiązuje graf relacji legacy rekurencyjnie: `role -> role -> permission`, `role -> permission -> permission` oraz bezpośredne `authassignment` do operacji są spłaszczane do uprawnień Spatie, bo Spatie nie ma natywnej hierarchii permissionów jak Yii RBAC.
 - `sbo:legacy-import-mysql` używa tego samego importera RBAC po odczycie tabel `authitem`, `authitemchild` i `authassignment` ze staging MySQL.
+- Historyczne `authassignment` wskazujące na nieistniejących użytkowników są pomijane z `WARN`; pełny dump 2025 zawierał 476 takich przypisań i nie da się ich bezpiecznie odwzorować bez rekordu `users`.
 - `LegacyAuditLog` zachowuje historyczną tabelę `logs`: operatora, opcjonalny projekt, treść audytu, kontroler, akcję i czas operacji.
 - `User::canAccessPanel()` dopuszcza tylko aktywnych użytkowników z `admin.access` albo rolą `admin`/`bdo`.
 - Policies dla `BudgetEdition`, `ProjectArea`, `Category` i `VoteCard` blokują operacje użytkownikom bez dedykowanych uprawnień.
@@ -49,7 +52,8 @@ Nowy system zachowuje nazwy legacy jako role/uprawnienia Spatie, ale decyzje dom
 - Akcje Filament dla weryfikacji merytorycznej używają `verification.merit.manage` z kompatybilnością dla `projects.verify/projects.manage`.
 - Akcje Filament dla korekt projektu używają `project_corrections.manage` z kompatybilnością dla `projects.manage`.
 
-## Zgodność do sprawdzenia
+## Zgodność po pełnym imporcie
 
-- Porównać liczności pełnych przypisań `authitemchild` i `authassignment` po bezpośrednim imporcie z dumpa/staging.
-- Po docelowym imporcie z dumpa potwierdzić, czy granularne permission keys wymagają dodatkowego mapowania dla historycznych niestandardowych ról.
+- `sbo:legacy-import-counts` oznacza `authitem`, `authitemchild` i `authassignment` jako `skipped`, bo po imporcie nie mają liniowego odpowiednika 1:1: role/uprawnienia są spłaszczone do pivotów Spatie, a część legacy operacji rozszerza się o canonical permissions.
+- Test `LegacyRbacImportTest` sprawdza role, zagnieżdżone relacje, bezpośrednie operacje oraz mapowanie `manage users`/`generate reports` na permission keys używane przez Laravel policies.
+- Dalszy przegląd produkcyjny powinien dotyczyć tylko niestandardowych ról dodanych poza legacy dumpem; rozpoznane role i operacje z `sbo2025_prod.sql` są pokryte mapą.

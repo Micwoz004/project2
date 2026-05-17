@@ -207,9 +207,14 @@ class PublicVotingFlow extends Component
 
     private function projectsForVoting(bool $local)
     {
+        if ($this->budgetEditionId === null) {
+            return collect();
+        }
+
         return Project::query()
             ->with('area')
             ->pickedForVoting()
+            ->where('budget_edition_id', $this->budgetEditionId)
             ->whereHas('area', fn ($query) => $query->where('is_local', $local))
             ->orderBy('number_drawn')
             ->get();

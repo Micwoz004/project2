@@ -160,6 +160,7 @@
 - [x] Formularz konsultacji merytorycznej w Filament zapisuje legacy `consultationInformation`.
 - [x] `VotingTokenService` ma adapter SMS: lokalny `null` provider i konfigurowalny HTTP provider dla realnej bramki.
 - [x] Publiczne `/glosowanie` renderuje Livewire flow wydania kodu SMS i oddania głosu przez usługi domenowe.
+- [x] Publiczny Livewire flow głosowania pokazuje wyłącznie projekty `Picked` z wybranej edycji SBO.
 - [x] Komenda `sbo:sms-config-check --production` blokuje brak realnego operatora SMS, niepoprawny timeout i szablon bez tokenu.
 - [x] Potwierdzono w legacy, że anonimizacja załączników nie transformuje fizycznie plików; jest oświadczeniem autora i bramką publikacji.
 - [x] Panel Filament `/admin/wyniki` prezentuje administracyjne agregaty wyników, statusy kart, remisy, kategorie i skróty do CSV chronione `reports.export`.

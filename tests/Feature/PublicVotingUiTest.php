@@ -116,6 +116,35 @@ it('casts vote through livewire voting flow', function (): void {
         ->and($token->refresh()->disabled)->toBeTrue();
 });
 
+it('shows livewire voting projects only from selected budget edition', function (): void {
+    $currentEdition = budgetEdition();
+    $historicalEdition = budgetEdition([
+        'propose_start' => now()->subMonths(7),
+        'propose_end' => now()->subMonths(6),
+        'pre_voting_verification_end' => now()->subMonths(5),
+        'voting_start' => now()->subMonths(4),
+        'voting_end' => now()->subMonths(3),
+        'post_voting_verification_end' => now()->subMonths(2),
+        'result_announcement_end' => now()->subMonth(),
+    ]);
+    $area = ProjectArea::query()->create(areaAttributes());
+    $currentProject = Project::query()->create(projectAttributes($currentEdition->id, $area->id, [
+        'title' => 'Aktualny projekt do głosowania',
+        'status' => ProjectStatus::Picked,
+        'number_drawn' => 1,
+    ]));
+    $historicalProject = Project::query()->create(projectAttributes($historicalEdition->id, $area->id, [
+        'title' => 'Historyczny projekt do głosowania',
+        'status' => ProjectStatus::Picked,
+        'number_drawn' => 2,
+    ]));
+
+    Livewire::test(PublicVotingFlow::class)
+        ->set('budgetEditionId', $currentEdition->id)
+        ->assertSee($currentProject->title)
+        ->assertDontSee($historicalProject->title);
+});
+
 function voterPayload(): array
 {
     return [

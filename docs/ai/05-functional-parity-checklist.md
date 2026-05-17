@@ -72,6 +72,7 @@
 - [x] Import słowników imion, nazwisk i nazwisk matek z legacy.
 - [x] Import relacji `taskscategories` do pivotu kategorii projektów.
 - [x] Fixture import `authitem`, `authitemchild` i `authassignment` do Spatie Permission.
+- [x] Import RBAC spłaszcza zagnieżdżone relacje Yii `authitemchild` do permissionów Spatie.
 - [x] Fixture import użytkowników i departamentów legacy.
 - [x] Policy/bramki dla kart głosowania, wyników i eksportów raportów.
 - [x] Filament Resource dla użytkowników, departamentów użytkownika i przypisań ról Spatie.

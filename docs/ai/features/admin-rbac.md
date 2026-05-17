@@ -20,7 +20,7 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone dla głosowania, ra
 3. [x] Dodać policies dla projektów, edycji budżetu i słowników.
 4. [x] Ograniczyć dostęp do panelu Filament przez aktywność użytkownika i `admin.access`.
 5. [x] Pokryć testami synchronizację RBAC, dostęp do panelu i odmowy dla słowników/edycji.
-6. [ ] Dodać pełny import `authitemchild` i `authassignment` z dumpa legacy.
+6. [x] Dodać pełny import `authitemchild` i `authassignment` z dumpa legacy.
 7. [x] Dodać policies/bramki dla kart głosowania, wyników i raportów.
 8. [x] Dodać bazowe permissions dla weryfikacji po pełnym domknięciu paneli.
 9. [x] Ograniczyć poszczególne akcje Filament przez permissions.
@@ -39,6 +39,7 @@ Nowy system zachowuje nazwy legacy jako role/uprawnienia Spatie, ale decyzje dom
 - `SystemPermission` opisuje docelowe uprawnienia i mapę operacji legacy do nowych permission keys.
 - `SyncSystemRolesAndPermissionsAction` tworzy role i uprawnienia Spatie bez kasowania nieznanych historycznych ról.
 - `LegacyRbacImportService` przenosi relacje `authitemchild` oraz przypisania `authassignment` dla użytkowników z `legacy_id`.
+- Import RBAC rozwiązuje graf relacji legacy rekurencyjnie: `role -> role -> permission`, `role -> permission -> permission` oraz bezpośredne `authassignment` do operacji są spłaszczane do uprawnień Spatie, bo Spatie nie ma natywnej hierarchii permissionów jak Yii RBAC.
 - `LegacyAuditLog` zachowuje historyczną tabelę `logs`: operatora, opcjonalny projekt, treść audytu, kontroler, akcję i czas operacji.
 - `User::canAccessPanel()` dopuszcza tylko aktywnych użytkowników z `admin.access` albo rolą `admin`/`bdo`.
 - Policies dla `BudgetEdition`, `ProjectArea`, `Category` i `VoteCard` blokują operacje użytkownikom bez dedykowanych uprawnień.
@@ -49,5 +50,5 @@ Nowy system zachowuje nazwy legacy jako role/uprawnienia Spatie, ale decyzje dom
 
 ## Zgodność do sprawdzenia
 
-- Porównać pełne przypisania `authitemchild` i `authassignment` w imporcie legacy.
+- Porównać liczności pełnych przypisań `authitemchild` i `authassignment` po bezpośrednim imporcie z dumpa/staging.
 - Po docelowym imporcie z dumpa potwierdzić, czy granularne permission keys wymagają dodatkowego mapowania dla historycznych niestandardowych ról.

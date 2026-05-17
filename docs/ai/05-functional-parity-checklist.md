@@ -163,6 +163,7 @@
 - [x] Karty weryfikacji merytorycznej i konsultacyjnej można cofnąć do kopii roboczej z `is_returned=true`, zgodnie z `TaskDepartmentAssignment::setAsReturned`.
 - [x] Panel Filament udostępnia cofnięcie wysłanej karty weryfikacji merytorycznej/konsultacyjnej przez tę samą akcję domenową.
 - [x] Kodowa i dokumentacyjna mapa punktów wysyłki mail/SMS legacy w `LegacyCommunicationTrigger`.
+- [x] Mailowe triggery projektowe z `LegacyCommunicationTrigger` można kolejkować przez wspólną akcję domenową.
 - [x] Formularz konsultacji merytorycznej w Filament zapisuje legacy `consultationInformation`.
 - [x] `VotingTokenService` ma adapter SMS: lokalny `null` provider i konfigurowalny HTTP provider dla realnej bramki.
 - [x] Publiczne `/glosowanie` renderuje Livewire flow wydania kodu SMS i oddania głosu przez usługi domenowe.

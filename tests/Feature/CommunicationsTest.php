@@ -5,6 +5,7 @@ use App\Domain\Communications\Actions\AddProjectCommentAction;
 use App\Domain\Communications\Actions\AddProjectPublicCommentAction;
 use App\Domain\Communications\Actions\EditProjectPublicCommentAction;
 use App\Domain\Communications\Actions\MarkCorrespondenceMessageReadAction;
+use App\Domain\Communications\Actions\QueueLegacyProjectNotificationAction;
 use App\Domain\Communications\Actions\QueueProjectNotificationAction;
 use App\Domain\Communications\Actions\SendProjectCoauthorConfirmationAction;
 use App\Domain\Communications\Actions\SendProjectContactMessageAction;
@@ -389,6 +390,66 @@ it('rejects queued project notifications without recipient email', function (): 
         ProjectNotificationTemplate::ProjectStatusChanged,
     );
 })->throws(DomainException::class, 'Adres e-mail odbiorcy jest wymagany.');
+
+it('queues project notifications through the legacy trigger map', function (): void {
+    Bus::fake();
+
+    $creator = User::factory()->create();
+    $recipient = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id, [
+        'creator_id' => $creator->id,
+    ]);
+
+    $notification = app(QueueLegacyProjectNotificationAction::class)->execute(
+        $project,
+        $creator,
+        $recipient,
+        $recipient->email,
+        LegacyCommunicationTrigger::TaskStatusRejectedFormal,
+        ['status' => 'Odrzucony formalnie'],
+    );
+
+    expect($notification->project_id)->toBe($project->id)
+        ->and($notification->sent_to_user_id)->toBe($recipient->id)
+        ->and($notification->subject)->toContain('Zmiana statusu projektu')
+        ->and($notification->body)->toContain('Odrzucony formalnie');
+
+    Bus::assertDispatched(SendProjectNotificationJob::class);
+});
+
+it('rejects legacy project notification triggers without a project mail template', function (): void {
+    $creator = User::factory()->create();
+    $recipient = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id);
+
+    app(QueueLegacyProjectNotificationAction::class)->execute(
+        $project,
+        $creator,
+        $recipient,
+        $recipient->email,
+        LegacyCommunicationTrigger::ProjectContactMessage,
+    );
+})->throws(DomainException::class, 'Trigger legacy nie ma szablonu powiadomienia projektu.');
+
+it('rejects sms legacy triggers in the project mail notification queue', function (): void {
+    $creator = User::factory()->create();
+    $recipient = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id);
+
+    app(QueueLegacyProjectNotificationAction::class)->execute(
+        $project,
+        $creator,
+        $recipient,
+        $recipient->email,
+        LegacyCommunicationTrigger::TaskCallToCorrectionSms,
+    );
+})->throws(DomainException::class, 'Trigger legacy wymaga kanału innego niż e-mail.');
 
 it('keeps a legacy communication trigger map for mail and sms parity', function (): void {
     expect(LegacyCommunicationTrigger::cases())->toHaveCount(35)

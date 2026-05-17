@@ -158,11 +158,11 @@
 - [x] `VotingTokenService` ma adapter SMS: lokalny `null` provider i konfigurowalny HTTP provider dla realnej bramki.
 - [x] Publiczne `/glosowanie` renderuje Livewire flow wydania kodu SMS i oddania głosu przez usługi domenowe.
 - [x] Komenda `sbo:sms-config-check --production` blokuje brak realnego operatora SMS, niepoprawny timeout i szablon bez tokenu.
+- [x] Potwierdzono w legacy, że anonimizacja załączników nie transformuje fizycznie plików; jest oświadczeniem autora i bramką publikacji.
 
 ## Do pełnego parytetu
 
 - [ ] Finalny przegląd tekstów oświadczeń formularza projektu z aktualną wersją urzędową.
-- [ ] Potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Finalny przegląd etykiet formularza formalnego z aktualną wersją urzędową.
 - [ ] Produkcyjna konfiguracja realnego operatora SMS na środowisku.
 - [ ] Próbny pełny przebieg importu na odtworzonym stagingu z `sbo2025_prod.sql` i porównanie liczności tabel.

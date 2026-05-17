@@ -30,6 +30,8 @@ Status: częściowo zaimplementowane w etapie 1.
 - Legacy formularz obsługuje maksymalnie dwóch współautorów (`cocreator1`, `cocreator2`) i przyjmuje dla nich imię, nazwisko, e-mail, telefon, ulicę, numer domu, numer lokalu, kod pocztowy, miasto oraz zgody kontaktowe.
 - `Task::cocreatorValidate` wymaga imienia, nazwiska, e-maila lub telefonu oraz potwierdzenia zgody.
 - `Cocreator::validateContact` wymaga wybrania co najmniej jednej publicznej formy kontaktu: e-mail lub telefon.
+- Legacy nie wykonuje fizycznej transformacji plików w ramach anonimizacji załączników. `Task::rules` wymaga `attachmentsAnonimized=1` przy scenariuszach `propose` i `update`, widoki pokazują instrukcję o anonimizacji materiałów graficznych, a `Task::saveFile()` zapisuje upload przez `saveAs()` do `webroot.assets.uploads` bez procesu maskowania lub konwersji.
+- Pole `attachmentsAnonimized` jest w legacy oświadczeniem autora o prawach do publikacji i przygotowaniu materiałów, a nie statusem zadania asynchronicznego. Dodatkowa wzmianka w `TaskVerification` dotyczy kontroli formalnej: urzędnik odpowiada, czy załączniki są niezbędne i zanonimizowane.
 
 ## Zaimplementowany odpowiednik Laravel
 
@@ -39,6 +41,7 @@ Status: częściowo zaimplementowane w etapie 1.
 - `StoreProjectFileAction` zapisuje fizyczny plik na dysku `public` albo `local`, a następnie tworzy `ProjectFile`; walidacja legacy jest wykonywana przed zapisem do storage.
 - `MarkProjectAttachmentsAnonymizedAction` oznacza projekt jako gotowy do publicznej prezentacji załączników.
 - `ProjectFile::publiclyVisible()` udostępnia publicznie wyłącznie pliki `is_private=false` oraz tylko wtedy, gdy projekt ma `attachments_anonymized=true`.
+- Nowy system zachowuje semantykę legacy: nie przetwarza binarnie pliku przy oznaczeniu anonimizacji, tylko używa flagi jako bramki publikacji po ręcznym przygotowaniu załącznika.
 - Publiczny formularz zgłoszenia projektu zapisuje plik listy poparcia w prywatnym storage i oznacza go jako załącznik formularza.
 - Publiczny formularz obsługuje dodatkowe uploady legacy: zgody właściciela i rodzica jako prywatne, załączniki mapy oraz pozostałe załączniki jako publiczne dopiero po anonimizacji projektu.
 - Publiczny formularz korekty autora zapisuje tylko te typy załączników, które zostały odblokowane w `project_corrections.allowed_fields`.
@@ -51,4 +54,3 @@ Status: częściowo zaimplementowane w etapie 1.
 ## Zgodność do sprawdzenia
 
 - Potwierdzić, czy historyczny limit `1024 * 1024 * 10000` ma zostać zachowany, czy świadomie skorygowany do 10 MB w UI i walidacji.
-- Doprecyzować, czy legacy wykonywało fizyczną transformację plików podczas anonimizacji; aktualny baseline traktuje anonimizację jako decyzję publikacyjną po ręcznym przygotowaniu pliku.

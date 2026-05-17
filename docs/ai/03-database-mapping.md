@@ -72,6 +72,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 
 - Wiele tabel weryfikacyjnych używa JSON dla odpowiedzi, bo legacy formularze mają liczne pola specyficzne dla etapu. Parytet wymaga testów formularzy przed docelowym usztywnieniem.
 - Załączniki publiczne i prywatne są jedną tabelą z flagą `is_private`, zamiast dwóch tabel.
+- `projects.attachments_anonymized` odpowiada legacy `tasks.attachmentsAnonimized` jako oświadczenie/bramka publikacji. Legacy nie miało tabeli z zadaniami anonimizacji i nie modyfikowało fizycznie plików w `Task::saveFile()`.
 - Głosowania rad/komisji są jedną tabelą `project_board_votes`, żeby uniknąć powielania tych samych pól.
 - Korekty projektów mają osobną tabelę `project_corrections`; pola `projects.need_correction`, `correction_no`, `correction_start_time`, `correction_end_time` pozostają szybką denormalizacją dla blokad edycji i kompatybilności z legacy `tasks`.
 - Dane autora składane w publicznym formularzu są utrzymywane jako snapshot JSON w `projects.authors`; `projects.creator_id` pozostaje relacją do `users`, gdy formularz jest składany w aktywnej sesji. To pozwala zachować wartości z formularza 1:1 bez wymuszania tworzenia konta użytkownika w baseline logiki.

@@ -21,6 +21,7 @@ Status: zaimplementowany baseline domenowy i administracyjny.
 4. [x] Dodać ustawienia systemowe i cache. Wykonane: `ApplicationSetting` i import fixture przenoszą `settings.category`, `settings.key` oraz surowe `settings.value`; `ApplicationSettings` udostępnia odczyt raw/string/int/bool bez parsowania serializacji Yii/PHP.
 5. Pokryć testami granice dat zgodne z legacy. Wykonane dla granic stanu, kolejności dat, overlapu i stron treści.
 6. [x] Dodać panel administracyjny ustawień aplikacji chroniony przez `settings.manage`.
+7. [x] Dodać panel administracyjny stron treści procesu z symbolami legacy.
 
 ## Uwagi 1:1
 
@@ -31,5 +32,7 @@ Wartości `settings.value` są na etapie importu zachowywane dosłownie. To pozw
 `ApplicationSettingResource` pozwala operatorowi z `settings.manage` albo rolą `admin`/`bdo` utrzymać rekordy `application_settings` w panelu Filament. Resource edytuje surową wartość legacy, więc reguły biznesowe nadal korzystają z typowanego odczytu w `ApplicationSettings`, a nie z logiki UI.
 
 Legacy `PageForm` zapisuje treści stron procesu głosowania bez dodatkowych walidacji biznesowych, a `Page::getPageBySymbol(Page::SYMBOL_VOID)` pobiera treść braku procesu z ustawienia `owner.pageProcessAbsence`. Rekordy `pages` dla konkretnych edycji są importowane do `content_pages`; `ContentPageResolver` odtwarza fallback symbolu `V` z ustawień, a pozostałe symbole czyta z `content_pages` wybranej edycji.
+
+`ContentPageResource` pozwala operatorowi z `settings.manage` albo rolą `admin`/`bdo` edytować treści HTML stron procesu dla symboli `V,S,A,I,TY,W,T`. Resource nie dodaje logiki biznesowej do UI; publiczne odczyty nadal przechodzą przez `ContentPageResolver`.
 
 Legacy `Statuses` przechowuje edytowalne nazwy statusów projektu niezależnie od kodu statusu. Import zapisuje je w `project_status_labels`, a logika domenowa nadal korzysta z `ProjectStatus`.

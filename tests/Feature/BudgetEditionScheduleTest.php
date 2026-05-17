@@ -10,6 +10,7 @@ use App\Domain\Settings\Services\ContentPageResolver;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemPermission;
 use App\Filament\Resources\ApplicationSettings\ApplicationSettingResource;
+use App\Filament\Resources\ContentPages\ContentPageResource;
 use App\Models\User;
 
 it('accepts a valid budget edition schedule', function (): void {
@@ -132,5 +133,32 @@ it('guards application settings resource with settings permissions', function ()
 
     $this->actingAs($viewer)
         ->get(ApplicationSettingResource::getUrl(panel: 'admin'))
+        ->assertForbidden();
+});
+
+it('guards content page resource with settings permissions', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    ContentPage::query()->create([
+        'budget_edition_id' => $edition->id,
+        'symbol' => ContentPage::SYMBOL_WELCOME,
+        'body' => '<p>Witamy w procesie SBO.</p>',
+    ]);
+
+    $manager = User::factory()->create(['status' => true]);
+    $manager->givePermissionTo(SystemPermission::AdminAccess->value);
+    $manager->givePermissionTo(SystemPermission::SettingsManage->value);
+    $viewer = User::factory()->create(['status' => true]);
+    $viewer->givePermissionTo(SystemPermission::AdminAccess->value);
+
+    $this->actingAs($manager)
+        ->get(ContentPageResource::getUrl(panel: 'admin'))
+        ->assertOk()
+        ->assertSee('W - powitanie')
+        ->assertSee('Witamy w procesie SBO');
+
+    $this->actingAs($viewer)
+        ->get(ContentPageResource::getUrl(panel: 'admin'))
         ->assertForbidden();
 });

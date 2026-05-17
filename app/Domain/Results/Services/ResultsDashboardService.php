@@ -5,6 +5,7 @@ namespace App\Domain\Results\Services;
 use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Reports\Services\VoteCardReportService;
+use App\Domain\Results\Models\ResultTieDecision;
 use App\Domain\Voting\Enums\VoteCardStatus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -140,23 +141,30 @@ class ResultsDashboardService
     private function tieGroups(Collection $tieGroups, Collection $projects): array
     {
         return $tieGroups
-            ->map(fn (array $group): array => [
-                'points' => $group['points'],
-                'requires_manual_decision' => $group['requires_manual_decision'],
-                'decision' => $group['decision'],
-                'projects' => collect($group['ranking_order'])
-                    ->map(function (array $row) use ($projects): array {
-                        $project = $projects->get($row['project_id']);
+            ->map(function (array $group) use ($projects): array {
+                $groupKey = ResultTieDecision::groupKey((int) $group['points'], $group['project_ids']);
 
-                        return [
-                            'project_id' => (int) $row['project_id'],
-                            'number_drawn' => $row['number_drawn'],
-                            'title' => $project?->title ?? 'Projekt '.$row['project_id'],
-                        ];
-                    })
-                    ->values()
-                    ->all(),
-            ])
+                return [
+                    'group_key' => $groupKey,
+                    'form_key' => sha1($groupKey),
+                    'points' => $group['points'],
+                    'project_ids' => $group['project_ids'],
+                    'requires_manual_decision' => $group['requires_manual_decision'],
+                    'decision' => $group['decision'],
+                    'projects' => collect($group['ranking_order'])
+                        ->map(function (array $row) use ($projects): array {
+                            $project = $projects->get($row['project_id']);
+
+                            return [
+                                'project_id' => (int) $row['project_id'],
+                                'number_drawn' => $row['number_drawn'],
+                                'title' => $project?->title ?? 'Projekt '.$row['project_id'],
+                            ];
+                        })
+                        ->values()
+                        ->all(),
+                ];
+            })
             ->values()
             ->all();
     }

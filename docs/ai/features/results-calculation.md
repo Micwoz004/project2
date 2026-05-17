@@ -23,6 +23,7 @@ Status: baseline domenowy rozbudowany.
 6. [x] Dodać jawne wykrywanie remisów wymagających decyzji manualnej.
 7. [x] Dodać porównanie wyników liczonych po kategorii głównej projektu i po wielu kategoriach.
 8. [x] Dodać domenowy zapis ręcznej decyzji remisu bez automatycznego zgadywania zwycięzcy.
+9. [x] Podpiąć decyzję remisu pod panel `/admin/wyniki`, z zachowaniem walidacji w `ResolveResultTieDecisionAction`.
 
 ## Implementacja Laravel
 
@@ -37,8 +38,8 @@ Status: baseline domenowy rozbudowany.
 - `/wyniki` nie liczy ani nie pokazuje punktów przed oknem publikacji wyników.
 - `ResultsDashboardService` buduje administracyjne podsumowanie wyników dla edycji: statusy kart, ranking projektów, punkty po obszarach i kategoriach, remisy wymagające decyzji oraz różnice między kategorią główną i wieloma kategoriami.
 - Filament page `/admin/wyniki` pokazuje administracyjny dashboard wyników dla operatorów z uprawnieniem `results.view`; linki do raportów CSV pozostają za `reports.export`.
+- Operator z `reports.export` albo rolą `admin`/`bdo` może z poziomu `/admin/wyniki` wybrać zwycięski projekt dla aktywnej grupy remisowej. Formularz przekazuje stabilny klucz grupy i listę projektów do `ResolveResultTieDecisionAction`, więc UI nie rozstrzyga reguł samodzielnie.
 
 ## Świadome braki na tym etapie
 
 - Nie znaleziono w legacy automatycznej procedury wyboru zwycięzcy przy remisie. Nowy system wykrywa remisy i wymaga decyzji manualnej, zachowując deterministyczną kolejność rankingu/raportu.
-- Brak pełnego formularza UI decyzji remisu; domenowy zapis decyzji i dane dla dashboardu są gotowe, a UI może zostać dopracowane bez zmiany logiki.

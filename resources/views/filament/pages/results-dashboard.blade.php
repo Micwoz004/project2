@@ -157,15 +157,62 @@
                 </x-filament::section>
             </div>
 
-            <x-filament::section heading="Remisy wymagające decyzji">
+            <x-filament::section heading="Remisy i decyzje manualne">
                 @forelse ($summary['tie_groups'] as $group)
-                    <div class="mb-4 rounded-lg border border-warning-200 bg-warning-50 p-4 last:mb-0 dark:border-warning-500/30 dark:bg-warning-500/10">
-                        <p class="text-sm font-semibold text-warning-800 dark:text-warning-200">{{ $group['points'] }} pkt</p>
+                    <div wire:key="tie-group-{{ $group['form_key'] }}" class="mb-4 rounded-lg border border-warning-200 bg-warning-50 p-4 last:mb-0 dark:border-warning-500/30 dark:bg-warning-500/10">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <p class="text-sm font-semibold text-warning-800 dark:text-warning-200">{{ $group['points'] }} pkt</p>
+                            @if (! $group['requires_manual_decision'])
+                                <span class="rounded-md bg-success-100 px-2 py-1 text-xs font-semibold text-success-700 dark:bg-success-500/20 dark:text-success-200">
+                                    decyzja zapisana
+                                </span>
+                            @endif
+                        </div>
                         <ul class="mt-2 space-y-1 text-sm text-warning-900 dark:text-warning-100">
                             @foreach ($group['projects'] as $project)
                                 <li>#{{ $project['project_id'] }} · {{ $project['number_drawn'] ?? '-' }} · {{ $project['title'] }}</li>
                             @endforeach
                         </ul>
+
+                        @if ($group['decision'])
+                            @php($winner = collect($group['projects'])->firstWhere('project_id', $group['decision']['winner_project_id']))
+                            <div class="mt-3 rounded-md border border-success-200 bg-white/70 p-3 text-sm text-success-800 dark:border-success-500/30 dark:bg-gray-950/40 dark:text-success-200">
+                                <p class="font-semibold">
+                                    Zwycięzca remisu: {{ $winner['title'] ?? 'Projekt #'.$group['decision']['winner_project_id'] }}
+                                </p>
+                                @if ($group['decision']['notes'])
+                                    <p class="mt-1 text-xs">{{ $group['decision']['notes'] }}</p>
+                                @endif
+                            </div>
+                        @elseif ($this->canResolveResultTies())
+                            <form wire:submit.prevent="resolveTieDecision('{{ $group['form_key'] }}')" class="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end">
+                                <label class="block">
+                                    <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-warning-800 dark:text-warning-200">Zwycięski projekt</span>
+                                    <select
+                                        wire:model="tieDecisionWinners.{{ $group['form_key'] }}"
+                                        class="w-full rounded-lg border-warning-200 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-warning-500/40 dark:bg-gray-950"
+                                    >
+                                        <option value="">Wybierz projekt</option>
+                                        @foreach ($group['projects'] as $project)
+                                            <option value="{{ $project['project_id'] }}">
+                                                {{ $project['number_drawn'] ?? '-' }} · {{ $project['title'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                                <label class="block">
+                                    <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-warning-800 dark:text-warning-200">Notatka</span>
+                                    <input
+                                        type="text"
+                                        wire:model="tieDecisionNotes.{{ $group['form_key'] }}"
+                                        class="w-full rounded-lg border-warning-200 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-warning-500/40 dark:bg-gray-950"
+                                    >
+                                </label>
+                                <x-filament::button type="submit">
+                                    Zapisz decyzję
+                                </x-filament::button>
+                            </form>
+                        @endif
                     </div>
                 @empty
                     <p class="text-sm text-gray-600 dark:text-gray-300">Brak remisów w punktowanych projektach.</p>

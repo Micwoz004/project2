@@ -5,6 +5,7 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Results\Models\ResultTieDecision;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemPermission;
 use App\Domain\Voting\Enums\VoteCardStatus;
@@ -12,6 +13,7 @@ use App\Domain\Voting\Models\VoteCard;
 use App\Domain\Voting\Models\Voter;
 use App\Filament\Pages\ResultsDashboard;
 use App\Models\User;
+use Livewire\Livewire;
 
 it('shows administrative results dashboard for users with results permission', function (): void {
     app(SyncSystemRolesAndPermissionsAction::class)->execute();
@@ -28,7 +30,7 @@ it('shows administrative results dashboard for users with results permission', f
         ->assertSee('Wyniki i publikacja')
         ->assertSee($projectA->title)
         ->assertSee($projectB->title)
-        ->assertSee('Remisy wymagające decyzji')
+        ->assertSee('Remisy i decyzje manualne')
         ->assertSee('ważna')
         ->assertSee('nieważna')
         ->assertSee('Kategorie CSV');
@@ -43,6 +45,39 @@ it('blocks administrative results dashboard without results permission', functio
     $this->actingAs($user)
         ->get(ResultsDashboard::getUrl(panel: 'admin'))
         ->assertForbidden();
+});
+
+it('stores manual result tie decision from administrative dashboard', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    [$edition, $projectA] = createDashboardResultsFixture();
+    $user = User::factory()->create(['status' => true]);
+    $user->givePermissionTo(SystemPermission::AdminAccess->value);
+    $user->givePermissionTo(SystemPermission::ResultsView->value);
+    $user->givePermissionTo(SystemPermission::ReportsExport->value);
+
+    $this->actingAs($user);
+
+    $component = Livewire::test(ResultsDashboard::class)
+        ->set('budgetEditionId', $edition->id)
+        ->call('loadDashboard');
+
+    $summary = $component->get('summary');
+    $formKey = $summary['tie_groups'][0]['form_key'];
+
+    $component
+        ->set('tieDecisionWinners.'.$formKey, $projectA->id)
+        ->set('tieDecisionNotes.'.$formKey, 'Decyzja komisji po analizie remisu.')
+        ->call('resolveTieDecision', $formKey)
+        ->assertHasNoErrors();
+
+    $decision = ResultTieDecision::query()->firstOrFail();
+    $updatedSummary = $component->get('summary');
+
+    expect($decision->winner_project_id)->toBe($projectA->id)
+        ->and($decision->decided_by_id)->toBe($user->id)
+        ->and($updatedSummary['tie_groups'][0]['requires_manual_decision'])->toBeFalse()
+        ->and($updatedSummary['tie_groups'][0]['decision']['winner_project_id'])->toBe($projectA->id);
 });
 
 function createDashboardResultsFixture(): array

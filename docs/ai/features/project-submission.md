@@ -37,3 +37,4 @@ Status: częściowo zaimplementowane; publiczne zgłoszenie zapisuje projekt, au
 - `PublicProjectController::store()` zapisuje listę poparcia przez `StoreProjectFileAction` przed złożeniem projektu i oznacza plik jako `is_task_form_attachment`.
 - Lista poparcia z publicznego formularza jest prywatna (`is_private=true`), zgodnie z ostrożnym odwzorowaniem danych wrażliwych z legacy.
 - `StorePublicProjectRequest::coauthors()` filtruje puste sloty współautorów i przekazuje dane, także adresowe (`street`, `house_no`, `flat_no`, `post_code`, `city`), do `SyncProjectCoauthorsAction`, która wymusza reguły legacy `Cocreator`.
+- Widok `resources/views/public/projects/create.blade.php` korzysta ze wspólnego publicznego design systemu: czytelny nagłówek, jednolity panel formularza, spójne pola, checkboxy i sekcje kosztów/współautorów bez zmiany walidacji HTTP ani domenowej.

@@ -26,7 +26,8 @@ Status: zaimplementowany baseline katalogu i mapy publicznej.
 - Query: `App\Domain\Projects\Services\PublicProjectCatalogQuery`.
 - Mapa: `App\Domain\Projects\Services\PublicProjectMapQuery`, która korzysta z tych samych filtrów co katalog i pokazuje tylko publiczne projekty z lokalizacją.
 - Kontroler: `PublicProjectController@index`.
-- Widoki: `resources/views/public/projects/index.blade.php`, `resources/views/public/projects/map.blade.php`.
+- Widoki: `resources/views/public/projects/index.blade.php`, `resources/views/public/projects/show.blade.php`, `resources/views/public/projects/map.blade.php`.
+- Publiczny layout `resources/views/components/public/layout.blade.php` zawiera wspólny civic design system dla nawigacji, nagłówków, filtrów, kart projektów, tabel i stanów pustych. Layout nie zmienia logiki widoczności ani kolejności projektów.
 - Testy: `PublicProjectCatalogTest`.
 - Źródła współrzędnych mapy są sprawdzane w kolejności: `lat/lng`, pierwszy punkt z legacy `map_data`, a na końcu tekstowe `map_lng_lat` w formacie używanym przez formularz.
 

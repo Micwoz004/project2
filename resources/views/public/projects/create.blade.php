@@ -1,5 +1,10 @@
 <x-public.layout title="Zgłoś projekt">
-    <h1>Zgłoś projekt</h1>
+    <section class="page-hero">
+        <div>
+            <h1 class="page-title">Zgłoś projekt</h1>
+            <p class="page-summary">Formularz zachowuje reguły legacy: dane autora, lokalizację, kosztorys, zgody, współautorów i wymagane załączniki.</p>
+        </div>
+    </section>
 
     @if ($errors->any())
         <div class="panel">
@@ -21,7 +26,7 @@
         ]);
     @endphp
 
-    <form class="panel" method="post" action="{{ route('public.projects.store') }}" enctype="multipart/form-data">
+    <form class="panel form-panel" method="post" action="{{ route('public.projects.store') }}" enctype="multipart/form-data">
         @csrf
 
         <h2>Dane kontaktowe autora</h2>

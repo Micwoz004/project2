@@ -29,6 +29,7 @@
 - [x] Publiczny katalog projektów filtrowany po edycji, obszarze, kategorii i wyszukiwaniu.
 - [x] Testy katalogu publicznego dla widoczności, filtrów i kolejności.
 - [x] Publiczna mapa projektów używa tych samych filtrów co katalog i rozpoznaje współrzędne z `lat/lng`, `map_data` oraz `map_lng_lat`.
+- [x] Publiczny layout ma wspólny responsywny design system dla katalogu, szczegółów projektu, mapy, formularza zgłoszenia, głosowania, wyników i raportów.
 - [x] Filament Resources dla obszarów i kategorii.
 - [x] Testy listy obszarów lokalnych/OGM i relacji kategorii.
 - [x] Bazowa mapa ról legacy i canonical permissions.

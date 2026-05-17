@@ -40,6 +40,7 @@ Status: baseline domenowy i publiczny flow Livewire rozbudowane.
 - Jeśli provider odrzuci wysyłkę, nowo wygenerowany token jest natychmiast unieważniany, żeby nie został aktywny bez dostarczenia kodu.
 - Publiczny endpoint `POST /glosowanie` aktywuje token przez `phone + token`, przekazuje wybór projektów do `CastVoteService` i unieważnia token po skutecznym głosie.
 - Widok `/glosowanie` renderuje komponent Livewire `PublicVotingFlow`, który obsługuje wydanie kodu SMS i oddanie głosu na jeden projekt lokalny oraz jeden ogólnomiejski przez te same usługi domenowe co endpointy POST.
+- `PublicVotingFlow` korzysta ze wspólnego publicznego design systemu: okno głosowania jest pokazane jako metadane, formularz kodu SMS i formularz oddania głosu są zestawione responsywnie w dwóch panelach, a listy projektów do głosowania używają tych samych kart co katalog.
 
 ## Świadome braki na tym etapie
 

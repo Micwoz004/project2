@@ -1,5 +1,10 @@
 <x-public.layout title="Korekta projektu">
-    <h1>Korekta projektu</h1>
+    <section class="page-hero">
+        <div>
+            <h1 class="page-title">Korekta projektu</h1>
+            <p class="page-summary">Autor może poprawić wyłącznie pola odblokowane w wezwaniu do korekty. Pozostałe dane pozostają zablokowane zgodnie z regułami legacy.</p>
+        </div>
+    </section>
 
     <div class="panel">
         <p><strong>{{ $project->title }}</strong></p>
@@ -32,7 +37,7 @@
         }
     @endphp
 
-    <form class="panel" method="post" action="{{ route('public.projects.corrections.update', $project) }}" enctype="multipart/form-data">
+    <form class="panel form-panel" method="post" action="{{ route('public.projects.corrections.update', $project) }}" enctype="multipart/form-data">
         @csrf
         @method('put')
 

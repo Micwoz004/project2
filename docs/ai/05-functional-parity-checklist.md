@@ -164,6 +164,7 @@
 - [x] Panel Filament udostępnia cofnięcie wysłanej karty weryfikacji merytorycznej/konsultacyjnej przez tę samą akcję domenową.
 - [x] Kodowa i dokumentacyjna mapa punktów wysyłki mail/SMS legacy w `LegacyCommunicationTrigger`.
 - [x] Mailowe triggery projektowe z `LegacyCommunicationTrigger` można kolejkować przez wspólną akcję domenową.
+- [x] SMS-owe triggery legacy poza głosowaniem można wysłać przez wspólny `SmsProvider` bez logowania treści wiadomości.
 - [x] Formularz konsultacji merytorycznej w Filament zapisuje legacy `consultationInformation`.
 - [x] `VotingTokenService` ma adapter SMS: lokalny `null` provider i konfigurowalny HTTP provider dla realnej bramki.
 - [x] Publiczne `/glosowanie` renderuje Livewire flow wydania kodu SMS i oddania głosu przez usługi domenowe.

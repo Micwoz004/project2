@@ -44,6 +44,7 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 - `LegacyCommunicationTrigger` jest kodową mapą punktów wysyłki z Yii: wskazuje źródło legacy, kanał `mail`/`sms`, odbiorcę, klucze `settings` i ewentualny odpowiednik `ProjectNotificationTemplate`.
 - `QueueProjectNotificationAction` tworzy `ProjectNotification`, waliduje adres odbiorcy na granicy operacji i dispatchuje `SendProjectNotificationJob`.
 - `QueueLegacyProjectNotificationAction` podpina mailowe triggery projektowe z `LegacyCommunicationTrigger` do wspólnej kolejki powiadomień projektu. Triggery bez szablonu projektu albo SMS są jawnie odrzucane, żeby nie zgadywać treści lub kanału.
+- `SendLegacySmsNotificationAction` obsługuje legacy SMS triggery poza głosowaniem przez wspólny `SmsProvider`, waliduje kanał/telefon/treść i zapisuje tylko ślad w `sms_logs`, bez treści wiadomości.
 - `SendProjectNotificationJob` wysyła wiadomość przez Laravel Mail i zapisuje ślad w `MailLog`, zachowując audyt legacy `maillogs`.
 - `SendProjectCorrespondenceMessageAction` po zapisie korespondencji kolejkuje powiadomienie mailowe do adresata.
 - `SendProjectCoauthorConfirmationAction` obsługuje trigger `cocreator.confirmation`: generuje brakujący hash współautora, zapisuje notyfikację, wysyła mail przez kolejkę i używa kompatybilnego linku `/activation/confirmCocreator`.
@@ -98,7 +99,7 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 ## Świadome braki na tym etapie
 
 - Mailowe triggery projektowe z `LegacyCommunicationTrigger` mają wspólną akcję domenową. Triggery niestandardowe, np. formularz kontaktu i tokeny głosowania, pozostają w wyspecjalizowanych akcjach.
-- Brak integracji z operatorem SMS dla powiadomień innych niż token głosowania i podsumowanie SMS.
+- SMS-y legacy poza głosowaniem mają wspólną akcję domenową na `SmsProvider`; realne dane operatora nadal pozostają konfiguracją środowiska.
 - Publiczne komentarze mają domenowe akcje zgodne z `CommentsController`: dodanie przez rolę `applicant`, odpowiedzi przez `parentId`, edycję i ukrycie własnego komentarza, akceptację administracyjną, ukrycie administracyjne oraz powiadomienia mailowe dla autora projektu/autora komentarza przez kolejkę Laravel.
 - `ProjectPublicCommentVisibilityService` odtwarza warunki widoczności z legacy `_comments.php`: komentarz zaakceptowany i nieukryty jest publiczny; oczekujący widzi autor komentarza, admin i autor projektu; ukryty przez użytkownika widzi autor komentarza i admin; ukryty administracyjnie widzi tylko admin.
 - Publiczny UI obsługuje dodanie, odpowiedź, edycję i ukrycie własnego komentarza, a administracyjny panel Filament obsługuje akceptację oraz ukrycie administracyjne. Dalsze dopracowanie może dotyczyć tylko układu i filtrów operatorskich, nie logiki biznesowej.

@@ -13,7 +13,7 @@
 
 ## Plan wdrożenia
 
-Status: częściowo zaimplementowane w etapie 3.
+Status: częściowo zaimplementowane; pełniejsza lista pytań legacy jest dostępna w akcji Filament.
 
 1. [x] Spisać podstawowe pola formularza formalnego z legacy.
 2. [x] Dodać akcję rozpoczęcia i zakończenia oceny formalnej.
@@ -41,6 +41,8 @@ Status: częściowo zaimplementowane w etapie 3.
 - `ForwardFormalVerificationToInitialVerificationAction` przekazuje projekt ze statusu `FormallyVerified` do `DuringInitialVerification`, ustawia `need_pre_verification=true` i tworzy przydziały `MeritInitial` dla wskazanych jednostek.
 - `RecordVerificationVersionAction` zapisuje snapshot bieżącej karty formalnej do `verification_versions` z typem `FormalVerification=4`, zgodnie z mechanizmem `VerificationVersion::beforeSave()` w Yii.
 - `ProjectResource` w Filament udostępnia rozpoczęcie weryfikacji formalnej, pozytywne/negatywne zakończenie, uruchomienie korekty formalnej i przekazanie do weryfikacji wstępnej. Widoczność akcji wymaga `projects.verify`, `projects.manage`, `admin` albo `bdo` oraz pasującego statusu projektu.
+- Formularz Filament zapisuje pytania z widoku legacy `processing/verification.php`: termin/formularz/zasady, dane kontaktowe, załączniki, lista poparcia, poprawność danych i opisu, nieodpłatność, przypisanie, mapa, zgody, neutralność wykonawcy, budżet, lokalizacja w mieście, zadania własne gminy oraz kategorię projektu.
+- Komentarze do pytań formalnych są zapisywane w JSON `answers` pod kluczami legacy `*Comments`.
 - Pozytywny wynik wymaga `projects.is_support_list=true`.
 - Negatywny wynik wymaga `result_comments`.
 - `LegacyFixtureImportService` importuje historyczne `taskverification`, mapuje wspólne pola i zachowuje pełny rekord w `raw_legacy_payload`.
@@ -48,5 +50,5 @@ Status: częściowo zaimplementowane w etapie 3.
 
 ## Zgodność do sprawdzenia
 
-- Uzupełnić pełną listę pytań formularza formalnego w Filament na podstawie `TaskVerification::attributeLabels()`.
+- Porównać docelowe brzmienie etykiet z aktualną wersją formularza urzędowego przed wdrożeniem produkcyjnym.
 - Porównać docelowe etykiety akcji i komunikatów Filament z wymaganiami urzędu, jeżeli wdrożenie ma zachować teksty legacy.

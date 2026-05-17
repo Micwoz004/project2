@@ -134,12 +134,13 @@
 - [x] Korekta kosztorysu projektu podmienia pozycje kosztów i przelicza sumę.
 - [x] Publiczna korekta autora obsługuje odblokowane typy załączników legacy.
 - [x] Granularne permissions dla akcji Filament: weryfikacja formalna, merytoryczna i korekty projektu.
+- [x] Formularz formalnej weryfikacji w Filament zapisuje pełniejszą listę pytań i komentarzy legacy.
 
 ## Do pełnego parytetu
 
 - [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
 - [ ] Potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
-- [ ] Weryfikacja formalna z pełną listą pytań/pól legacy w UI.
+- [ ] Finalny przegląd etykiet formularza formalnego z aktualną wersją urzędową.
 - [ ] Weryfikacje merytoryczne i konsultacje z pełną listą pól legacy w UI.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.

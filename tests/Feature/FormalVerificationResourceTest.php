@@ -85,13 +85,20 @@ it('completes positive formal verification from filament form through domain act
     $verification = ProjectResource::completeFormalVerificationFromAdminForm($project, [
         'was_sent_on_correct_form' => true,
         'has_support_attachment' => true,
+        'is_map_correct' => false,
+        'is_map_correct_comments' => 'Brak numeru działki.',
+        'is_project_category' => 1,
     ], true);
 
     expect($verification->result)->toBeTrue()
-        ->and($verification->answers)->toBe([
+        ->and($verification->answers)->toMatchArray([
             'wasSentOnCorrectForm' => 1,
             'hasSupportAttachment' => 1,
+            'isMapCorrect' => 0,
+            'isMapCorrectComments' => 'Brak numeru działki.',
+            'isProjectCategory' => 1,
         ])
+        ->and($verification->answers['wasSentInTime'])->toBe(0)
         ->and($project->refresh()->status)->toBe(ProjectStatus::FormallyVerified)
         ->and(VerificationVersion::query()->where('verification_legacy_id', $verification->id)->count())->toBe(1);
 });

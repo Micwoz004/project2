@@ -68,6 +68,76 @@ class ProjectResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
+    /**
+     * @var array<string, array{legacy: string, label: string}>
+     */
+    private const FORMAL_ANSWER_FIELDS = [
+        'was_sent_on_correct_form' => [
+            'legacy' => 'wasSentOnCorrectForm',
+            'label' => 'Czy projekt został złożony na właściwym formularzu?',
+        ],
+        'was_sent_in_time' => [
+            'legacy' => 'wasSentInTime',
+            'label' => 'Czy projekt przesłano we właściwym terminie?',
+        ],
+        'was_sent_in_compliance_with_rules' => [
+            'legacy' => 'wasSentInComplianceWithRules',
+            'label' => 'Czy projekt został złożony do Urzędu zgodnie z obowiązującymi zasadami SBO?',
+        ],
+        'has_leader_contact_data' => [
+            'legacy' => 'hasLeaderContactData',
+            'label' => 'Czy projekt zawiera dane kontaktowe do autora i współautorów?',
+        ],
+        'has_proper_attachments' => [
+            'legacy' => 'hasProperAttachments',
+            'label' => 'Czy załączono niezbędne załączniki i czy zostały zanonimizowane?',
+        ],
+        'has_support_attachment' => [
+            'legacy' => 'hasSupportAttachment',
+            'label' => 'Czy załączona została lista poparcia?',
+        ],
+        'is_data_correct' => [
+            'legacy' => 'isDataCorrect',
+            'label' => 'Czy projekt został wypełniony prawidłowo?',
+        ],
+        'is_description_valid' => [
+            'legacy' => 'isDescriptionValid',
+            'label' => 'Czy opis projektu jest jasny, konkretny i jednoznaczny?',
+        ],
+        'is_free_of_charge' => [
+            'legacy' => 'isFreeOfCharge',
+            'label' => 'Czy autor zawarł informacje o ogólnodostępności i nieodpłatności?',
+        ],
+        'is_correctly_assigned' => [
+            'legacy' => 'isCorrectlyAssigned',
+            'label' => 'Czy projekt przyporządkowano do odpowiedniej kategorii i obszaru?',
+        ],
+        'is_map_correct' => [
+            'legacy' => 'isMapCorrect',
+            'label' => 'Czy autor prawidłowo wskazał lokalizację projektu?',
+        ],
+        'has_required_consent' => [
+            'legacy' => 'hasRequiredConsent',
+            'label' => 'Czy złożono wszystkie wymagane oświadczenia?',
+        ],
+        'is_description_fair' => [
+            'legacy' => 'isDescriptionFair',
+            'label' => 'Czy opis nie wskazuje potencjalnego wykonawcy lub dostawcy?',
+        ],
+        'is_in_budget' => [
+            'legacy' => 'isInBudget',
+            'label' => 'Czy wartość projektu mieści się w puli środków?',
+        ],
+        'is_located_within_city' => [
+            'legacy' => 'isLocatedWithinCity',
+            'label' => 'Czy projekt jest zlokalizowany w granicach administracyjnych miasta?',
+        ],
+        'is_in_own_tasks' => [
+            'legacy' => 'isInOwnTasks',
+            'label' => 'Czy projekt mieści się w zadaniach własnych Gminy?',
+        ],
+    ];
+
     public static function getModelLabel(): string
     {
         return 'projekt';
@@ -849,24 +919,51 @@ class ProjectResource extends Resource
      */
     private static function formalVerificationAnswerSchema(): array
     {
-        return [
-            Toggle::make('was_sent_on_correct_form')
-                ->label('Zgłoszenie na właściwym formularzu'),
-            Toggle::make('has_support_attachment')
-                ->label('Poprawna lista poparcia'),
-        ];
+        $schema = [];
+
+        foreach (self::FORMAL_ANSWER_FIELDS as $fieldName => $definition) {
+            $schema[] = Toggle::make($fieldName)
+                ->label($definition['label']);
+            $schema[] = Textarea::make($fieldName.'_comments')
+                ->label('Uwagi')
+                ->maxLength(63000)
+                ->columnSpanFull();
+        }
+
+        $schema[] = Select::make('is_project_category')
+            ->label('Weryfikowany projekt jest')
+            ->options([
+                1 => 'Projektem infrastrukturalnym',
+                2 => 'Projektem nieinfrastrukturalnym',
+                3 => 'Projektem mieszanym',
+            ]);
+
+        return $schema;
     }
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array<string, int>
+     * @return array<string, int|string>
      */
     private static function formalAnswersFromData(array $data): array
     {
-        return [
-            'wasSentOnCorrectForm' => (bool) ($data['was_sent_on_correct_form'] ?? false) ? 1 : 0,
-            'hasSupportAttachment' => (bool) ($data['has_support_attachment'] ?? false) ? 1 : 0,
-        ];
+        $answers = [];
+
+        foreach (self::FORMAL_ANSWER_FIELDS as $fieldName => $definition) {
+            $legacyField = $definition['legacy'];
+            $answers[$legacyField] = (bool) ($data[$fieldName] ?? false) ? 1 : 0;
+
+            $comment = trim((string) ($data[$fieldName.'_comments'] ?? ''));
+            if ($comment !== '') {
+                $answers[$legacyField.'Comments'] = $comment;
+            }
+        }
+
+        if (($data['is_project_category'] ?? null) !== null && $data['is_project_category'] !== '') {
+            $answers['isProjectCategory'] = (int) $data['is_project_category'];
+        }
+
+        return $answers;
     }
 
     private static function correctionFieldOptions(): array

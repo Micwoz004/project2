@@ -7,6 +7,10 @@ use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Settings\Services\ApplicationSettings;
 use App\Domain\Settings\Services\ContentPageResolver;
+use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Domain\Users\Enums\SystemPermission;
+use App\Filament\Resources\ApplicationSettings\ApplicationSettingResource;
+use App\Models\User;
 
 it('accepts a valid budget edition schedule', function (): void {
     app(BudgetEditionScheduleValidator::class)->assertValid(editionAttributes());
@@ -103,4 +107,30 @@ it('resolves legacy content pages with SYMBOL_VOID fallback from settings', func
     expect($resolver->bodyFor($edition, ContentPage::SYMBOL_VOID))->toBe('<p>Proces głosowania jest niedostępny.</p>')
         ->and($resolver->bodyFor($edition, ContentPage::SYMBOL_WELCOME))->toBe('<p>Witamy w głosowaniu.</p>')
         ->and($resolver->bodyFor(null, ContentPage::SYMBOL_WELCOME))->toBeNull();
+});
+
+it('guards application settings resource with settings permissions', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    ApplicationSetting::query()->create([
+        'category' => 'owner',
+        'key' => 'pageProcessAbsence',
+        'value' => '<p>Proces głosowania jest niedostępny.</p>',
+    ]);
+
+    $manager = User::factory()->create(['status' => true]);
+    $manager->givePermissionTo(SystemPermission::AdminAccess->value);
+    $manager->givePermissionTo(SystemPermission::SettingsManage->value);
+    $viewer = User::factory()->create(['status' => true]);
+    $viewer->givePermissionTo(SystemPermission::AdminAccess->value);
+
+    $this->actingAs($manager)
+        ->get(ApplicationSettingResource::getUrl(panel: 'admin'))
+        ->assertOk()
+        ->assertSee('pageProcessAbsence')
+        ->assertSee('owner');
+
+    $this->actingAs($viewer)
+        ->get(ApplicationSettingResource::getUrl(panel: 'admin'))
+        ->assertForbidden();
 });

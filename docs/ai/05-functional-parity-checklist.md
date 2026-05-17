@@ -26,6 +26,7 @@
 - [x] Policy widoczności, edycji i składania projektu.
 - [x] Domenowa walidacja harmonogramu edycji SBO zgodna z `TaskGroup::afterValidate`.
 - [x] Automatyczne utworzenie stron treści edycji według symboli legacy.
+- [x] Filament Resource dla surowych ustawień aplikacji legacy z bramką `settings.manage`.
 - [x] Publiczny katalog projektów filtrowany po edycji, obszarze, kategorii i wyszukiwaniu.
 - [x] Testy katalogu publicznego dla widoczności, filtrów i kolejności.
 - [x] Publiczna mapa projektów używa tych samych filtrów co katalog i rozpoznaje współrzędne z `lat/lng`, `map_data` oraz `map_lng_lat`.

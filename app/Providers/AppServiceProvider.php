@@ -7,6 +7,7 @@ use App\Domain\Dictionaries\Models\DictionaryEntry;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Voting\Models\VoteCard;
@@ -14,6 +15,7 @@ use App\Domain\Voting\Services\Sms\HttpSmsProvider;
 use App\Domain\Voting\Services\Sms\NullSmsProvider;
 use App\Domain\Voting\Services\Sms\SmsProvider;
 use App\Models\User;
+use App\Policies\ApplicationSettingPolicy;
 use App\Policies\BudgetEditionPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\DictionaryEntryPolicy;
@@ -42,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(ApplicationSetting::class, ApplicationSettingPolicy::class);
         Gate::policy(BudgetEdition::class, BudgetEditionPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(DictionaryEntry::class, DictionaryEntryPolicy::class);

@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Communications\Models\MailLog;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
@@ -29,6 +30,7 @@ use App\Domain\Voting\Actions\UpdateVoteCardStatusAction;
 use App\Domain\Voting\Data\VoterIdentityData;
 use App\Domain\Voting\Enums\CitizenConfirmation;
 use App\Domain\Voting\Enums\VoteCardStatus;
+use App\Domain\Voting\Enums\VotingTokenType;
 use App\Domain\Voting\Models\SmsLog;
 use App\Domain\Voting\Models\VoteCard;
 use App\Domain\Voting\Models\Voter;
@@ -260,6 +262,47 @@ it('sends generated sms token through configured provider', function (): void {
         ->and($provider->messages[0]['message'])->toContain($token->token);
 });
 
+it('issues email voting token and activates legacy email link', function (): void {
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+        email: 'jan@example.test',
+    );
+
+    $first = app(VotingTokenService::class)->issueEmailToken($identity, 'jan@example.test');
+    $second = app(VotingTokenService::class)->issueEmailToken($identity, 'jan@example.test');
+
+    expect($first->refresh()->disabled)->toBeTrue()
+        ->and($second->type)->toBe(VotingTokenType::Email)
+        ->and($second->token)->toMatch('/^[a-f0-9]{32}$/')
+        ->and(MailLog::query()->where('action', 'sendTokentByEmail')->count())->toBe(2)
+        ->and(MailLog::query()->where('action', 'sendTokentByEmail')->latest('id')->firstOrFail()->content)
+        ->toContain(route('public.voting.email-token.activate', [
+            'id' => $second->id,
+            'tokenStr' => $second->token,
+        ]));
+
+    $this->get(route('public.voting.email-token.activate', [
+        'id' => $second->id,
+        'tokenStr' => $second->token,
+    ]))
+        ->assertOk()
+        ->assertSee('Token e-mail został aktywowany.');
+});
+
+it('rejects invalid email voting token address', function (): void {
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+    );
+
+    app(VotingTokenService::class)->issueEmailToken($identity, 'not-an-email');
+})->throws(DomainException::class, 'Nieprawidłowy adres e-mail.');
+
 it('disables sms token when provider rejects delivery', function (): void {
     $provider = new class implements SmsProvider
     {
@@ -383,6 +426,44 @@ it('sends vote summary sms after successful sms vote cast', function (): void {
     expect($provider->messages)->toHaveCount(2)
         ->and($provider->messages[1]['phone'])->toBe('500600700')
         ->and($provider->messages[1]['message'])->toContain('L1 nr 7 Park 1 głs');
+});
+
+it('sends vote summary email after successful email token vote cast', function (): void {
+    $edition = BudgetEdition::query()->create(editionAttributes());
+    $area = ProjectArea::query()->create(areaAttributes([
+        'symbol' => 'L1',
+    ]));
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'title' => 'Park kieszonkowy',
+        'status' => ProjectStatus::Picked,
+        'number_drawn' => 4,
+    ]));
+    $identity = new VoterIdentityData(
+        pesel: '44051401458',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        motherLastName: 'Nowak',
+        email: 'jan@example.test',
+    );
+    $token = app(VotingTokenService::class)->issueEmailToken($identity, 'jan@example.test');
+    $activated = app(VotingTokenService::class)->activateEmailToken($token->id, $token->token);
+
+    $voteCard = app(CastVoteService::class)->cast(
+        $edition,
+        $identity,
+        [$project->id],
+        [],
+        [
+            'citizen_confirm' => CitizenConfirmation::Living,
+            'confirm_missing_category' => true,
+            'voting_token' => $activated,
+        ],
+    );
+
+    expect($voteCard->status)->toBe(VoteCardStatus::Accepted)
+        ->and(MailLog::query()->where('action', 'sendVoteSummaryByEmail')->count())->toBe(1)
+        ->and(MailLog::query()->where('action', 'sendVoteSummaryByEmail')->firstOrFail()->content)->toContain('L1 nr 4 Park kieszonkowy - 1 głs')
+        ->and($token->refresh()->disabled)->toBeTrue();
 });
 
 it('keeps accepted vote and logs sms failure when vote summary sms is rejected', function (): void {

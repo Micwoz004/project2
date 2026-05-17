@@ -45,4 +45,9 @@ return [
         'voting_summary_message' => env('SMS_VOTING_SUMMARY_MESSAGE', 'Podsumowanie głosowania SBO: {smsSummaryTable}'),
     ],
 
+    'voting' => [
+        'token_email_subject' => env('VOTING_TOKEN_EMAIL_SUBJECT', 'Budżet Obywatelski w Szczecinie - link aktywacyjny'),
+        'summary_email_subject' => env('VOTING_SUMMARY_EMAIL_SUBJECT', 'Budżet Obywatelski w Szczecinie - Podsumowanie'),
+    ],
+
 ];

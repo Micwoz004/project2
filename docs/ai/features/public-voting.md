@@ -35,8 +35,10 @@ Status: baseline domenowy i publiczny flow Livewire rozbudowane.
 - Jeżeli historyczny `votingtokens.type` jest pusty albo spoza enumu, importer traktuje rekord jako SMS, bo dump 2025 używa tej tabeli dla tokenów SMS.
 - Import fixture `voters` przenosi pełniejsze dane wyborcy z legacy: drugie imię, nazwisko matki, ojca, e-mail, adres, IP, user agent, telefon i datę utworzenia.
 - Publiczny endpoint `/glosowanie/kod-sms` tworzy token SMS przez `VotingTokenService`.
+- `VotingTokenService` obsługuje także legacy token e-mail `VotingController::sendTokentByEmail`: generuje 32-znakowy hash MD5, unieważnia wcześniejsze tokeny e-mail dla tego samego PESEL, zapisuje mail log i udostępnia kompatybilny link `/voting/activateSession/{id}/{tokenStr}`.
 - `VotingTokenService` wysyła wygenerowany kod przez `SmsProvider`. Domyślny `NullSmsProvider` obsługuje środowisko lokalne/testowe, a `HttpSmsProvider` pozwala podpiąć realną bramkę przez `SMS_DRIVER=http`, `SMS_API_URL`, `SMS_API_TOKEN`, `SMS_FROM` i `SMS_VOTING_TOKEN_MESSAGE`.
 - `VoteSummaryNotificationService` po skutecznym głosie przez token SMS wysyła podsumowanie zgodne z legacy `VotingController::sendVoteSummaryBySms`: obszar, numer losowania, skrócony tytuł i punkty. Błąd wysyłki nie cofa głosu; system zapisuje `sms_logs` i administracyjny `MailLog`, jak legacy `sendVoteSummaryErrorEmail`.
+- Dla tokenu e-mail `VoteSummaryNotificationService` wysyła podsumowanie e-mail i zapisuje `MailLog` z akcją `sendVoteSummaryByEmail`.
 - `sbo:sms-config-check {--production} {--json}` waliduje konfigurację SMS: produkcja wymaga `SMS_DRIVER=http`, adresu API, tokenu, nadawcy, dodatniego timeoutu oraz szablonów zawierających `{activationSmsToken}` i `{smsSummaryTable}`.
 - `.env.example` zawiera komplet wymaganych zmiennych SMS jako puste placeholdery; realne wartości operatora muszą być ustawione dopiero na środowisku.
 - Livewire `PublicVotingFlow` pokazuje projekty z listy głosowania tylko dla aktualnie wybranej edycji SBO. To domyka zgodność z domenowym `CastVoteService`, który już odrzuca projekt spoza `budget_edition_id` karty.

@@ -29,6 +29,12 @@ class VoteSummaryNotificationService
             'token_type' => $token->type->value,
         ]);
 
+        if ($token->type === VotingTokenType::Email) {
+            $this->sendEmailSummary($voteCard, $token);
+
+            return;
+        }
+
         if ($token->type !== VotingTokenType::Sms) {
             Log::info('voting.summary.send.skipped_unsupported_token_type', [
                 'vote_card_id' => $voteCard->id,
@@ -139,6 +145,45 @@ class VoteSummaryNotificationService
         Log::info('voting.summary.sms.failure_recorded', [
             'vote_card_id' => $voteCard->id,
             'sms_log_id' => $smsLog->id,
+        ]);
+    }
+
+    private function sendEmailSummary(VoteCard $voteCard, VotingToken $token): void
+    {
+        $email = trim((string) $token->email);
+
+        if ($email === '') {
+            Log::warning('voting.summary.email.rejected_missing_email', [
+                'vote_card_id' => $voteCard->id,
+                'token_id' => $token->id,
+            ]);
+
+            return;
+        }
+
+        $subject = (string) config('services.voting.summary_email_subject');
+        $body = collect($this->summaryRows($voteCard))
+            ->map(fn (array $vote): string => trim($vote['area'].' nr '.$vote['number_drawn'].' '.$vote['title'].' - '.$vote['points'].' głs'))
+            ->implode(PHP_EOL);
+
+        Mail::raw($body, function (Message $message) use ($email, $subject): void {
+            $message
+                ->to($email)
+                ->subject($subject);
+        });
+
+        MailLog::query()->create([
+            'email' => $email,
+            'subject' => $subject,
+            'content' => $body,
+            'controller' => 'voting',
+            'action' => 'sendVoteSummaryByEmail',
+            'sent_at' => now(),
+        ]);
+
+        Log::info('voting.summary.email.send.success', [
+            'vote_card_id' => $voteCard->id,
+            'voter_id' => $voteCard->voter_id,
         ]);
     }
 }

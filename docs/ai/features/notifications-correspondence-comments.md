@@ -45,7 +45,8 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 - `SendProjectCorrespondenceMessageAction` po zapisie korespondencji kolejkuje powiadomienie mailowe do adresata.
 - `SendProjectCoauthorConfirmationAction` obsługuje trigger `cocreator.confirmation`: generuje brakujący hash współautora, zapisuje notyfikację, wysyła mail przez kolejkę i używa kompatybilnego linku `/activation/confirmCocreator`.
 - `SendProjectContactMessageAction` obsługuje trigger `project.contact_message`: waliduje `topic`, `email`, `content` jak legacy `ContactForm`, wymaga adresu e-mail autora projektu i zapisuje wiadomość z legacy prefiksem `Otrzymałeś/aś wiadomość od ...`.
-- `VoteSummaryNotificationService` obsługuje trigger `voting.summary.sms` oraz ścieżkę błędu `voting.summary.sms_failure_email`; wysyłka podsumowania nie wpływa na ważność zapisanego głosu.
+- `VotingTokenService` obsługuje trigger `voting.token.email`: zapisuje token e-mail, wysyła link aktywacyjny i zapisuje `MailLog`.
+- `VoteSummaryNotificationService` obsługuje triggery `voting.summary.email`, `voting.summary.sms` oraz ścieżkę błędu `voting.summary.sms_failure_email`; wysyłka podsumowania nie wpływa na ważność zapisanego głosu.
 - Logi zapisują identyfikatory projektu/użytkownika/wiadomości, ale nie zapisują treści wiadomości ani komentarzy.
 
 ## Mapa punktów wysyłki legacy

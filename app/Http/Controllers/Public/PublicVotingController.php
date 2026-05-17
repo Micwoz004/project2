@@ -12,6 +12,7 @@ use App\Http\Requests\Public\CastPublicVoteRequest;
 use App\Http\Requests\Public\IssueVotingTokenRequest;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -85,6 +86,29 @@ class PublicVotingController extends Controller
         ]);
 
         return redirect()->route('public.voting.welcome')->with('status', 'Głos został zapisany.');
+    }
+
+    public function activateEmailToken(int $id, string $tokenStr, VotingTokenService $votingTokenService): Response
+    {
+        Log::info('public_voting.email_token.activate.start', [
+            'token_id' => $id,
+        ]);
+
+        try {
+            $token = $votingTokenService->activateEmailToken($id, $tokenStr);
+        } catch (DomainException $exception) {
+            Log::warning('public_voting.email_token.activate.rejected', [
+                'token_id' => $id,
+            ]);
+
+            abort(404, $exception->getMessage());
+        }
+
+        Log::info('public_voting.email_token.activate.success', [
+            'token_id' => $token->id,
+        ]);
+
+        return response('Token e-mail został aktywowany.');
     }
 
     /**

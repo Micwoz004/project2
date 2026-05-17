@@ -63,6 +63,7 @@ Status: częściowo zaimplementowane w etapie 4.
 - `SubmitProjectAppealAction` odtwarza reguły z `TaskController::actionAppealAgainstDecision`: odwołanie może złożyć autor odrzuconego projektu, treść jest wymagana, ma limit 5000 znaków i drugi rekord odwołania dla projektu jest blokowany.
 - `DecideProjectAppealAction` odtwarza decyzję wstępną z `ProcessingController::actionMakePreDecisionRegardingAppeal`: odrzucenie zapisuje `firstDecision=1`, a akceptacja zapisuje `firstDecision=2` i przywraca projekt do `FormallyVerified`.
 - `RespondProjectAppealAction` odtwarza regułę `TaskAppealAgainstDecision::beforeSave()`: odpowiedź komisji jest wymagana, a pierwsze zapisanie odpowiedzi ustawia `response_created_at`.
+- `ProjectAppealResource` udostępnia read-only listę odwołań z `taskappealagainstdecision`: projekt, treść odwołania, decyzję wstępną, obecność odpowiedzi i datę odpowiedzi. Operacje biznesowe nadal pozostają w akcjach domenowych i akcjach projektu.
 
 ## Zgodność do sprawdzenia
 

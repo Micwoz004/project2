@@ -135,6 +135,7 @@
 - [x] Złożenie i decyzja wstępna odwołania zachowują legacy `firstDecision`: `1=odrzucone`, `2=przyjęte do ponownej oceny`.
 - [x] Odpowiedź komisji na odwołanie zapisuje `response_created_at` przy pierwszym zapisie odpowiedzi.
 - [x] Panel Filament udostępnia administracyjne dodanie odwołania, decyzję wstępną i odpowiedź komisji przez akcje domenowe.
+- [x] Panel Filament udostępnia read-only listę odwołań od decyzji.
 - [x] Gate dla ról rad/komisji (`cast-board-vote`) oraz zarządzania głosowaniem (`manage-board-voting`).
 - [x] Bazowy publiczny formularz głosowania z wygenerowaniem i aktywacją tokenu SMS.
 - [x] Filament Resource dla administracyjnego podglądu i edycji statusu kart głosowania.

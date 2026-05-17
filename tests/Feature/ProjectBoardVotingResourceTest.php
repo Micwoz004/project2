@@ -9,6 +9,8 @@ use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\OtVoteChoice;
 use App\Domain\Verification\Enums\ProjectAppealFirstDecision;
+use App\Domain\Verification\Models\ProjectAppeal;
+use App\Filament\Resources\ProjectAppeals\ProjectAppealResource;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\User;
 
@@ -154,4 +156,35 @@ it('handles project appeals from filament actions through domain logic', functio
 
     expect($responded->response_to_appeal)->toBe('Odpowiedź komisji.')
         ->and($responded->response_created_at)->not->toBeNull();
+});
+
+it('shows project appeals in read only filament resource for project managers', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $coordinator = User::factory()->create(['status' => true]);
+    $coordinator->assignRole(SystemRole::Coordinator->value);
+    $applicant = User::factory()->create(['status' => true]);
+    $applicant->assignRole(SystemRole::Applicant->value);
+    $project = boardVotingResourceProject(ProjectStatus::TeamRejectedWithRecall);
+
+    ProjectAppeal::query()->create([
+        'project_id' => $project->id,
+        'appeal_message' => 'Treść odwołania do komisji.',
+        'first_decision' => ProjectAppealFirstDecision::Accepted->value,
+        'response_to_appeal' => 'Odpowiedź komisji.',
+        'response_created_at' => now(),
+    ]);
+
+    $this->actingAs($coordinator)
+        ->get(ProjectAppealResource::getUrl(panel: 'admin'))
+        ->assertOk()
+        ->assertSee('Treść odwołania do komisji.')
+        ->assertSee('przyjęte');
+
+    $this->actingAs($applicant)
+        ->get(ProjectAppealResource::getUrl(panel: 'admin'))
+        ->assertForbidden();
+
+    expect(array_keys(ProjectAppealResource::getPages()))->toBe(['index'])
+        ->and(ProjectAppealResource::canCreate())->toBeFalse();
 });

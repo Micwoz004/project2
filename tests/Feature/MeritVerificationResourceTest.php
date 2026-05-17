@@ -9,6 +9,7 @@ use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Actions\AssignVerificationDepartmentAction;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
+use App\Domain\Verification\Enums\VerificationCardStatus;
 use App\Domain\Verification\Models\VerificationVersion;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\User;
@@ -212,4 +213,42 @@ it('submits consultation from filament form without changing project status', fu
             'consultationInformation' => 'Brak kolizji z planami jednostki.',
         ])
         ->and($project->refresh()->status)->toBe(ProjectStatus::DuringMeritVerification);
+});
+
+it('returns sent verification card from filament form through domain action', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $coordinator = User::factory()->create();
+    $coordinator->assignRole(SystemRole::Coordinator->value);
+    $this->actingAs($coordinator);
+
+    $project = meritResourceProject(ProjectStatus::FormallyVerified);
+    $department = meritResourceDepartment();
+    app(AssignVerificationDepartmentAction::class)->execute($project, $department, VerificationAssignmentType::MeritInitial);
+
+    $verification = ProjectResource::submitInitialMeritVerificationFromAdminForm($project, [
+        'department_id' => $department->id,
+        'result' => true,
+    ]);
+
+    expect(ProjectResource::canReturnVerificationCard($project->refresh()))->toBeTrue();
+
+    $returned = ProjectResource::returnVerificationCardFromAdminForm($project, [
+        'type' => VerificationAssignmentType::MeritInitial->value,
+        'department_id' => $department->id,
+    ]);
+
+    $assignment = $project->verificationAssignments()
+        ->where('department_id', $department->id)
+        ->where('type', VerificationAssignmentType::MeritInitial->value)
+        ->firstOrFail();
+
+    expect($returned->id)->toBe($verification->id)
+        ->and($returned->status)->toBe(VerificationCardStatus::WorkingCopy)
+        ->and($assignment->is_returned)->toBeTrue()
+        ->and($assignment->sent_at)->toBeNull()
+        ->and(VerificationVersion::query()
+            ->where('verification_legacy_id', $verification->id)
+            ->where('type', VerificationAssignmentType::MeritInitial->value)
+            ->count())->toBe(2);
 });

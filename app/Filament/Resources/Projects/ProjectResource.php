@@ -21,6 +21,7 @@ use App\Domain\Verification\Actions\CompleteFormalVerificationAction;
 use App\Domain\Verification\Actions\ForwardFormalVerificationToInitialVerificationAction;
 use App\Domain\Verification\Actions\RequestFormalCorrectionAction;
 use App\Domain\Verification\Actions\RestartBoardVotingAction;
+use App\Domain\Verification\Actions\ReturnVerificationCardAction;
 use App\Domain\Verification\Actions\SubmitConsultationVerificationAction;
 use App\Domain\Verification\Actions\SubmitFinalMeritVerificationAction;
 use App\Domain\Verification\Actions\SubmitInitialMeritVerificationAction;
@@ -28,6 +29,7 @@ use App\Domain\Verification\Enums\AtVoteChoice;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\OtVoteChoice;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
+use App\Domain\Verification\Enums\VerificationCardStatus;
 use App\Domain\Verification\Enums\ZkVoteChoice;
 use App\Domain\Verification\Models\ConsultationVerification;
 use App\Domain\Verification\Models\FinalMeritVerification;
@@ -506,6 +508,7 @@ class ProjectResource extends Resource
                 self::submitInitialMeritVerificationAction(),
                 self::submitFinalMeritVerificationAction(),
                 self::submitConsultationVerificationAction(),
+                self::returnVerificationCardAction(),
                 self::verificationOverviewAction(),
                 self::castBoardVoteAction(BoardType::Zk),
                 self::castBoardVoteAction(BoardType::Ot),
@@ -584,6 +587,19 @@ class ProjectResource extends Resource
                 ProjectStatus::SentForMeritVerification,
                 ProjectStatus::DuringMeritVerification,
             ], true);
+    }
+
+    public static function canReturnVerificationCard(Project $project): bool
+    {
+        return self::canManageMeritVerification()
+            && $project->verificationAssignments()
+                ->whereIn('type', [
+                    VerificationAssignmentType::MeritInitial->value,
+                    VerificationAssignmentType::MeritFinish->value,
+                    VerificationAssignmentType::Consultation->value,
+                ])
+                ->whereNotNull('sent_at')
+                ->exists();
     }
 
     public static function canStartProjectCorrection(Project $project): bool
@@ -720,6 +736,23 @@ class ProjectResource extends Resource
             (bool) ($data['result'] ?? false),
             self::meritAnswersFromData($data, textFields: self::CONSULTATION_TEXT_FIELDS),
             $data['result_comments'] ?? null,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function returnVerificationCardFromAdminForm(
+        Project $project,
+        array $data,
+    ): InitialMeritVerification|FinalMeritVerification|ConsultationVerification {
+        $type = VerificationAssignmentType::from((int) $data['type']);
+        $department = self::departmentFromData($data);
+        $verification = self::returnableVerification($project, $department, $type);
+
+        return app(ReturnVerificationCardAction::class)->execute(
+            $verification,
+            self::authenticatedUser('verification.card.return.rejected_guest'),
         );
     }
 
@@ -1040,6 +1073,24 @@ class ProjectResource extends Resource
             ->action(fn (array $data, Project $record): ConsultationVerification => self::submitConsultationVerificationFromAdminForm($record, $data));
     }
 
+    private static function returnVerificationCardAction(): Action
+    {
+        return Action::make('return_verification_card')
+            ->label('Cofnij kartę')
+            ->schema([
+                Select::make('type')
+                    ->label('Typ karty')
+                    ->options(self::verificationAssignmentTypeOptions())
+                    ->required(),
+                Select::make('department_id')
+                    ->label('Jednostka')
+                    ->options(fn (Project $record): array => self::returnableVerificationDepartmentOptions($record))
+                    ->required(),
+            ])
+            ->visible(fn (Project $record): bool => self::canReturnVerificationCard($record))
+            ->action(fn (array $data, Project $record): InitialMeritVerification|FinalMeritVerification|ConsultationVerification => self::returnVerificationCardFromAdminForm($record, $data));
+    }
+
     private static function verificationOverviewAction(): Action
     {
         return Action::make('verification_overview')
@@ -1280,6 +1331,20 @@ class ProjectResource extends Resource
         ];
     }
 
+    private static function returnableVerificationDepartmentOptions(Project $project): array
+    {
+        return $project->verificationAssignments()
+            ->whereNotNull('sent_at')
+            ->with('department')
+            ->get()
+            ->filter(fn (VerificationAssignment $assignment): bool => $assignment->department instanceof Department)
+            ->mapWithKeys(fn (VerificationAssignment $assignment): array => [
+                $assignment->department->id => $assignment->department->name,
+            ])
+            ->sort()
+            ->all();
+    }
+
     private static function departmentOptions(): array
     {
         return Department::query()
@@ -1418,6 +1483,50 @@ class ProjectResource extends Resource
     private static function departmentFromData(array $data): Department
     {
         return Department::query()->findOrFail((int) $data['department_id']);
+    }
+
+    private static function returnableVerification(
+        Project $project,
+        Department $department,
+        VerificationAssignmentType $type,
+    ): InitialMeritVerification|FinalMeritVerification|ConsultationVerification {
+        $query = match ($type) {
+            VerificationAssignmentType::MeritInitial => InitialMeritVerification::query(),
+            VerificationAssignmentType::MeritFinish => FinalMeritVerification::query(),
+            VerificationAssignmentType::Consultation => ConsultationVerification::query(),
+            default => null,
+        };
+
+        if ($query === null) {
+            Log::warning('verification.card.return.rejected_invalid_type', [
+                'project_id' => $project->id,
+                'department_id' => $department->id,
+                'type' => $type->value,
+            ]);
+
+            throw new DomainException('Nieobsługiwany typ karty weryfikacji.');
+        }
+
+        $verification = $query
+            ->where('project_id', $project->id)
+            ->where('department_id', $department->id)
+            ->where('status', VerificationCardStatus::Sent->value)
+            ->latest()
+            ->first();
+
+        if ($verification instanceof InitialMeritVerification
+            || $verification instanceof FinalMeritVerification
+            || $verification instanceof ConsultationVerification) {
+            return $verification;
+        }
+
+        Log::warning('verification.card.return.rejected_missing_card', [
+            'project_id' => $project->id,
+            'department_id' => $department->id,
+            'type' => $type->value,
+        ]);
+
+        throw new DomainException('Nie znaleziono wysłanej karty weryfikacji do cofnięcia.');
     }
 
     /**

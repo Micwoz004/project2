@@ -9,6 +9,7 @@ use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
 use App\Domain\Verification\Actions\CloseBoardVotingAction;
 use App\Domain\Verification\Actions\DecideProjectAppealAction;
 use App\Domain\Verification\Actions\RecordBoardVoteRejectionAction;
+use App\Domain\Verification\Actions\RespondProjectAppealAction;
 use App\Domain\Verification\Actions\RestartBoardVotingAction;
 use App\Domain\Verification\Actions\StartBoardVotingAction;
 use App\Domain\Verification\Actions\SubmitProjectAppealAction;
@@ -181,6 +182,18 @@ it('decides appeal preliminary review with legacy firstDecision values', functio
         ->and($acceptedProject->refresh()->status)->toBe(ProjectStatus::FormallyVerified)
         ->and($rejectedDecision->first_decision)->toBe(ProjectAppealFirstDecision::Rejected->value)
         ->and($rejectedProject->refresh()->status)->toBe(ProjectStatus::TeamRejectedWithRecall);
+});
+
+it('records appeal response with response date like legacy model', function (): void {
+    $actor = User::factory()->create();
+    $project = boardProject(ProjectStatus::TeamRejectedWithRecall);
+    $project->forceFill(['creator_id' => $actor->id])->save();
+    $appeal = app(SubmitProjectAppealAction::class)->execute($project, $actor, 'Treść odwołania.');
+
+    $responded = app(RespondProjectAppealAction::class)->execute($appeal, $actor, 'Odpowiedź komisji.');
+
+    expect($responded->response_to_appeal)->toBe('Odpowiedź komisji.')
+        ->and($responded->response_created_at)->not->toBeNull();
 });
 
 it('records rejection comments only for OT and AT', function (): void {

@@ -40,6 +40,7 @@ Status: baseline domenowy rozpoczęty.
 - `CategoryComparisonCsvExporter` eksportuje raport porównujący punkty po legacy kategorii głównej projektu i po wielu kategoriach z `category_project`; raport nie zawiera PII.
 - `/wyniki/export.csv` jest dostępne tylko w oknie publikacji wyników.
 - `AdminReportController` udostępnia CSV za `auth` i `reports.export`: karty głosowania z PII, projekty złożone, niewysłane weryfikacje jednostek, korekty projektów, historię projektów, manifest wyników weryfikacji i porównanie kategorii.
+- Filament `/admin/wyniki` udostępnia operatorowi z `results.view` dashboard wyników; skróty do eksportów CSV kart głosowania, kategorii, projektów złożonych, manifestu weryfikacji i historii projektów są widoczne tylko przy `reports.export`.
 
 ## Inwentaryzacja legacy
 

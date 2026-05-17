@@ -18,7 +18,7 @@ Status: baseline domenowy rozbudowany.
 1. [x] Rozszerzyć kalkulator o obszary i kategorie.
 2. [x] Dodać deterministyczną kolejność remisów w rankingu: punkty malejąco, `number_drawn`, `project_id`.
 3. [x] Dodać publikację wyników zależną od etapu edycji.
-4. Zbudować publiczny i administracyjny widok wyników.
+4. [x] Zbudować publiczny i administracyjny widok wyników.
 5. [x] Pokryć testami accepted/rejected/verifying i agregacje.
 6. [x] Dodać jawne wykrywanie remisów wymagających decyzji manualnej.
 7. [x] Dodać porównanie wyników liczonych po kategorii głównej projektu i po wielu kategoriach.
@@ -32,8 +32,10 @@ Status: baseline domenowy rozbudowany.
 - `ResultsPublicationService` pozwala publicznie pokazać wyniki tylko w stanie edycji `ResultAnnouncement`.
 - `ResultTieBreakerService` wykrywa grupy projektów z tą samą liczbą punktów i oznacza je jako wymagające decyzji manualnej; nie wybiera zwycięzcy automatycznie, bo w legacy nie znaleziono takiej reguły.
 - `/wyniki` nie liczy ani nie pokazuje punktów przed oknem publikacji wyników.
+- `ResultsDashboardService` buduje administracyjne podsumowanie wyników dla edycji: statusy kart, ranking projektów, punkty po obszarach i kategoriach, remisy wymagające decyzji oraz różnice między kategorią główną i wieloma kategoriami.
+- Filament page `/admin/wyniki` pokazuje administracyjny dashboard wyników dla operatorów z uprawnieniem `results.view`; linki do raportów CSV pozostają za `reports.export`.
 
 ## Świadome braki na tym etapie
 
 - Nie znaleziono w legacy automatycznej procedury wyboru zwycięzcy przy remisie. Nowy system wykrywa remisy i wymaga decyzji manualnej, zachowując deterministyczną kolejność rankingu/raportu.
-- Brak UI administracyjnego dla raportu porównującego kategorie główne i wielokrotne kategorie; logika domenowa i test parytetu są już gotowe.
+- Brak formularza administracyjnej decyzji remisu; baseline pokazuje grupy remisowe do ręcznej decyzji zgodnie z udokumentowaną niepewnością legacy.

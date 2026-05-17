@@ -101,7 +101,7 @@ Kryteria gotowości:
 
 ## Etap 6: wyniki, raporty i import
 
-Status: częściowy baseline wyników istnieje.
+Status: w toku; baseline wyników, eksportów CSV i administracyjnego dashboardu Filament istnieje.
 
 Zakres:
 - `results-calculation`

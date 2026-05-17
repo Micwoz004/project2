@@ -13,7 +13,7 @@
 
 ## Plan wdrożenia
 
-Status: częściowo zaimplementowane; domena, Filament i publiczny panel autora dla wspieranych pól są dostępne.
+Status: zaimplementowane dla pól obsługiwanych przez legacy `taskcorrection`; różnice końcowe wymagają porównania liczności po pełnym imporcie.
 
 1. [x] Dodać serwis `ProjectLifecycleService` dla blokad edycji.
 2. [x] Dodać akcje rozpoczęcia i zakończenia korekty.
@@ -45,7 +45,7 @@ Status: częściowo zaimplementowane; domena, Filament i publiczny panel autora 
 - Po poprawnym zastosowaniu korekty aktywne okno jest zamykane przez `correction_done=true` i wyczyszczenie flagi `need_correction`.
 - `ProjectResource` w Filament udostępnia administracyjne wezwanie do korekty z whitelistą pól oraz zastosowanie korekty przez `ApplyCorrectionAction`. Formularz administracyjny obejmuje pola projektu wspierane przez `ProjectCorrectionField::editableProjectColumns()`.
 - Publiczne trasy `/moje-projekty/{project}/korekta` pozwalają autorowi w aktywnym oknie korekty poprawić tylko pola odblokowane w `project_corrections.allowed_fields`.
-- `UpdatePublicProjectCorrectionRequest` waliduje poprawiane pola na granicy HTTP i opiera decyzję dostępu na `ProjectPolicy::update`.
+- `UpdatePublicProjectCorrectionRequest` waliduje tylko pola odblokowane w aktywnej korekcie. To odtwarza legacy `TaskController`, który przed walidacją usuwał z `Task` każde pole spoza `TaskCorrection::getAttributesToValidate()`.
 - Korekta kategorii synchronizuje także pivot `category_project`, żeby publiczna kategoria główna i wielokategorie nie rozjechały się po poprawce.
 - Korekta kosztu przez pole legacy `cost` podmienia pozycje `project_cost_items`, przelicza `projects.cost_formatted`, aktualizuje tekstowe `projects.cost` i nadal wymaga co najmniej jednej pozycji kosztorysu.
 - Korekty załączników obsługują pola legacy `support_attachment`, `agreement_attachment`, `map_attachment`, `parent_agreement_attachment` i `attachments`; pliki są zapisywane przez `StoreProjectFileAction`, a sama korekta może zostać zamknięta nawet bez zmiany pól tekstowych.
@@ -53,4 +53,4 @@ Status: częściowo zaimplementowane; domena, Filament i publiczny panel autora 
 ## Zgodność do sprawdzenia
 
 - Porównać pełne liczności `taskcorrection` z `project_corrections` po docelowym imporcie z dumpa MySQL.
-- Rozszerzyć publiczny panel autora po pełnym module formularza o mapę i układ pól 1:1 względem widoków Yii.
+- Układ publicznego formularza korekty można dopracować wizualnie po wdrożeniu, ale logika biznesowa whitelisty, załączników, kosztów i wersji jest po stronie domeny.

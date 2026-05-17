@@ -276,6 +276,50 @@ it('lets the project author apply an active correction through the public endpoi
         ->and($project->versions()->count())->toBe(1);
 });
 
+it('ignores invalid fields that are not whitelisted for public correction like legacy', function (): void {
+    $author = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $category = Category::query()->create(['name' => 'Zieleń']);
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'category_id' => $category->id,
+        'status' => ProjectStatus::Submitted,
+        'is_support_list' => true,
+        'submitted_at' => now()->subDay(),
+    ]));
+    $project->costItems()->create([
+        'description' => 'Prace projektowe',
+        'amount' => 1000,
+    ]);
+
+    app(StartCorrectionAction::class)->execute(
+        $project,
+        $author,
+        [ProjectCorrectionField::Title],
+        'Popraw tylko tytuł.',
+        now()->addDay(),
+    );
+
+    $this->actingAs($author)
+        ->put(route('public.projects.corrections.update', $project), [
+            'title' => 'Tytuł po korekcie',
+            'goal' => ['tego pola nie wolno poprawić'],
+            'category_id' => 'niepoprawna-kategoria',
+            'attachment_files' => ['nie jest plikiem'],
+        ])
+        ->assertRedirect(route('public.projects.index'))
+        ->assertSessionDoesntHaveErrors();
+
+    $project->refresh();
+
+    expect($project->title)->toBe('Tytuł po korekcie')
+        ->and($project->goal)->toBe('Cel projektu')
+        ->and($project->category_id)->toBe($category->id)
+        ->and($project->need_correction)->toBeFalse()
+        ->and($project->versions()->count())->toBe(1);
+});
+
 it('lets the project author apply an attachment-only correction through the public endpoint', function (): void {
     Storage::fake('public');
     $author = User::factory()->create();

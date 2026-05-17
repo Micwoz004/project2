@@ -140,6 +140,7 @@
 - [x] Składanie projektu waliduje limit kosztu obszaru i rozwiązuje Zielone SBO do obszaru ogólnomiejskiego bez użycia stałego ID legacy.
 - [x] Korekta kosztorysu projektu podmienia pozycje kosztów i przelicza sumę.
 - [x] Publiczna korekta autora obsługuje odblokowane typy załączników legacy.
+- [x] Publiczna korekta autora ignoruje i nie waliduje pól nieodblokowanych w `taskcorrection`, zgodnie z legacy whitelistą.
 - [x] Granularne permissions dla akcji Filament: weryfikacja formalna, merytoryczna i korekty projektu.
 - [x] Formularz formalnej weryfikacji w Filament zapisuje pełniejszą listę pytań i komentarzy legacy.
 - [x] Formularze wstępnej i końcowej weryfikacji merytorycznej w Filament zapisują pola i komentarze legacy w `answers` JSON.

@@ -32,7 +32,7 @@
         }
     @endphp
 
-    <form class="panel" method="post" action="{{ route('public.projects.corrections.update', $project) }}">
+    <form class="panel" method="post" action="{{ route('public.projects.corrections.update', $project) }}" enctype="multipart/form-data">
         @csrf
         @method('put')
 

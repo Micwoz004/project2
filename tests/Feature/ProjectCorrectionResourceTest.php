@@ -2,13 +2,16 @@
 
 use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Files\Models\ProjectFile;
+use App\Domain\Projects\Enums\ProjectChangeSuggestionDecision;
 use App\Domain\Projects\Enums\ProjectCorrectionField;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectChangeSuggestion;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemPermission;
 use App\Domain\Users\Enums\SystemRole;
+use App\Filament\Resources\ProjectChangeSuggestions\ProjectChangeSuggestionResource;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -88,6 +91,41 @@ it('allows correction actions through granular permission', function (): void {
 
     expect(ProjectResource::canStartProjectCorrection($submitted))->toBeTrue()
         ->and(ProjectResource::canApplyProjectCorrection($activeCorrection))->toBeTrue();
+});
+
+it('lists and decides project change suggestions through filament resource', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $operator = User::factory()->create(['status' => true]);
+    $operator->givePermissionTo(SystemPermission::AdminAccess->value);
+    $operator->givePermissionTo(SystemPermission::ProjectCorrectionsManage->value);
+    $this->actingAs($operator);
+
+    $project = correctionResourceProject($operator, ProjectStatus::DuringChangesSuggestion);
+    $suggestion = ProjectChangeSuggestion::query()->create([
+        'project_id' => $project->id,
+        'created_by_id' => $operator->id,
+        'old_data' => [],
+        'old_costs' => [],
+        'old_files' => [],
+        'new_data' => [],
+        'new_costs' => [],
+        'new_files' => [],
+        'deadline' => now()->addDay(),
+    ]);
+
+    $this->get(ProjectChangeSuggestionResource::getUrl(panel: 'admin'))
+        ->assertOk()
+        ->assertSee($project->title)
+        ->assertSee('oczekuje');
+
+    $decided = ProjectChangeSuggestionResource::declineFromAdmin($suggestion);
+
+    expect($decided->decision)->toBe(ProjectChangeSuggestionDecision::Declined)
+        ->and($decided->decision_by_id)->toBe($operator->id)
+        ->and($project->refresh()->status)->toBe(ProjectStatus::DuringMeritVerification)
+        ->and(array_keys(ProjectChangeSuggestionResource::getPages()))->toBe(['index'])
+        ->and(ProjectChangeSuggestionResource::canCreate())->toBeFalse();
 });
 
 it('starts project correction from filament form through domain action', function (): void {

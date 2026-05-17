@@ -7,6 +7,7 @@ use App\Domain\Dictionaries\Models\DictionaryEntry;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectChangeSuggestion;
 use App\Domain\Results\Models\ResultPublication;
 use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
@@ -25,6 +26,7 @@ use App\Policies\ContentPagePolicy;
 use App\Policies\DepartmentPolicy;
 use App\Policies\DictionaryEntryPolicy;
 use App\Policies\ProjectAreaPolicy;
+use App\Policies\ProjectChangeSuggestionPolicy;
 use App\Policies\ProjectPolicy;
 use App\Policies\ResultPublicationPolicy;
 use App\Policies\VoteCardPolicy;
@@ -58,6 +60,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(DictionaryEntry::class, DictionaryEntryPolicy::class);
         Gate::policy(Project::class, ProjectPolicy::class);
         Gate::policy(ProjectArea::class, ProjectAreaPolicy::class);
+        Gate::policy(ProjectChangeSuggestion::class, ProjectChangeSuggestionPolicy::class);
         Gate::policy(ResultPublication::class, ResultPublicationPolicy::class);
         Gate::policy(VoteCard::class, VoteCardPolicy::class);
 

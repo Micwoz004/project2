@@ -7,13 +7,16 @@ use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
 use App\Domain\Verification\Actions\CloseBoardVotingAction;
+use App\Domain\Verification\Actions\DecideProjectAppealAction;
 use App\Domain\Verification\Actions\RecordBoardVoteRejectionAction;
 use App\Domain\Verification\Actions\RestartBoardVotingAction;
 use App\Domain\Verification\Actions\StartBoardVotingAction;
+use App\Domain\Verification\Actions\SubmitProjectAppealAction;
 use App\Domain\Verification\Enums\AtVoteChoice;
 use App\Domain\Verification\Enums\BoardDecision;
 use App\Domain\Verification\Enums\BoardType;
 use App\Domain\Verification\Enums\OtVoteChoice;
+use App\Domain\Verification\Enums\ProjectAppealFirstDecision;
 use App\Domain\Verification\Enums\ZkVoteChoice;
 use App\Domain\Verification\Services\BoardDecisionResolver;
 use App\Models\User;
@@ -135,6 +138,49 @@ it('resolves AT appeal accepted or finally rejected', function (): void {
         ->and($accepted->refresh()->status)->toBe(ProjectStatus::Picked)
         ->and($rejectedDecision)->toBe(BoardDecision::Rejected)
         ->and($rejected->refresh()->status)->toBe(ProjectStatus::TeamRejectedFinally);
+});
+
+it('submits a project appeal for rejected project author and blocks duplicates', function (): void {
+    $author = User::factory()->create();
+    $project = boardProject(ProjectStatus::TeamRejectedWithRecall);
+    $project->forceFill(['creator_id' => $author->id])->save();
+
+    $appeal = app(SubmitProjectAppealAction::class)->execute($project, $author, 'Proszę o ponowną ocenę.');
+
+    expect($appeal->project_id)->toBe($project->id)
+        ->and($appeal->appeal_message)->toBe('Proszę o ponowną ocenę.')
+        ->and($project->refresh()->status)->toBe(ProjectStatus::TeamRejectedWithRecall);
+
+    app(SubmitProjectAppealAction::class)->execute($project, $author, 'Drugie odwołanie.');
+})->throws(DomainException::class, 'Dla projektu istnieje już odwołanie.');
+
+it('decides appeal preliminary review with legacy firstDecision values', function (): void {
+    $actor = User::factory()->create();
+    $acceptedProject = boardProject(ProjectStatus::TeamRejectedWithRecall);
+    $rejectedProject = boardProject(ProjectStatus::TeamRejectedWithRecall);
+    $acceptedProject->forceFill(['creator_id' => $actor->id])->save();
+    $rejectedProject->forceFill(['creator_id' => $actor->id])->save();
+
+    $acceptedAppeal = app(SubmitProjectAppealAction::class)->execute($acceptedProject, $actor, 'Odwołanie przyjęte.');
+    $rejectedAppeal = app(SubmitProjectAppealAction::class)->execute($rejectedProject, $actor, 'Odwołanie odrzucone.');
+
+    $acceptedDecision = app(DecideProjectAppealAction::class)->execute(
+        $acceptedAppeal,
+        $actor,
+        ProjectAppealFirstDecision::Accepted,
+    );
+    $rejectedDecision = app(DecideProjectAppealAction::class)->execute(
+        $rejectedAppeal,
+        $actor,
+        ProjectAppealFirstDecision::Rejected,
+    );
+
+    expect(ProjectAppealFirstDecision::Rejected->value)->toBe(1)
+        ->and(ProjectAppealFirstDecision::Accepted->value)->toBe(2)
+        ->and($acceptedDecision->first_decision)->toBe(ProjectAppealFirstDecision::Accepted->value)
+        ->and($acceptedProject->refresh()->status)->toBe(ProjectStatus::FormallyVerified)
+        ->and($rejectedDecision->first_decision)->toBe(ProjectAppealFirstDecision::Rejected->value)
+        ->and($rejectedProject->refresh()->status)->toBe(ProjectStatus::TeamRejectedWithRecall);
 });
 
 it('records rejection comments only for OT and AT', function (): void {

@@ -13,6 +13,7 @@ use App\Domain\Verification\Models\ConsultationVerification;
 use App\Domain\Verification\Models\FinalMeritVerification;
 use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
+use App\Domain\Verification\Models\ProjectAppeal;
 use App\Domain\Verification\Models\ProjectBoardVote;
 use App\Domain\Verification\Models\VerificationAssignment;
 use App\Models\User;
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Project extends Model
 {
@@ -158,6 +160,11 @@ class Project extends Model
     public function boardVoteRejections(): HasMany
     {
         return $this->hasMany(BoardVoteRejection::class);
+    }
+
+    public function appeal(): HasOne
+    {
+        return $this->hasOne(ProjectAppeal::class);
     }
 
     public function comments(): HasMany

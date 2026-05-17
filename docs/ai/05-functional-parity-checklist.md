@@ -122,6 +122,7 @@
 - [x] Administracyjny podgląd historii kart weryfikacji, wersji i agregacji przydziałów departamentów.
 - [x] Głos przewodniczącego ZK rozstrzyga graniczny wynik 4:4 zgodnie z `Task::zkAccepted()`.
 - [x] Zamknięcie i restart głosowań OT/AT z efektami legacy.
+- [x] Złożenie i decyzja wstępna odwołania zachowują legacy `firstDecision`: `1=odrzucone`, `2=przyjęte do ponownej oceny`.
 - [x] Gate dla ról rad/komisji (`cast-board-vote`) oraz zarządzania głosowaniem (`manage-board-voting`).
 - [x] Bazowy publiczny formularz głosowania z wygenerowaniem i aktywacją tokenu SMS.
 - [x] Filament Resource dla administracyjnego podglądu i edycji statusu kart głosowania.

@@ -39,7 +39,7 @@ Status: częściowo zaimplementowane w etapie 4.
 - `ProcessingController::actionProcessATVote()` przy remisie nie rozstrzyga; przewaga odrzucenia ustawia `TeamRejectedFinally`, przewaga akceptacji `Picked`.
 - `AtOtVotesRejection` wymaga `taskId`, `votesType` i `comment`; dotyczy typów `AT` i `OT`.
 - `TaskAppealAgainstDecision` wymaga `appealMessage` w scenariuszu składania odwołania, `responseToAppeal` w scenariuszu odpowiedzi, pilnuje limitu 5000 znaków treści i maksymalnie 5 załączników typu prywatnego.
-- `firstDecision=1` oznacza wstępną akceptację rozpatrzenia odwołania, a `firstDecision=2` odrzucenie na etapie wstępnym.
+- `ProcessingController::actionMakePreDecisionRegardingAppeal()` pokazuje, że `firstDecision=1` oznacza odrzucenie odwołania na etapie wstępnym, a `firstDecision=2` oznacza przyjęcie odwołania i skierowanie projektu ponownie do oceny merytorycznej przez status `FormallyVerified`.
 
 ## Zaimplementowany odpowiednik Laravel
 
@@ -59,6 +59,8 @@ Status: częściowo zaimplementowane w etapie 4.
 - Dla ZK resolver zachowuje szczególną regułę `Task::zkAccepted()`: przy wyniku 4:4 głos użytkownika z rolą `president ZK` rozstrzyga akceptację albo odrzucenie.
 - `LegacyFixtureImportService` konsoliduje historyczne głosy rad/komisji w `project_board_votes` i uzasadnienia odrzuceń w `board_vote_rejections`.
 - `ProjectAppeal` odwzorowuje `taskappealagainstdecision`: treść odwołania, odpowiedź komisji, daty oraz pierwszą decyzję.
+- `SubmitProjectAppealAction` odtwarza reguły z `TaskController::actionAppealAgainstDecision`: odwołanie może złożyć autor odrzuconego projektu, treść jest wymagana, ma limit 5000 znaków i drugi rekord odwołania dla projektu jest blokowany.
+- `DecideProjectAppealAction` odtwarza decyzję wstępną z `ProcessingController::actionMakePreDecisionRegardingAppeal`: odrzucenie zapisuje `firstDecision=1`, a akceptacja zapisuje `firstDecision=2` i przywraca projekt do `FormallyVerified`.
 
 ## Zgodność do sprawdzenia
 

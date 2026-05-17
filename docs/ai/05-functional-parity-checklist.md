@@ -108,6 +108,7 @@
 - [x] Import fixture historycznych logów administracyjnych z tabeli `logs`.
 - [x] Komenda Artisan `sbo:legacy-import` do importu znormalizowanego JSON fixture.
 - [x] Komenda Artisan `sbo:legacy-import-mysql` do importu ze staging MySQL przez istniejące mapowania domenowe, użytkowników i RBAC.
+- [x] Komenda Artisan `sbo:legacy-import-counts` do porównania liczności importu staging MySQL z tabelami docelowymi.
 - [x] Fizyczny zapis załączników projektu do publicznego/prywatnego storage z walidacją legacy przed zapisem.
 - [x] Publiczna widoczność załączników dopiero po oznaczeniu projektu jako zanonimizowanego i tylko dla plików nieprywatnych.
 - [x] Publiczny formularz zgłoszenia zapisuje realny prywatny upload listy poparcia.

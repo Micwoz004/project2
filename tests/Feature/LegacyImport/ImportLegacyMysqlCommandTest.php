@@ -2,6 +2,7 @@
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\LegacyImport\Models\LegacyImportBatch;
+use App\Domain\LegacyImport\Services\LegacyImportCountComparator;
 use App\Domain\Projects\Models\ProjectArea;
 use App\Models\User;
 use Illuminate\Database\ConnectionInterface;
@@ -74,6 +75,49 @@ it('imports legacy data directly from a configured mysql-style connection', func
         ->and($batch->source_path)->toBe('legacy-sqlite-test')
         ->and($batch->stats['taskgroups'])->toBe(1)
         ->and($batch->stats['tasktypes'])->toBe(1);
+
+    $comparison = app(LegacyImportCountComparator::class)->compare($connection);
+    $taskgroups = collect($comparison['rows'])->firstWhere('legacy_table', 'taskgroups');
+    $tasktypes = collect($comparison['rows'])->firstWhere('legacy_table', 'tasktypes');
+
+    expect($taskgroups['status'])->toBe('matched')
+        ->and($taskgroups['source_count'])->toBe(1)
+        ->and($taskgroups['target_count'])->toBe(1)
+        ->and($tasktypes['status'])->toBe('matched')
+        ->and($tasktypes['source_count'])->toBe(1)
+        ->and($tasktypes['target_count'])->toBe(1);
+
+    $this->artisan('sbo:legacy-import-counts', [
+        '--connection' => $connection,
+        '--json' => true,
+    ])->assertSuccessful();
+});
+
+it('fails the legacy count comparison when comparable target counts differ', function (): void {
+    $connection = 'legacy_testing_mismatch';
+    configureLegacySqliteConnection($connection);
+    createLegacyMysqlFixtureSchema($connection);
+
+    legacySchema($connection)->table('taskgroups')->insert([
+        'id' => 10,
+        'proposeStart' => '2025-01-01 00:00:00',
+        'proposeEnd' => '2025-02-01 00:00:00',
+        'preVotingVerificationEnd' => '2025-03-01 00:00:00',
+        'votingStart' => '2025-04-01 00:00:00',
+        'votingEnd' => '2025-04-15 23:59:59',
+        'postVotingVerificationEnd' => '2025-05-01 00:00:00',
+        'resultAnnouncementEnd' => '2025-06-01 00:00:00',
+        'currentDigitalCardNo' => 0,
+        'currentPaperCardNo' => 0,
+    ]);
+
+    budgetEdition(['legacy_id' => 10]);
+    budgetEdition(['legacy_id' => 11]);
+
+    $this->artisan('sbo:legacy-import-counts', [
+        '--connection' => $connection,
+        '--fail-on-mismatch' => true,
+    ])->assertFailed();
 });
 
 function configureLegacySqliteConnection(string $connection): void

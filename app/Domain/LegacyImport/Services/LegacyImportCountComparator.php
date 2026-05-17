@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Schema;
 class LegacyImportCountComparator
 {
     /**
-     * @var array<string, array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>}>
+     * @var array<string, array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>, source_valid_project?: bool, source_valid_user?: bool, source_user_column?: string}>
      */
     private const DIRECT_MAPPINGS = [
         'departments' => ['target_table' => 'departments'],
@@ -36,7 +36,7 @@ class LegacyImportCountComparator
         'cocreators' => ['target_table' => 'project_coauthors'],
         'taskverification' => ['target_table' => 'formal_verifications'],
         'taskinitialmeritverification' => ['target_table' => 'initial_merit_verifications'],
-        'taskfinishmeritverification' => ['target_table' => 'final_merit_verifications'],
+        'taskfinishmeritverification' => ['target_table' => 'final_merit_verifications', 'source_valid_project' => true],
         'taskconsultation' => ['target_table' => 'consultation_verifications'],
         'detailedverification' => ['target_table' => 'detailed_verifications'],
         'locationverification' => ['target_table' => 'location_verifications'],
@@ -74,10 +74,10 @@ class LegacyImportCountComparator
         ],
         'taskdepartmentassignment' => ['target_table' => 'verification_assignments'],
         'verificationpressure' => ['target_table' => 'verification_pressure_logs'],
-        'zkvotes' => ['target_table' => 'project_board_votes', 'where' => ['board_type' => BoardType::Zk->value]],
-        'otvotes' => ['target_table' => 'project_board_votes', 'where' => ['board_type' => BoardType::Ot->value]],
-        'atvotes' => ['target_table' => 'project_board_votes', 'where' => ['board_type' => BoardType::At->value]],
-        'atotvotesrejection' => ['target_table' => 'board_vote_rejections'],
+        'zkvotes' => ['target_table' => 'project_board_votes', 'where' => ['board_type' => BoardType::Zk->value], 'source_valid_user' => true],
+        'otvotes' => ['target_table' => 'project_board_votes', 'where' => ['board_type' => BoardType::Ot->value], 'source_valid_user' => true],
+        'atvotes' => ['target_table' => 'project_board_votes', 'where' => ['board_type' => BoardType::At->value], 'source_valid_user' => true],
+        'atotvotesrejection' => ['target_table' => 'board_vote_rejections', 'source_valid_user' => true, 'source_user_column' => 'createdBy'],
         'taskappealagainstdecision' => ['target_table' => 'project_appeals'],
         'correspondence' => ['target_table' => 'correspondence_messages'],
         'taskcomments' => ['target_table' => 'project_comments'],
@@ -177,18 +177,24 @@ class LegacyImportCountComparator
     }
 
     /**
-     * @param  array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>}  $mapping
+     * @param  array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>, source_valid_project?: bool, source_valid_user?: bool, source_user_column?: string}  $mapping
      * @return array<string, mixed>
      */
     private function compareDirectMapping(string $connection, string $legacyTable, array $mapping): array
     {
-        $sourceCount = $this->sourceCount($connection, $legacyTable);
+        $sourceCount = $this->sourceCount(
+            $connection,
+            $legacyTable,
+            $mapping['source_valid_project'] ?? false,
+            $mapping['source_valid_user'] ?? false,
+            $mapping['source_user_column'] ?? 'userId',
+        );
 
         return $this->compareDirectMappingCounts($legacyTable, $mapping, $sourceCount);
     }
 
     /**
-     * @param  array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>}  $mapping
+     * @param  array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>, source_valid_project?: bool, source_valid_user?: bool, source_user_column?: string}  $mapping
      * @return array<string, mixed>
      */
     private function compareDirectMappingSourceCount(array $sourceCounts, string $legacyTable, array $mapping): array
@@ -201,7 +207,7 @@ class LegacyImportCountComparator
     }
 
     /**
-     * @param  array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>}  $mapping
+     * @param  array{target_table: string, legacy_column?: string|null, where?: array<string, mixed>, source_valid_project?: bool, source_valid_user?: bool, source_user_column?: string}  $mapping
      * @return array<string, mixed>
      */
     private function compareDirectMappingCounts(string $legacyTable, array $mapping, ?int $sourceCount): array
@@ -242,8 +248,13 @@ class LegacyImportCountComparator
         ];
     }
 
-    private function sourceCount(string $connection, string $table): ?int
-    {
+    private function sourceCount(
+        string $connection,
+        string $table,
+        bool $onlyRowsWithProject = false,
+        bool $onlyRowsWithUser = false,
+        string $userColumn = 'userId',
+    ): ?int {
         if (! Schema::connection($connection)->hasTable($table)) {
             Log::warning('legacy_import_counts.source_table_missing', [
                 'connection' => $connection,
@@ -253,7 +264,17 @@ class LegacyImportCountComparator
             return null;
         }
 
-        return DB::connection($connection)->table($table)->count();
+        $query = DB::connection($connection)->table($table);
+
+        if ($onlyRowsWithProject) {
+            $query->join('tasks', "{$table}.taskId", '=', 'tasks.id');
+        }
+
+        if ($onlyRowsWithUser) {
+            $query->join('users', "{$table}.{$userColumn}", '=', 'users.id');
+        }
+
+        return $query->count();
     }
 
     /**

@@ -13,7 +13,7 @@
 
 ## Plan wdrożenia
 
-Status: baseline fixture, import ze staging MySQL i parser liczności surowego dumpa SQL zaimplementowane.
+Status: baseline fixture, import ze staging MySQL, parser liczności surowego dumpa SQL oraz pełny próbny import `sbo2025_prod.sql` zaimplementowane.
 
 1. [x] Przygotować staging MySQL z profilem `legacy-import`.
 2. [x] Dodać komendę Artisan importującą znormalizowany fixture w kolejności zależności.
@@ -23,19 +23,24 @@ Status: baseline fixture, import ze staging MySQL i parser liczności surowego d
 6. [x] Dodać komendę importującą bezpośrednio z połączenia MySQL/staging przez istniejące mapowania domenowe.
 7. [x] Dodać komendę audytu liczności po imporcie staging MySQL względem tabel docelowych.
 8. [x] Dodać parser surowego pliku `.sql` do audytu liczności bez staging MySQL.
+9. [x] Uruchomić pełny import z odtworzonego `sbo2025_prod.sql` i porównać liczności z tabelami docelowymi.
 
 ## Implementacja Laravel
 
 - `LegacyFixtureImportService` importuje podstawowy wycinek danych w transakcji: `taskgroups`, `settings`, `pages`, `statuses`, `activations`, `pesel`, `verification`, `tasktypes`, `categories`, `tasks`, `logs`, `taskscategories`, `taskcosts`, `files`, `filesprivate`, `cocreators`, `taskverification`, `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation`, `detailedverification`, `locationverification`, `verificationversion`, `taskadvancedverification`, `prerecommendations`, `recommendationswjo`, `tasksinitialverification`, `tasksdepartments`, `coordinatorassignment`, `verifierassignment`, `taskdepartmentassignment`, `verificationpressure`, `zkvotes`, `atvotes`, `otvotes`, `atotvotesrejection`, `taskappealagainstdecision`, `correspondence`, `taskcomments`, `comments`, `notification`, `maillogs`, `taskcorrection`, `taskchangessuggestion`, `versions`, `newverification`, `votingtokens`, `voters`, `smslogs`, `votecards`, `votes`.
 - `sbo:legacy-import {path} {--source=}` czyta znormalizowany JSON, waliduje kształt na granicy systemu, uruchamia `LegacyFixtureImportService` i zapisuje batch ze statystykami bez logowania payloadu ani PII.
-- `sbo:legacy-import-mysql {--connection=legacy_mysql} {--source=legacy-mysql} {--guard=web}` czyta tabele legacy z połączenia skonfigurowanego w Laravel, normalizuje różnice nazw kolumn i uruchamia kolejno import użytkowników/departamentów, domeny oraz RBAC.
+- `sbo:legacy-import-mysql {--connection=legacy_mysql} {--source=legacy-mysql} {--guard=web} {--memory-limit=1024M}` czyta tabele legacy z połączenia skonfigurowanego w Laravel, normalizuje różnice nazw kolumn i uruchamia kolejno import użytkowników/departamentów, domeny oraz RBAC.
 - `sbo:legacy-import-counts {--connection=legacy_mysql} {--fail-on-mismatch} {--json}` porównuje liczności bezpośrednio mapowanych tabel legacy ze staging MySQL z docelowymi tabelami PostgreSQL po imporcie; konsolidacje takie jak `files/filesprivate`, `zkvotes/otvotes/atvotes`, rekomendacje i zakresy departamentów są rozdzielane filtrami docelowymi.
 - `sbo:legacy-dump-counts {path} {--compare-target} {--fail-on-mismatch} {--json}` strumieniowo liczy rekordy z `INSERT INTO` w surowym dumpie MySQL bez odtwarzania staging DB i bez logowania wartości rekordów. Tryb `--compare-target` używa tych samych mapowań liczności co `sbo:legacy-import-counts`.
 - `LegacySqlDumpTableCounter` rozpoznaje `CREATE TABLE`, wielowierszowe `INSERT INTO ... VALUES` oraz nawiasy/średniki wewnątrz stringów, żeby liczność nie zależała od pełnego parsowania PII z payloadu.
 - Parser został uruchomiony na `sbo2025_prod.sql`: rozpoznał 61 tabel i 602134 rekordy z `INSERT INTO`. Wynik zawiera wyłącznie liczności tabel, bez wartości rekordów.
+- Pełny próbny import `sbo2025_prod.sql` przez staging MySQL zakończył się sukcesem na izolowanej bazie testowej SQLite. `sbo:legacy-import-counts --json` zwrócił: 53 tabele `matched`, 0 `mismatched`, 0 brakujących źródeł/celów oraz 3 świadomie `skipped` tabele RBAC.
 - `legacy_mysql` jest osobnym połączeniem DB skonfigurowanym przez `LEGACY_DB_*`, żeby staging dumpa nie mieszał się z docelowym PostgreSQL.
-- `LegacyMysqlSourceReader` normalizuje znane różnice dumpa MySQL: `users.firstname/lastname`, `users.houseno/homeno/postcode`, `users.name`, `tasktypes.nameshortcut` oraz analogiczne pola współautorów.
+- `LegacyMysqlSourceReader` normalizuje znane różnice dumpa MySQL: `users.firstname/lastname`, `users.houseno/homeno/postcode`, `users.name`, `tasktypes.nameshortcut`, `files.fileName/filesprivate.fileName` oraz analogiczne pola współautorów.
 - `LegacyUserImportService` importuje `departments` i `users`.
+- `LegacyUserImportService` zachowuje unikalność e-maili Laravel: legacy `*` dostaje techniczny `deleted-{legacy_id}@anonymous.local`, puste/niepoprawne adresy `legacy-user-{legacy_id}@invalid.local`, a duplikaty `legacy-user-{legacy_id}@duplicate.local`.
+- Użytkownicy legacy otrzymują jeden losowy hash importowy na paczkę, bo nie przenosimy haseł Yii do nowego auth; realny dostęp będzie wymagał resetu/aktywacji.
+- `newverification` jest importowane pakietowo przez `upsert`, zachowując `legacy_id` i wielkie litery hashy bez rozwijania PII.
 - Import jest idempotentny po `legacy_id` przez `updateOrCreate`.
 - Ustawienia aplikacji zachowują surową wartość z legacy `settings.value`, także jeśli jest to serializowany format Yii/PHP; typizacja ustawień będzie osobnym etapem po potwierdzeniu wszystkich kluczy z dumpa.
 - Strony procesu głosowania zachowują `pages.symbol` i HTML z `pages.body` per edycja SBO.
@@ -55,7 +60,16 @@ Status: baseline fixture, import ze staging MySQL i parser liczności surowego d
 - Relacje wielu kategorii projektu są przenoszone przez pivot `category_project` z `taskscategories`.
 - `legacy_import_batches` zapisuje `source_path`, statystyki per tabela oraz czas startu i zakończenia.
 - Porównanie liczności celowo oznacza RBAC jako `skipped`, bo `authitemchild` jest spłaszczany do uprawnień Spatie i nie ma liniowego odpowiednika 1:1.
-- Brakujące relacje są logowane jako `WARN` bez PII i kończą import wyjątkiem domenowym.
+- Brakujące relacje są logowane jako `WARN` bez PII. Krytyczne brakujące relacje kończą import wyjątkiem domenowym; historyczne osierocone rekordy potomne bez odtwarzalnego rodzica/użytkownika są pomijane tylko w jawnie opisanych miejscach.
+
+## Edge case'y potwierdzone na `sbo2025_prod.sql`
+
+- `tasks.categoryId` jest `NULL` albo `0` dla 246 projektów; nowy model zapisuje wtedy `projects.category_id = null`, a kategorie wielokrotne są nadal obsługiwane przez pivot `category_project`.
+- `tasks.taskTypeId = 0` występuje dla 2 projektów; nowy model zapisuje wtedy `projects.project_area_id = null`, żeby zachować rekord projektu bez sztucznego obszaru.
+- `taskfinishmeritverification` zawiera 207 wierszy wskazujących na nieistniejące projekty; importer pomija je z `WARN`, a audyt liczności porównuje tylko wiersze z istniejącym `tasks.id`.
+- `otvotes` zawiera 620 głosów użytkowników nieobecnych w `users`, a `atvotes` 27 takich głosów; importer pomija tylko te wiersze, a audyt liczności filtruje źródło po istniejącym użytkowniku.
+- `authassignment` zawiera 476 przypisań dla użytkowników nieobecnych w `users`; RBAC jest konsolidowany do Spatie i te przypisania są pomijane z `WARN`.
+- `atotvotesrejection` używa w legacy pól `votesType` i `createdBy`; nowy model mapuje je odpowiednio do `board_type` oraz `created_by_id`.
 
 ## Świadome braki na tym etapie
 

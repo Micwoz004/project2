@@ -13,7 +13,8 @@ class ImportLegacyMysqlCommand extends Command
     protected $signature = 'sbo:legacy-import-mysql
         {--connection=legacy_mysql : Laravel DB connection pointing at imported legacy MySQL dump}
         {--source=legacy-mysql : Source label stored in legacy_import_batches}
-        {--guard=web : Spatie guard name for imported RBAC}';
+        {--guard=web : Spatie guard name for imported RBAC}
+        {--memory-limit=1024M : Runtime memory limit used by the full dump reader}';
 
     protected $description = 'Import SBO legacy data directly from a MySQL/staging database connection.';
 
@@ -22,11 +23,15 @@ class ImportLegacyMysqlCommand extends Command
         $connection = (string) $this->option('connection');
         $source = (string) $this->option('source');
         $guardName = (string) $this->option('guard');
+        $memoryLimit = (string) $this->option('memory-limit');
+
+        ini_set('memory_limit', $memoryLimit);
 
         Log::info('legacy_mysql_import.command.start', [
             'connection' => $connection,
             'source' => $source,
             'guard' => $guardName,
+            'memory_limit' => $memoryLimit,
         ]);
 
         try {

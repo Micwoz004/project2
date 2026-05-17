@@ -94,6 +94,8 @@ class LegacyRbacImportService
      */
     private function importAuthAssignments(array $rows, string $guardName, array $childrenByParent): int
     {
+        $imported = 0;
+
         foreach ($rows as $row) {
             $user = User::query()->where('legacy_id', (int) Arr::get($row, 'userid'))->first();
 
@@ -102,13 +104,14 @@ class LegacyRbacImportService
                     'legacy_user_id' => Arr::get($row, 'userid'),
                 ]);
 
-                throw new DomainException('Brak użytkownika legacy dla przypisania RBAC.');
+                continue;
             }
 
             $itemName = (string) Arr::get($row, 'itemname');
 
             if ($this->roleExists($itemName, $guardName)) {
                 $user->assignRole($itemName);
+                $imported++;
 
                 continue;
             }
@@ -119,9 +122,11 @@ class LegacyRbacImportService
                 $itemName,
                 ...$this->permissionsForItem($itemName, $childrenByParent, $guardName),
             ])));
+
+            $imported++;
         }
 
-        return count($rows);
+        return $imported;
     }
 
     /**

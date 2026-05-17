@@ -96,10 +96,10 @@ class LegacyFixtureImportService
                 'files' => $this->importFiles($payload['files'] ?? [], false),
                 'filesprivate' => $this->importFiles($payload['filesprivate'] ?? [], true),
                 'cocreators' => $this->importCoauthors($payload['cocreators'] ?? []),
-                'taskverification' => $this->importVerificationRows($payload['taskverification'] ?? [], FormalVerification::class),
-                'taskinitialmeritverification' => $this->importVerificationRows($payload['taskinitialmeritverification'] ?? [], InitialMeritVerification::class),
-                'taskfinishmeritverification' => $this->importVerificationRows($payload['taskfinishmeritverification'] ?? [], FinalMeritVerification::class),
-                'taskconsultation' => $this->importVerificationRows($payload['taskconsultation'] ?? [], ConsultationVerification::class),
+                'taskverification' => $this->importVerificationRows($payload['taskverification'] ?? [], FormalVerification::class, 'taskverification'),
+                'taskinitialmeritverification' => $this->importVerificationRows($payload['taskinitialmeritverification'] ?? [], InitialMeritVerification::class, 'taskinitialmeritverification'),
+                'taskfinishmeritverification' => $this->importVerificationRows($payload['taskfinishmeritverification'] ?? [], FinalMeritVerification::class, 'taskfinishmeritverification'),
+                'taskconsultation' => $this->importVerificationRows($payload['taskconsultation'] ?? [], ConsultationVerification::class, 'taskconsultation'),
                 'detailedverification' => $this->importDetailedVerifications($payload['detailedverification'] ?? []),
                 'locationverification' => $this->importLocationVerifications($payload['locationverification'] ?? []),
                 'verificationversion' => $this->importVerificationVersions($payload['verificationversion'] ?? []),
@@ -370,15 +370,13 @@ class LegacyFixtureImportService
     {
         foreach ($rows as $row) {
             $budgetEdition = $this->budgetEdition((int) Arr::get($row, 'taskGroupId'));
-            $area = $this->projectArea((int) Arr::get($row, 'taskTypeId'));
-            $category = $this->category((int) Arr::get($row, 'categoryId'));
 
             Project::query()->updateOrCreate([
                 'legacy_id' => $this->legacyId($row),
             ], [
                 'budget_edition_id' => $budgetEdition->id,
-                'project_area_id' => $area->id,
-                'category_id' => $category->id,
+                'project_area_id' => $this->optionalProjectAreaId(Arr::get($row, 'taskTypeId')),
+                'category_id' => $this->optionalCategoryId(Arr::get($row, 'categoryId')),
                 'number' => Arr::get($row, 'number'),
                 'number_drawn' => Arr::get($row, 'numberDrawn'),
                 'title' => Arr::get($row, 'title'),
@@ -445,9 +443,18 @@ class LegacyFixtureImportService
     {
         foreach ($rows as $row) {
             $project = $this->project((int) Arr::get($row, 'taskId'));
-            $category = $this->category((int) Arr::get($row, 'categoryId'));
+            $categoryId = $this->optionalCategoryId(Arr::get($row, 'categoryId'));
 
-            $project->categories()->syncWithoutDetaching([$category->id]);
+            if ($categoryId === null) {
+                Log::info('legacy_import.project_category.skipped_empty_category', [
+                    'project_legacy_id' => Arr::get($row, 'taskId'),
+                    'category_legacy_id' => Arr::get($row, 'categoryId'),
+                ]);
+
+                continue;
+            }
+
+            $project->categories()->syncWithoutDetaching([$categoryId]);
         }
 
         return count($rows);
@@ -465,8 +472,8 @@ class LegacyFixtureImportService
                 'legacy_id' => $this->legacyId($row),
             ], [
                 'project_id' => $project->id,
-                'stored_name' => Arr::get($row, 'filename', Arr::get($row, 'storedName')),
-                'original_name' => Arr::get($row, 'originalName', Arr::get($row, 'filename')),
+                'stored_name' => Arr::get($row, 'filename', Arr::get($row, 'fileName', Arr::get($row, 'storedName'))),
+                'original_name' => Arr::get($row, 'originalName', Arr::get($row, 'filename', Arr::get($row, 'fileName'))),
                 'description' => Arr::get($row, 'description'),
                 'type' => ProjectFileType::tryFrom((int) Arr::get($row, 'type', ProjectFileType::Other->value)) ?? ProjectFileType::Other,
                 'is_private' => $private,
@@ -519,10 +526,22 @@ class LegacyFixtureImportService
      * @param  list<array<string, mixed>>  $rows
      * @param  class-string<TModel>  $model
      */
-    private function importVerificationRows(array $rows, string $model): int
+    private function importVerificationRows(array $rows, string $model, string $legacyTable): int
     {
+        $imported = 0;
+
         foreach ($rows as $row) {
-            $project = $this->project((int) Arr::get($row, 'taskId'));
+            $project = $this->optionalProject(Arr::get($row, 'taskId'));
+
+            if ($project === null) {
+                Log::warning('legacy_import.verification.skipped_missing_project', [
+                    'table' => $legacyTable,
+                    'row_legacy_id' => $this->legacyId($row),
+                    'project_legacy_id' => Arr::get($row, 'taskId'),
+                ]);
+
+                continue;
+            }
 
             $model::query()->updateOrCreate([
                 'legacy_id' => $this->legacyId($row),
@@ -539,9 +558,11 @@ class LegacyFixtureImportService
                 'raw_legacy_payload' => $row,
                 'sent_at' => Arr::get($row, 'sentAt'),
             ]);
+
+            $imported++;
         }
 
-        return count($rows);
+        return $imported;
     }
 
     /**
@@ -836,9 +857,21 @@ class LegacyFixtureImportService
      */
     private function importBoardVotes(array $rows, BoardType $boardType): int
     {
+        $imported = 0;
+
         foreach ($rows as $row) {
             $project = $this->project((int) Arr::get($row, 'taskId'));
-            $user = $this->user((int) Arr::get($row, 'userId'));
+            $user = $this->optionalUser(Arr::get($row, 'userId'));
+
+            if ($user === null) {
+                Log::warning('legacy_import.board_vote.skipped_missing_user', [
+                    'board_type' => $boardType->value,
+                    'row_legacy_id' => $this->legacyId($row),
+                    'user_legacy_id' => Arr::get($row, 'userId'),
+                ]);
+
+                continue;
+            }
 
             ProjectBoardVote::query()->updateOrCreate([
                 'legacy_id' => $this->legacyId($row),
@@ -849,9 +882,11 @@ class LegacyFixtureImportService
                 'choice' => (int) Arr::get($row, 'choice', Arr::get($row, 'vote')),
                 'comment' => Arr::get($row, 'comment'),
             ]);
+
+            $imported++;
         }
 
-        return count($rows);
+        return $imported;
     }
 
     /**
@@ -859,21 +894,34 @@ class LegacyFixtureImportService
      */
     private function importBoardVoteRejections(array $rows): int
     {
+        $imported = 0;
+
         foreach ($rows as $row) {
             $project = $this->project((int) Arr::get($row, 'taskId'));
-            $user = $this->user((int) Arr::get($row, 'userId'));
+            $user = $this->optionalUser(Arr::get($row, 'createdBy'));
+
+            if ($user === null) {
+                Log::warning('legacy_import.board_vote_rejection.skipped_missing_user', [
+                    'row_legacy_id' => $this->legacyId($row),
+                    'user_legacy_id' => Arr::get($row, 'createdBy'),
+                ]);
+
+                continue;
+            }
 
             BoardVoteRejection::query()->updateOrCreate([
                 'legacy_id' => $this->legacyId($row),
             ], [
                 'project_id' => $project->id,
-                'board_type' => BoardType::from((string) Arr::get($row, 'boardType', BoardType::At->value)),
+                'board_type' => BoardType::from((string) Arr::get($row, 'votesType', BoardType::At->value)),
                 'comment' => Arr::get($row, 'comment'),
                 'created_by_id' => $user->id,
             ]);
+
+            $imported++;
         }
 
-        return count($rows);
+        return $imported;
     }
 
     /**
@@ -1127,12 +1175,21 @@ class LegacyFixtureImportService
      */
     private function importVoterRegistryHashes(array $rows): int
     {
-        foreach ($rows as $row) {
-            VoterRegistryHash::query()->updateOrCreate([
+        $now = now();
+
+        foreach (array_chunk($rows, 1000) as $chunk) {
+            $records = array_map(fn (array $row): array => [
                 'legacy_id' => $this->legacyId($row),
-            ], [
                 'hash' => mb_strtoupper((string) Arr::get($row, 'hash')),
-            ]);
+                'created_at' => $now,
+                'updated_at' => $now,
+            ], $chunk);
+
+            VoterRegistryHash::query()->upsert(
+                $records,
+                ['legacy_id'],
+                ['hash', 'updated_at'],
+            );
         }
 
         return count($rows);
@@ -1323,14 +1380,43 @@ class LegacyFixtureImportService
         return $this->findLegacy(ProjectArea::class, $legacyId, 'tasktypes');
     }
 
+    private function optionalProjectAreaId(mixed $legacyId): ?int
+    {
+        if ($legacyId === null || $legacyId === '' || (int) $legacyId === 0) {
+            return null;
+        }
+
+        return $this->projectArea((int) $legacyId)->id;
+    }
+
     private function category(int $legacyId): Category
     {
         return $this->findLegacy(Category::class, $legacyId, 'categories');
     }
 
+    private function optionalCategoryId(mixed $legacyId): ?int
+    {
+        if ($legacyId === null || $legacyId === '' || (int) $legacyId === 0) {
+            return null;
+        }
+
+        return $this->category((int) $legacyId)->id;
+    }
+
     private function project(int $legacyId): Project
     {
         return $this->findLegacy(Project::class, $legacyId, 'tasks');
+    }
+
+    private function optionalProject(mixed $legacyId): ?Project
+    {
+        if ($legacyId === null || $legacyId === '' || (int) $legacyId === 0) {
+            return null;
+        }
+
+        return Project::query()
+            ->where('legacy_id', (int) $legacyId)
+            ->first();
     }
 
     private function voter(int $legacyId): Voter
@@ -1351,6 +1437,17 @@ class LegacyFixtureImportService
     private function user(int $legacyId): User
     {
         return $this->findLegacy(User::class, $legacyId, 'users');
+    }
+
+    private function optionalUser(mixed $legacyId): ?User
+    {
+        if ($legacyId === null || $legacyId === '' || (int) $legacyId === 0) {
+            return null;
+        }
+
+        return User::query()
+            ->where('legacy_id', (int) $legacyId)
+            ->first();
     }
 
     private function optionalDepartmentId(mixed $legacyId): ?int

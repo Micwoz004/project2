@@ -57,16 +57,19 @@ class LegacyUserImportService
      */
     private function importUsers(array $rows): int
     {
+        $passwordHash = Hash::make(Str::random(40));
+
         foreach ($rows as $row) {
+            $legacyId = (int) Arr::get($row, 'id');
             $departmentId = $this->departmentId(Arr::get($row, 'departmentId'));
-            $email = Arr::get($row, 'email') ?: 'legacy-user-'.Arr::get($row, 'id').'@invalid.local';
+            $email = $this->emailFor($row);
 
             User::query()->updateOrCreate([
-                'legacy_id' => (int) Arr::get($row, 'id'),
+                'legacy_id' => $legacyId,
             ], [
                 'name' => Arr::get($row, 'username', $email),
                 'email' => $email,
-                'password' => Hash::make(Str::random(40)),
+                'password' => $passwordHash,
                 'status' => (bool) Arr::get($row, 'status', true),
                 'pesel' => Arr::get($row, 'pesel'),
                 'first_name' => Arr::get($row, 'firstName'),
@@ -83,6 +86,37 @@ class LegacyUserImportService
         }
 
         return count($rows);
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function emailFor(array $row): string
+    {
+        $legacyId = (int) Arr::get($row, 'id');
+        $email = trim((string) Arr::get($row, 'email', ''));
+
+        if ($email === '*') {
+            return 'deleted-'.$legacyId.'@anonymous.local';
+        }
+
+        if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            return 'legacy-user-'.$legacyId.'@invalid.local';
+        }
+
+        if ($this->emailBelongsToAnotherLegacyUser($email, $legacyId)) {
+            return 'legacy-user-'.$legacyId.'@duplicate.local';
+        }
+
+        return $email;
+    }
+
+    private function emailBelongsToAnotherLegacyUser(string $email, int $legacyId): bool
+    {
+        return User::query()
+            ->where('email', $email)
+            ->where('legacy_id', '!=', $legacyId)
+            ->exists();
     }
 
     private function departmentId(mixed $legacyDepartmentId): ?int

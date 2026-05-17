@@ -62,8 +62,8 @@ it('flattens nested legacy rbac role and permission children', function (): void
         ->and($permissionUser->can('leaf operation'))->toBeTrue();
 });
 
-it('rejects legacy rbac assignments for missing users', function (): void {
-    app(LegacyRbacImportService::class)->import([
+it('skips legacy rbac assignments for missing users', function (): void {
+    $stats = app(LegacyRbacImportService::class)->import([
         'authitem' => [
             ['name' => 'custom coordinator', 'type' => 2],
         ],
@@ -71,4 +71,6 @@ it('rejects legacy rbac assignments for missing users', function (): void {
             ['itemname' => 'custom coordinator', 'userid' => 999],
         ],
     ]);
-})->throws(DomainException::class, 'Brak użytkownika legacy dla przypisania RBAC.');
+
+    expect($stats['authassignment'])->toBe(0);
+});

@@ -53,3 +53,39 @@ it('keeps legacy user import idempotent and creates placeholder email when missi
         ->and($user->email)->toBe('legacy-user-30@invalid.local')
         ->and($user->status)->toBeFalse();
 });
+
+it('creates unique technical emails for anonymized and duplicate legacy users', function (): void {
+    app(LegacyUserImportService::class)->import([
+        'users' => [
+            [
+                'id' => 40,
+                'username' => 'deleted-old-a',
+                'email' => '*',
+                'status' => false,
+            ],
+            [
+                'id' => 41,
+                'username' => 'deleted-old-b',
+                'email' => '*',
+                'status' => false,
+            ],
+            [
+                'id' => 42,
+                'username' => 'legacy.duplicate.a',
+                'email' => 'duplicate@example.test',
+                'status' => true,
+            ],
+            [
+                'id' => 43,
+                'username' => 'legacy.duplicate.b',
+                'email' => 'duplicate@example.test',
+                'status' => true,
+            ],
+        ],
+    ]);
+
+    expect(User::query()->where('legacy_id', 40)->firstOrFail()->email)->toBe('deleted-40@anonymous.local')
+        ->and(User::query()->where('legacy_id', 41)->firstOrFail()->email)->toBe('deleted-41@anonymous.local')
+        ->and(User::query()->where('legacy_id', 42)->firstOrFail()->email)->toBe('duplicate@example.test')
+        ->and(User::query()->where('legacy_id', 43)->firstOrFail()->email)->toBe('legacy-user-43@duplicate.local');
+});

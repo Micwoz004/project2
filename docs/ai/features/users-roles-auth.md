@@ -28,6 +28,7 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 - Seeder uruchamia synchronizację ról/uprawnień i nadaje lokalnemu użytkownikowi testowemu rolę `admin`.
 - `SyncSystemRolesAndPermissionsAction` tworzy role legacy: `admin`, `analyst ODS`, `applicant`, `checkVoter`, `consultant`, `coordinator`, role ZK/ZOD/W JO oraz `bdo`.
 - `LegacyUserImportService` importuje `departments` i `users` po `legacy_id`, zachowuje status aktywności i przypisuje departament przez `departments.legacy_id`; ten sam serwis jest używany przez import fixture i `sbo:legacy-import-mysql`.
+- Import użytkowników normalizuje legacy `email='*'` do `deleted-{legacy_id}@anonymous.local`, braki lub niepoprawne adresy do `legacy-user-{legacy_id}@invalid.local`, a duplikaty do `legacy-user-{legacy_id}@duplicate.local`, żeby zachować dane historyczne i spełnić unikalność Laravel auth.
 - `LegacyRbacImportService` importuje `authitem`, `authitemchild` i `authassignment` do Spatie Permission, przypisując użytkowników przez `users.legacy_id`; ten sam graf RBAC działa dla fixture i bezpośredniego staging MySQL.
 - `UserActivationToken` odwzorowuje legacy `activations` z typami: `1` aktywacja e-mail, `2` aktywacja SMS, `3` reset hasła.
 - Legacy linki aktywacyjne i resetu hasła są ważne przez `system.activationLinkLifetime`; docelowa akcja auth UI musi zachować tę regułę.
@@ -41,7 +42,7 @@ Status: częściowo zaimplementowane w etapie 2, rozszerzone o fixture import RB
 ## Świadome różnice względem legacy
 
 - Nowy kod używa stabilnych permission keys zamiast wyłącznie operacji tekstowych z Yii RBAC. Operacje legacy są nadal tworzone w Spatie, aby import danych mógł zachować oryginalne nazwy.
-- Import użytkowników z fixture tworzy techniczny placeholder e-mail dla historycznych kont bez adresu, ponieważ Laravel wymaga unikalnego e-maila.
+- Import użytkowników z fixture/staging tworzy techniczne placeholdery e-mail dla historycznych kont bez adresu, z `*` albo z duplikatem, ponieważ Laravel wymaga unikalnego e-maila.
 - Anonimizacja używa unikalnego adresu `deleted-{id}@anonymous.local` zamiast legacy `*`, ponieważ kolumna `users.email` w Laravel ma constraint unikalności i jest używana przez auth.
 - Pełny import operacyjny wymaga odtworzenia dumpa do staging MySQL i uruchomienia `sbo:legacy-import-mysql`; parser surowego pliku `.sql` pozostaje opcjonalnym krokiem operacyjnym.
 - Panel nie odtwarza ekranów Yii 1:1; zachowuje operacje biznesowe: aktywność konta, przypisanie departamentu oraz role/uprawnienia.

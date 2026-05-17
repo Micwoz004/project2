@@ -161,6 +161,9 @@ class LegacyMysqlSourceReader
                 'homeno' => 'flatNo',
                 'postcode' => 'postCode',
             ],
+            'files', 'filesprivate' => [
+                'fileName' => 'filename',
+            ],
             default => [],
         };
     }

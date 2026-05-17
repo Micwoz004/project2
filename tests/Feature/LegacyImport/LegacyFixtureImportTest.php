@@ -388,8 +388,8 @@ it('imports a legacy fixture with ids statuses relations and result totals', fun
         'atotvotesrejection' => [[
             'id' => 101,
             'taskId' => 40,
-            'userId' => 600,
-            'boardType' => BoardType::At->value,
+            'createdBy' => 600,
+            'votesType' => BoardType::At->value,
             'comment' => 'Powód odrzucenia',
         ]],
         'taskappealagainstdecision' => [[

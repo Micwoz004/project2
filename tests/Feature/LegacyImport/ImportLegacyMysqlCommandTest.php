@@ -62,6 +62,7 @@ it('imports legacy data directly from a configured mysql-style connection', func
     $this->artisan('sbo:legacy-import-mysql', [
         '--connection' => $connection,
         '--source' => 'legacy-sqlite-test',
+        '--memory-limit' => '256M',
     ])->assertSuccessful();
 
     $user = User::query()->where('legacy_id', 7)->firstOrFail();

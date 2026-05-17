@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Public\PublicCoauthorConfirmationController;
+use App\Http\Controllers\Public\PublicProjectCommentController;
 use App\Http\Controllers\Public\PublicProjectController;
 use App\Http\Controllers\Public\PublicReportController;
 use App\Http\Controllers\Public\PublicResultsController;
@@ -17,6 +18,9 @@ Route::get('/activation/confirmCocreator', PublicCoauthorConfirmationController:
 Route::get('/projekty/zglos', [PublicProjectController::class, 'create'])->name('public.projects.create');
 Route::post('/projekty/zglos', [PublicProjectController::class, 'store'])->name('public.projects.store');
 Route::middleware('auth')->group(function (): void {
+    Route::post('/projekt/{project}/komentarze', [PublicProjectCommentController::class, 'store'])->name('public.projects.comments.store');
+    Route::put('/projekt/{project}/komentarze/{comment}', [PublicProjectCommentController::class, 'update'])->name('public.projects.comments.update');
+    Route::patch('/projekt/{project}/komentarze/{comment}/widocznosc', [PublicProjectCommentController::class, 'toggleHidden'])->name('public.projects.comments.toggle-hidden');
     Route::get('/moje-projekty/{project}/korekta', [PublicProjectController::class, 'editCorrection'])->name('public.projects.corrections.edit');
     Route::put('/moje-projekty/{project}/korekta', [PublicProjectController::class, 'updateCorrection'])->name('public.projects.corrections.update');
 });

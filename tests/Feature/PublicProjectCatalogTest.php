@@ -1,11 +1,17 @@
 <?php
 
+use App\Domain\Communications\Jobs\SendProjectNotificationJob;
+use App\Domain\Communications\Models\ProjectPublicComment;
 use App\Domain\Files\Actions\MarkProjectAttachmentsAnonymizedAction;
 use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Domain\Users\Enums\SystemRole;
+use App\Models\User;
+use Illuminate\Support\Facades\Bus;
 
 it('lists only publicly visible projects ordered by legacy drawn number', function (): void {
     $edition = budgetEdition();
@@ -173,4 +179,120 @@ it('shows map view only for public projects with coordinates', function (): void
         ->assertSee('53.4000000, 14.6000000')
         ->assertDontSee('Projekt bez mapy')
         ->assertDontSee('Projekt ukryty na mapie');
+});
+
+it('shows public project comments according to legacy visibility rules', function (): void {
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $creator = User::factory()->create();
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'status' => ProjectStatus::Picked,
+    ]));
+
+    ProjectPublicComment::query()->create([
+        'project_id' => $project->id,
+        'created_by_id' => $creator->id,
+        'content' => 'Komentarz widoczny publicznie',
+        'moderated' => true,
+    ]);
+    ProjectPublicComment::query()->create([
+        'project_id' => $project->id,
+        'created_by_id' => $creator->id,
+        'content' => 'Komentarz oczekujący',
+        'moderated' => false,
+    ]);
+    ProjectPublicComment::query()->create([
+        'project_id' => $project->id,
+        'created_by_id' => $creator->id,
+        'content' => 'Komentarz ukryty przez autora',
+        'hidden' => true,
+        'moderated' => true,
+    ]);
+    ProjectPublicComment::query()->create([
+        'project_id' => $project->id,
+        'created_by_id' => $creator->id,
+        'content' => 'Komentarz ukryty administracyjnie',
+        'admin_hidden' => true,
+        'moderated' => true,
+    ]);
+
+    $this->get(route('public.projects.show', $project))
+        ->assertOk()
+        ->assertSee('Komentarz widoczny publicznie')
+        ->assertDontSee('Komentarz oczekujący')
+        ->assertDontSee('Komentarz ukryty przez autora')
+        ->assertDontSee('Komentarz ukryty administracyjnie');
+});
+
+it('allows applicants to add edit and hide public project comments through public routes', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+    Bus::fake();
+
+    $author = User::factory()->create();
+    $applicant = User::factory()->create();
+    $applicant->assignRole(SystemRole::Applicant->value);
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'status' => ProjectStatus::Picked,
+    ]));
+
+    $this->actingAs($applicant)
+        ->post(route('public.projects.comments.store', $project), [
+            'content' => ' Nowy publiczny komentarz ',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $comment = ProjectPublicComment::query()->where('project_id', $project->id)->firstOrFail();
+
+    expect($comment->created_by_id)->toBe($applicant->id)
+        ->and($comment->content)->toBe('Nowy publiczny komentarz')
+        ->and($comment->moderated)->toBeTrue();
+
+    $this->actingAs($applicant)
+        ->put(route('public.projects.comments.update', [$project, $comment]), [
+            'content' => 'Po edycji',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $this->actingAs($applicant)
+        ->patch(route('public.projects.comments.toggle-hidden', [$project, $comment]))
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $comment->refresh();
+
+    expect($comment->content)->toBe('Po edycji')
+        ->and($comment->hidden)->toBeTrue();
+
+    $this->actingAs($applicant)
+        ->get(route('public.projects.show', $project))
+        ->assertOk()
+        ->assertSee('Po edycji')
+        ->assertSee('Ukryty');
+
+    Bus::assertDispatched(SendProjectNotificationJob::class);
+});
+
+it('rejects public comment routes for users without applicant role', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $user = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'status' => ProjectStatus::Picked,
+    ]));
+
+    $this->actingAs($user)
+        ->post(route('public.projects.comments.store', $project), [
+            'content' => 'Komentarz bez roli',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasErrors('comment');
+
+    expect(ProjectPublicComment::query()->count())->toBe(0);
 });

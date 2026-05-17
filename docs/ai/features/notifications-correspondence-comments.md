@@ -27,6 +27,7 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 10. [x] Uzupełnić pełną mapę wszystkich punktów wysyłki mail/SMS względem kontrolerów legacy.
 11. [x] Dodać wysyłkę i obsługę potwierdzenia współautora z triggera `cocreator.confirmation`.
 12. [x] Dodać publiczną wiadomość do autora projektu z triggera `project.contact_message`.
+13. [x] Podpiąć publiczne dodawanie, edycję, odpowiedzi i ukrycie własnych komentarzy pod trasy oraz widok szczegółów projektu.
 
 ## Implementacja Laravel
 
@@ -45,6 +46,8 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 - `SendProjectCorrespondenceMessageAction` po zapisie korespondencji kolejkuje powiadomienie mailowe do adresata.
 - `SendProjectCoauthorConfirmationAction` obsługuje trigger `cocreator.confirmation`: generuje brakujący hash współautora, zapisuje notyfikację, wysyła mail przez kolejkę i używa kompatybilnego linku `/activation/confirmCocreator`.
 - `SendProjectContactMessageAction` obsługuje trigger `project.contact_message`: waliduje `topic`, `email`, `content` jak legacy `ContactForm`, wymaga adresu e-mail autora projektu i zapisuje wiadomość z legacy prefiksem `Otrzymałeś/aś wiadomość od ...`.
+- `PublicProjectCommentController` podpina akcje publicznych komentarzy do HTTP: dodanie, odpowiedź przez `parent_id`, edycję i ukrycie własnego komentarza, z walidacją na granicy requestu oraz logowaniem decyzji biznesowych bez treści komentarzy.
+- Widok `public.projects.show` renderuje publiczne komentarze przez `ProjectPublicCommentVisibilityService`, więc pending/hidden/admin-hidden zachowują legacy widoczność względem gościa, autora komentarza, autora projektu i admina.
 - `VotingTokenService` obsługuje trigger `voting.token.email`: zapisuje token e-mail, wysyła link aktywacyjny i zapisuje `MailLog`.
 - `VoteSummaryNotificationService` obsługuje triggery `voting.summary.email`, `voting.summary.sms` oraz ścieżkę błędu `voting.summary.sms_failure_email`; wysyłka podsumowania nie wpływa na ważność zapisanego głosu.
 - Logi zapisują identyfikatory projektu/użytkownika/wiadomości, ale nie zapisują treści wiadomości ani komentarzy.
@@ -93,6 +96,6 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 
 - Kolejka obejmuje bazowe powiadomienia projektu; nie wszystkie triggery z `LegacyCommunicationTrigger` mają jeszcze osobne akcje domenowe.
 - Brak integracji z operatorem SMS dla powiadomień innych niż token głosowania i podsumowanie SMS.
-- Publiczne komentarze mają domenowe akcje zgodne z `CommentsController`: dodanie przez rolę `applicant`, edycję i ukrycie własnego komentarza, akceptację administracyjną, ukrycie administracyjne oraz powiadomienia mailowe dla autora projektu/autora komentarza przez kolejkę Laravel.
+- Publiczne komentarze mają domenowe akcje zgodne z `CommentsController`: dodanie przez rolę `applicant`, odpowiedzi przez `parentId`, edycję i ukrycie własnego komentarza, akceptację administracyjną, ukrycie administracyjne oraz powiadomienia mailowe dla autora projektu/autora komentarza przez kolejkę Laravel.
 - `ProjectPublicCommentVisibilityService` odtwarza warunki widoczności z legacy `_comments.php`: komentarz zaakceptowany i nieukryty jest publiczny; oczekujący widzi autor komentarza, admin i autor projektu; ukryty przez użytkownika widzi autor komentarza i admin; ukryty administracyjnie widzi tylko admin.
-- Brak pełnego publicznego UI do dodawania i moderowania komentarzy; logika domenowa, import oraz testy są gotowe do podpięcia pod kontrolery/Livewire.
+- Publiczny UI obsługuje dodanie, odpowiedź, edycję i ukrycie własnego komentarza. Administracyjna moderacja ma gotowe akcje domenowe; pełny panel moderacji w Filament pozostaje do dopracowania jako warstwa operatorska.

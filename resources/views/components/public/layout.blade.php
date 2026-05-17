@@ -367,13 +367,15 @@
             transform: translateY(-1px);
         }
 
-        .button.secondary {
+        .button.secondary,
+        button.secondary {
             border: 1px solid var(--line);
             background: var(--surface);
             color: var(--ink);
         }
 
-        .button.secondary:hover {
+        .button.secondary:hover,
+        button.secondary:hover {
             background: var(--surface-soft);
             color: var(--primary);
         }
@@ -526,6 +528,88 @@
             background: var(--surface-soft);
             padding: 11px 12px;
             text-decoration: none;
+        }
+
+        .comments-panel h2 {
+            margin-top: 0;
+        }
+
+        .comments-heading {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .comments-heading p {
+            margin: 8px 0 0;
+        }
+
+        .comment-form,
+        .comment-reply-form {
+            border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
+            background: var(--surface-soft);
+            padding: 14px;
+        }
+
+        .comment-list {
+            display: grid;
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .comment {
+            border-left: 4px solid var(--primary-soft);
+            border-radius: var(--radius-sm);
+            background: #fff;
+            padding: 14px 16px;
+        }
+
+        .comment p {
+            margin: 10px 0 0;
+        }
+
+        .comment-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            color: var(--ink-soft);
+            font-size: 13px;
+        }
+
+        .comment-meta strong {
+            color: var(--ink);
+            font-size: 14px;
+        }
+
+        .comment-reply-form,
+        .comment-owner-tools {
+            margin-top: 14px;
+        }
+
+        .comment-reply-form textarea,
+        .comment-owner-tools textarea {
+            min-height: 84px;
+        }
+
+        .comment-owner-tools {
+            display: grid;
+            gap: 10px;
+            border-top: 1px solid var(--line);
+            padding-top: 12px;
+        }
+
+        .comment-owner-tools summary {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        .inline-notice {
+            margin-bottom: 0;
         }
 
         .pagination {

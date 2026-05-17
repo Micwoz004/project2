@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Public;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Domain\Communications\Models\ProjectPublicComment;
+use App\Domain\Communications\Services\ProjectPublicCommentVisibilityService;
 use App\Domain\Files\Actions\StoreProjectFileAction;
 use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Projects\Actions\ApplyCorrectionAction;
@@ -61,12 +63,21 @@ class PublicProjectController extends Controller
         ]);
     }
 
-    public function show(Project $project): View
+    public function show(Request $request, Project $project, ProjectPublicCommentVisibilityService $commentVisibility): View
     {
         abort_unless(Gate::allows('view', $project), 404);
+        $project->load(['area', 'budgetEdition', 'costItems', 'publicFiles']);
+
+        $comments = $project->publicComments()
+            ->with(['creator', 'project'])
+            ->oldest()
+            ->get()
+            ->filter(fn (ProjectPublicComment $comment): bool => $commentVisibility->canView($comment, $request->user()))
+            ->values();
 
         return view('public.projects.show', [
-            'project' => $project->load(['area', 'budgetEdition', 'costItems', 'publicFiles']),
+            'project' => $project,
+            'publicComments' => $comments,
         ]);
     }
 

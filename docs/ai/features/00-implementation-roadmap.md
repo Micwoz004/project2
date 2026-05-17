@@ -11,7 +11,7 @@ Ten plik jest operacyjną mapą wdrożenia funkcjonalności opisanych w `docs/ai
 
 ## Etap 1: fundament projektu i edycji
 
-Status: w toku; `project-submission`, część `budget-editions-settings`, część `public-project-catalog`, część `areas-categories-dictionaries`, część `project-editing-corrections` i część `project-files-coauthors` są zaimplementowane.
+Status: zrealizowany w baseline logiki. Pozostaje tylko finalny przegląd tekstów oświadczeń względem aktualnych materiałów urzędowych przed wdrożeniem produkcyjnym.
 
 Zakres:
 - `budget-editions-settings`
@@ -37,7 +37,7 @@ Kryteria gotowości:
 
 ## Etap 2: administracja i RBAC
 
-Status: w toku; bazowa mapa RBAC, synchronizacja Spatie, dostęp do Filament i policies dla edycji/słowników są zaimplementowane.
+Status: zrealizowany w baseline logiki. Mapa RBAC, import ról, policies, dostęp do Filament oraz zasoby administracyjne dla podstawowych słowników i użytkowników są wdrożone.
 
 Zakres:
 - `admin-rbac`
@@ -53,7 +53,7 @@ Kryteria gotowości:
 
 ## Etap 3: weryfikacje projektu
 
-Status: w toku; bazowe rozpoczęcie i zakończenie oceny formalnej oraz domenowa logika weryfikacji merytorycznej są zaimplementowane.
+Status: zrealizowany w baseline logiki. Formularze formalne/merytoryczne, statusy, przydziały, wersjonowanie, korespondencja, komentarze, mailowe triggery legacy i publiczna moderacja komentarzy są wdrożone.
 
 Zakres:
 - `formal-verification`
@@ -72,7 +72,7 @@ Kryteria gotowości:
 
 ## Etap 4: rady, komisje i odwołania
 
-Status: w toku; podstawowa logika głosów ZK/OT/AT i decyzji jest zaimplementowana.
+Status: zrealizowany w baseline logiki. Głosy ZK/OT/AT, restarty/zamknięcia, rozstrzygnięcia, odwołania i akcje Filament są wdrożone.
 
 Zakres:
 - `board-appeal-voting`
@@ -85,7 +85,7 @@ Kryteria gotowości:
 
 ## Etap 5: głosowanie publiczne
 
-Status: częściowy baseline domenowy istnieje, pełny flow zaplanowany.
+Status: zrealizowany w baseline logiki. Flow Livewire, tokeny SMS/e-mail, PESEL, rejestr hashy, zgody, karty papierowe, administracja kartami i testy krytyczne są wdrożone. Produkcyjne wartości operatora SMS pozostają konfiguracją środowiska.
 
 Zakres:
 - `public-voting`
@@ -101,7 +101,7 @@ Kryteria gotowości:
 
 ## Etap 6: wyniki, raporty i import
 
-Status: w toku; baseline wyników, eksportów CSV i administracyjnego dashboardu Filament istnieje.
+Status: zrealizowany w baseline logiki. Wyniki, remisy, publikacja, dashboard Filament, raporty CSV/XLSX, kolejkowane eksporty oraz import fixture/staging/dump-count są wdrożone.
 
 Zakres:
 - `results-calculation`
@@ -115,10 +115,10 @@ Kryteria gotowości:
 - import dumpa z `legacy_id`,
 - testy na fixture z legacy i porównania liczności.
 
-## Kolejność najbliższej implementacji
+## Pozostałe przed produkcją
 
-1. `project-submission`: Form Request, walidator domenowy, policy i testy.
-2. `admin-rbac`: pierwsza mapa ról i permissions. (wykonane częściowo)
-3. `project-editing-corrections`: akcje korekty i blokady edycji. (wykonane częściowo)
-4. `areas-categories-dictionaries`: import słowników imion/nazwisk.
-5. `public-project-catalog`: osobny widok mapy po doprecyzowaniu legacy map.
+1. Finalnie porównać teksty oświadczeń formularza projektu z aktualną wersją urzędową.
+2. Finalnie porównać etykiety formularza formalnego z aktualną wersją urzędową.
+3. Ustawić produkcyjne wartości operatora SMS (`SMS_DRIVER=http`, URL, token, nadawca, timeout i treści szablonów).
+4. Opcjonalnie odtworzyć graficzne szablony XLSX z `raporty_sbo`; dane domenowe raportów są już dostępne w CSV/XLSX.
+5. Opcjonalnie dopracować mikrocopy i układ UI bez zmiany logiki domenowej.

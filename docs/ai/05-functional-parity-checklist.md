@@ -140,13 +140,13 @@
 - [x] Końcowa weryfikacja merytoryczna pomija koszty przyszłe przy `hasAdditionalCosts=NO/N/A` zgodnie z legacy.
 - [x] Wielowierszowy kosztorys końcowej weryfikacji merytorycznej w UI zapisuje listy `correctedCost` i `futureCost`.
 - [x] Kodowa i dokumentacyjna mapa punktów wysyłki mail/SMS legacy w `LegacyCommunicationTrigger`.
+- [x] Formularz konsultacji merytorycznej w Filament zapisuje legacy `consultationInformation`.
 
 ## Do pełnego parytetu
 
 - [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
 - [ ] Potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Finalny przegląd etykiet formularza formalnego z aktualną wersją urzędową.
-- [ ] Konsultacje z pełną listą pól legacy w UI, jeśli analiza widoków jednostek wykaże pola poza `TaskConsultation`.
 - [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
 - [ ] Pełny import przypisań ról/uprawnień z dumpa legacy.

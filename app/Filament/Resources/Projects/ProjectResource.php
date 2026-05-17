@@ -399,6 +399,16 @@ class ProjectResource extends Resource
         ],
     ];
 
+    /**
+     * @var array<string, array{legacy: string, label: string, comments?: bool}>
+     */
+    private const CONSULTATION_TEXT_FIELDS = [
+        'consultation_information' => [
+            'legacy' => 'consultationInformation',
+            'label' => 'Istotne informacje mogące mieć wpływ na realizację inwestycji',
+        ],
+    ];
+
     public static function getModelLabel(): string
     {
         return 'projekt';
@@ -708,7 +718,7 @@ class ProjectResource extends Resource
             self::departmentFromData($data),
             self::authenticatedUser('verification.consultation.submit.rejected_guest'),
             (bool) ($data['result'] ?? false),
-            self::meritAnswersFromData($data),
+            self::meritAnswersFromData($data, textFields: self::CONSULTATION_TEXT_FIELDS),
             $data['result_comments'] ?? null,
         );
     }
@@ -1124,6 +1134,7 @@ class ProjectResource extends Resource
     {
         return [
             ...self::meritVerificationHeaderSchema(),
+            ...self::legacyMeritAnswerSchema([], self::CONSULTATION_TEXT_FIELDS),
             ...self::meritVerificationFooterSchema(),
         ];
     }

@@ -202,10 +202,14 @@ it('submits consultation from filament form without changing project status', fu
     $verification = ProjectResource::submitConsultationVerificationFromAdminForm($project, [
         'department_id' => $department->id,
         'result' => true,
+        'consultation_information' => 'Brak kolizji z planami jednostki.',
         'answers_notes' => 'Bez uwag.',
     ]);
 
     expect($verification->result)->toBeTrue()
-        ->and($verification->answers)->toBe(['notes' => 'Bez uwag.'])
+        ->and($verification->answers)->toBe([
+            'notes' => 'Bez uwag.',
+            'consultationInformation' => 'Brak kolizji z planami jednostki.',
+        ])
         ->and($project->refresh()->status)->toBe(ProjectStatus::DuringMeritVerification);
 });

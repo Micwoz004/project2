@@ -20,7 +20,16 @@ it('validates public project submission at the request boundary', function (): v
             'budget_edition_id',
             'project_area_id',
             'category_id',
+            'local',
+            'author_first_name',
+            'author_last_name',
+            'author_email',
+            'author_read_confirm',
+            'contact_with',
             'title',
+            'map_data',
+            'cost_items',
+            'attachments_anonymized',
             'support_list',
             'support_list_file',
         ]);
@@ -39,7 +48,22 @@ it('creates a submitted project through the public endpoint', function (): void 
         'budget_edition_id' => $edition->id,
         'project_area_id' => $area->id,
         'category_id' => $category->id,
+        'local' => 1,
+        'author_first_name' => 'Piotr',
+        'author_last_name' => 'Kowalski',
+        'author_email' => 'piotr@example.test',
+        'author_phone' => '500600700',
+        'author_street' => 'Jasne Błonia',
+        'author_house_no' => '1',
+        'author_flat_no' => '2',
+        'author_post_code' => '70-001',
+        'author_city' => 'Szczecin',
+        'author_email_agree' => '1',
+        'author_personal_data_agree' => '1',
+        'author_read_confirm' => '1',
+        'contact_with' => 1,
         'title' => 'Nowy park kieszonkowy',
+        'short_description' => 'Krótki opis projektu.',
         'localization' => 'Szczecin',
         'address' => 'Plac Andersa 1',
         'plot' => 'Działka 10/2',
@@ -53,12 +77,23 @@ it('creates a submitted project through the public endpoint', function (): void 
         'availability' => 'Dostępność',
         'recipients' => 'Mieszkańcy',
         'free_of_charge' => 'Tak',
-        'cost_description' => 'Zakup i montaż wyposażenia',
-        'cost_amount' => 10000,
+        'additional_cost' => 'Koszty utrzymania zieleni.',
+        'cost_items' => [
+            ['description' => 'Zakup i montaż wyposażenia', 'amount' => 10000],
+            ['description' => 'Nasadzenia', 'amount' => 5000],
+        ],
+        'consent_to_change' => '1',
+        'show_task_coauthors' => '1',
+        'attachments_anonymized' => '1',
         'coauthors' => [[
             'first_name' => 'Anna',
             'last_name' => 'Nowak',
             'email' => 'anna@example.test',
+            'street' => 'Różana',
+            'house_no' => '3',
+            'flat_no' => '4',
+            'post_code' => '70-002',
+            'city' => 'Szczecin',
             'read_confirm' => '1',
             'email_agree' => '1',
         ]],
@@ -93,9 +128,20 @@ it('creates a submitted project through the public endpoint', function (): void 
         ->and($project->lng)->toBe('14.5528116')
         ->and($project->map_lng_lat)->toBe('14.5528116,53.4285432')
         ->and($project->map_data)->toBe(['type' => 'Point', 'coordinates' => [14.5528116, 53.4285432]])
-        ->and($project->costItems()->count())->toBe(1)
+        ->and($project->local)->toBe(1)
+        ->and($project->short_description)->toBe('Krótki opis projektu.')
+        ->and($project->additional_cost)->toBe('Koszty utrzymania zieleni.')
+        ->and($project->contact_with)->toBe(1)
+        ->and($project->attachments_anonymized)->toBeTrue()
+        ->and($project->consent_to_change)->toBeTrue()
+        ->and($project->authors['email'])->toBe('piotr@example.test')
+        ->and($project->costItems()->count())->toBe(2)
+        ->and($project->cost_formatted)->toBe('15000.00')
         ->and($project->coauthors()->count())->toBe(1)
         ->and($project->coauthors()->firstOrFail()->email)->toBe('anna@example.test')
+        ->and($project->coauthors()->firstOrFail()->street)->toBe('Różana')
+        ->and($project->coauthors()->firstOrFail()->house_no)->toBe('3')
+        ->and($project->coauthors()->firstOrFail()->flat_no)->toBe('4')
         ->and($project->files()->count())->toBe(4)
         ->and($project->versions()->count())->toBe(1)
         ->and($project->category_id)->toBe($category->id)
@@ -122,16 +168,26 @@ it('rejects public project submission when coauthor has no public contact consen
             'budget_edition_id' => $edition->id,
             'project_area_id' => $area->id,
             'category_id' => $category->id,
+            'local' => 1,
+            'author_first_name' => 'Piotr',
+            'author_last_name' => 'Kowalski',
+            'author_email' => 'piotr@example.test',
+            'author_email_agree' => '1',
+            'author_read_confirm' => '1',
+            'contact_with' => 1,
             'title' => 'Nowy park kieszonkowy',
             'localization' => 'Szczecin',
+            'map_data' => json_encode(['type' => 'Point', 'coordinates' => [14.5528116, 53.4285432]]),
             'description' => 'Opis projektu',
             'goal' => 'Cel projektu',
             'argumentation' => 'Uzasadnienie',
             'availability' => 'Dostępność',
             'recipients' => 'Mieszkańcy',
             'free_of_charge' => 'Tak',
-            'cost_description' => 'Zakup i montaż wyposażenia',
-            'cost_amount' => 10000,
+            'cost_items' => [
+                ['description' => 'Zakup i montaż wyposażenia', 'amount' => 10000],
+            ],
+            'attachments_anonymized' => '1',
             'coauthors' => [[
                 'first_name' => 'Anna',
                 'last_name' => 'Nowak',

@@ -27,7 +27,7 @@ Status: częściowo zaimplementowane w etapie 1.
 - `Task::rules` dopuszcza rozszerzenia: `doc`, `docx`, `rtf`, `xls`, `txt`, `jpg`, `png`, `bmp`, `gif`, `tif`, `pdf`, `pptx`.
 - Legacy limit rozmiaru jest zapisany jako `1024 * 1024 * 10000`, mimo że komunikat użytkownika mówi o 10 MB. Nowy kod zachowuje stałą z kodu jako źródło prawdy i oznacza różnicę komunikatu do późniejszego uporządkowania.
 - Limity liczby załączników z `Task::beforeValidate`: `Other=10`, `Map=5`, `ParentAgreement=5`, `SupportList=5`, `OwnerAgreement=5`.
-- Legacy formularz obsługuje maksymalnie dwóch współautorów (`cocreator1`, `cocreator2`).
+- Legacy formularz obsługuje maksymalnie dwóch współautorów (`cocreator1`, `cocreator2`) i przyjmuje dla nich imię, nazwisko, e-mail, telefon, ulicę, numer domu, numer lokalu, kod pocztowy, miasto oraz zgody kontaktowe.
 - `Task::cocreatorValidate` wymaga imienia, nazwiska, e-maila lub telefonu oraz potwierdzenia zgody.
 - `Cocreator::validateContact` wymaga wybrania co najmniej jednej publicznej formy kontaktu: e-mail lub telefon.
 
@@ -45,6 +45,7 @@ Status: częściowo zaimplementowane w etapie 1.
 - `ProjectCoauthorValidator` waliduje limit dwóch współautorów, wymagane dane kontaktowe, potwierdzenie przeczytania i zgodę na co najmniej jedną formę kontaktu.
 - `SyncProjectCoauthorsAction` wymienia listę współautorów projektu transakcyjnie.
 - Publiczny formularz zgłoszenia projektu przyjmuje maksymalnie dwóch współautorów, pomija puste sloty formularza i zapisuje dane przez `SyncProjectCoauthorsAction` przed złożeniem projektu.
+- Współautorzy mają teraz w PostgreSQL pola adresowe `street`, `house_no`, `flat_no`, `post_code`, `city`, żeby zachować dane z formularza Yii i przyszły pełny import `cocreators`.
 - `LegacyFixtureImportService` rozdziela `files` i `filesprivate` flagą `is_private` oraz przenosi współautorów z `cocreators`.
 
 ## Zgodność do sprawdzenia

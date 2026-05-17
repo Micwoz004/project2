@@ -136,7 +136,9 @@ class PublicProjectController extends Controller
             'budget_edition_id' => $data['budget_edition_id'],
             'project_area_id' => $data['project_area_id'],
             'category_id' => $data['category_id'],
+            'creator_id' => $request->user()?->id,
             'title' => $data['title'],
+            'local' => $data['local'],
             'localization' => $data['localization'],
             'address' => $data['address'] ?? null,
             'plot' => $data['plot'] ?? null,
@@ -150,15 +152,25 @@ class PublicProjectController extends Controller
             'availability' => $data['availability'],
             'recipients' => $data['recipients'],
             'free_of_charge' => $data['free_of_charge'],
+            'short_description' => $data['short_description'] ?? null,
+            'additional_cost' => $data['additional_cost'] ?? null,
+            'contact_with' => $data['contact_with'],
+            'attachments_anonymized' => true,
+            'consent_to_change' => (bool) ($data['consent_to_change'] ?? false),
+            'show_task_coauthors' => (bool) ($data['show_task_coauthors'] ?? true),
+            'authors' => $request->authorSnapshot(),
             'status' => ProjectStatus::WorkingCopy,
             'is_support_list' => true,
+            'cost' => collect($request->costItems())
+                ->map(fn (array $costItem): string => $costItem['description'].': '.$costItem['amount'])
+                ->implode(PHP_EOL),
+            'cost_formatted' => collect($request->costItems())->sum('amount'),
         ]);
         $project->categories()->sync([$data['category_id']]);
 
-        $project->costItems()->create([
-            'description' => $data['cost_description'],
-            'amount' => $data['cost_amount'],
-        ]);
+        foreach ($request->costItems() as $costItem) {
+            $project->costItems()->create($costItem);
+        }
 
         try {
             $supportListFile = $request->file('support_list_file');

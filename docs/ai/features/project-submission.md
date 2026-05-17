@@ -13,20 +13,25 @@
 
 ## Plan wdrożenia
 
-Status: częściowo zaimplementowane; publiczne zgłoszenie zapisuje podstawowy projekt, koszt, kategorię, mapę, załączniki legacy i współautorów.
+Status: częściowo zaimplementowane; publiczne zgłoszenie zapisuje projekt, autora jako snapshot danych formularza, kosztorys wielowierszowy, kategorię, mapę, zgody, załączniki legacy i współautorów.
 
 1. Przenieść walidację wejścia publicznego do Form Request. Wykonane: `StorePublicProjectRequest`.
 2. Wyodrębnić walidację domenową z akcji składania projektu. Wykonane: `ProjectSubmissionValidator`.
 3. Dodać policy dla widoczności, edycji i składania projektu. Wykonane: `ProjectPolicy` i `ProjectLifecycleService`.
-4. Rozszerzyć formularz o autorów, kategorie, mapę i prawdziwe uploady. Wykonane częściowo: publiczny formularz zapisuje realny upload listy poparcia jako prywatny `ProjectFile`, przyjmuje pozostałe typy załączników legacy, zapisuje kategorię główną i pivot kategorii projektu, zapisuje dane mapowe oraz synchronizuje maksymalnie dwóch współautorów.
+4. Rozszerzyć formularz o autorów, kategorie, mapę i prawdziwe uploady. Wykonane częściowo: publiczny formularz zapisuje realny upload listy poparcia jako prywatny `ProjectFile`, przyjmuje pozostałe typy załączników legacy, zapisuje kategorię główną i pivot kategorii projektu, zapisuje typ projektu `local`, dane mapowe, snapshot autora, zgody autora, pole kontaktu oraz synchronizuje maksymalnie dwóch współautorów.
 5. Dodać testy: wymagane pola, URL, koszt, lista poparcia, status i wersja.
 
 ## Implementacja Laravel
 
 - `StorePublicProjectRequest` wymaga pliku `support_list_file` na granicy HTTP.
+- `StorePublicProjectRequest` wymaga danych autora z widoku Yii: imię, nazwisko, e-mail, wybór co najmniej jednej publicznej formy kontaktu, potwierdzenie regulaminu oraz wybór `contact_with` (`1=autor`, `2=współautor`).
+- Publiczny formularz zapisuje snapshot autora w `projects.authors`. To świadoma różnica względem legacy: w Yii dane autora były pobierane bezpośrednio z konta `users`; w nowym baseline publiczny endpoint może działać również bez sesji użytkownika, więc dane formularza nie są tracone.
 - `StorePublicProjectRequest` przyjmuje `address`, `plot`, `lat`, `lng`, `map_lng_lat` i `map_data`; JSON mapy jest dekodowany na granicy requestu i zapisywany w castowanym polu `projects.map_data`.
+- `map_data` jest wymagane przy złożeniu zgodnie z `Task::rules` dla scenariusza `propose`.
+- Formularz zapisuje `short_description`, `additional_cost`, `local`, `contact_with`, `consent_to_change`, `attachments_anonymized` i `show_task_coauthors`.
+- Kosztorys publiczny przyjmuje listę `cost_items[]`, zapisuje pozycje w `project_cost_items`, a w `projects.cost` i `projects.cost_formatted` utrzymuje zagregowany odpowiednik pól legacy `cost`/`costFormatted`.
 - `PublicProjectController::store()` zapisuje dodatkowe uploady przez `StoreProjectFileAction`: zgody właściciela, mapy, zgody rodzica/opiekuna oraz pozostałe załączniki z limitem i listą rozszerzeń z legacy.
 - `StorePublicProjectRequest` wymaga kategorii projektu; `PublicProjectController::store()` zapisuje ją w `projects.category_id` i synchronizuje pivot `category_project`, żeby zachować zgodność z raportami po kategoriach.
 - `PublicProjectController::store()` zapisuje listę poparcia przez `StoreProjectFileAction` przed złożeniem projektu i oznacza plik jako `is_task_form_attachment`.
 - Lista poparcia z publicznego formularza jest prywatna (`is_private=true`), zgodnie z ostrożnym odwzorowaniem danych wrażliwych z legacy.
-- `StorePublicProjectRequest::coauthors()` filtruje puste sloty współautorów i przekazuje dane do `SyncProjectCoauthorsAction`, która wymusza reguły legacy `Cocreator`.
+- `StorePublicProjectRequest::coauthors()` filtruje puste sloty współautorów i przekazuje dane, także adresowe (`street`, `house_no`, `flat_no`, `post_code`, `city`), do `SyncProjectCoauthorsAction`, która wymusza reguły legacy `Cocreator`.

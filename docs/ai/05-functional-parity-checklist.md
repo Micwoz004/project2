@@ -132,6 +132,9 @@
 - [x] Publiczne zgłoszenie projektu zapisuje współautorów przez domenowe reguły `Cocreator`.
 - [x] Publiczne zgłoszenie projektu zapisuje bazowe dane mapy i współrzędne.
 - [x] Publiczne zgłoszenie projektu obsługuje uploady legacy: lista poparcia, zgody właściciela/rodzica, mapa i pozostałe załączniki.
+- [x] Publiczne zgłoszenie projektu zapisuje snapshot autora, wybór kontaktu, zgody autora, typ `local`, skrócony opis, koszt utrzymania i oświadczenie o anonimizacji załączników.
+- [x] Publiczne zgłoszenie projektu obsługuje wielowierszowy kosztorys i agreguje go do pól zgodnych z legacy.
+- [x] Publiczne zgłoszenie projektu zapisuje adresowe pola współautorów z widoku Yii.
 - [x] Korekta kosztorysu projektu podmienia pozycje kosztów i przelicza sumę.
 - [x] Publiczna korekta autora obsługuje odblokowane typy załączników legacy.
 - [x] Granularne permissions dla akcji Filament: weryfikacja formalna, merytoryczna i korekty projektu.
@@ -146,7 +149,7 @@
 
 ## Do pełnego parytetu
 
-- [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
+- [ ] Finalny przegląd tekstów oświadczeń formularza projektu z aktualną wersją urzędową.
 - [ ] Potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Finalny przegląd etykiet formularza formalnego z aktualną wersją urzędową.
 - [ ] Produkcyjna konfiguracja realnego operatora SMS na środowisku.

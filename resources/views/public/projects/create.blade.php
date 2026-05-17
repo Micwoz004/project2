@@ -14,10 +14,75 @@
         if (is_array($mapDataValue)) {
             $mapDataValue = json_encode($mapDataValue, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         }
+        $costRows = old('cost_items', [
+            ['description' => old('cost_description', ''), 'amount' => old('cost_amount', '')],
+            ['description' => '', 'amount' => ''],
+            ['description' => '', 'amount' => ''],
+        ]);
     @endphp
 
     <form class="panel" method="post" action="{{ route('public.projects.store') }}" enctype="multipart/form-data">
         @csrf
+
+        <h2>Dane kontaktowe autora</h2>
+
+        <label for="author_first_name">Imię autora</label>
+        <input id="author_first_name" name="author_first_name" value="{{ old('author_first_name') }}" required maxlength="127">
+
+        <label for="author_last_name">Nazwisko autora</label>
+        <input id="author_last_name" name="author_last_name" value="{{ old('author_last_name') }}" required maxlength="127">
+
+        <label for="author_email">E-mail autora</label>
+        <input id="author_email" name="author_email" value="{{ old('author_email') }}" type="email" required maxlength="255">
+
+        <label for="author_phone">Telefon autora</label>
+        <input id="author_phone" name="author_phone" value="{{ old('author_phone') }}" maxlength="30">
+
+        <label for="author_street">Ulica</label>
+        <input id="author_street" name="author_street" value="{{ old('author_street') }}" maxlength="127">
+
+        <label for="author_house_no">Nr domu</label>
+        <input id="author_house_no" name="author_house_no" value="{{ old('author_house_no') }}" maxlength="20">
+
+        <label for="author_flat_no">Nr lokalu</label>
+        <input id="author_flat_no" name="author_flat_no" value="{{ old('author_flat_no') }}" maxlength="20">
+
+        <label for="author_post_code">Kod pocztowy</label>
+        <input id="author_post_code" name="author_post_code" value="{{ old('author_post_code') }}" maxlength="6">
+
+        <label for="author_city">Miejscowość</label>
+        <input id="author_city" name="author_city" value="{{ old('author_city') }}" maxlength="127">
+
+        <label for="contact_with">Proszę kontaktować się z</label>
+        <select id="contact_with" name="contact_with" required>
+            <option value="1" @selected((int) old('contact_with', 1) === 1)>Autorem</option>
+            <option value="2" @selected((int) old('contact_with') === 2)>Współautorem</option>
+        </select>
+
+        <label>
+            <input name="author_email_agree" type="checkbox" value="1" @checked(old('author_email_agree'))>
+            Publikowana forma kontaktu: adres e-mail autora.
+        </label>
+
+        <label>
+            <input name="author_phone_agree" type="checkbox" value="1" @checked(old('author_phone_agree'))>
+            Publikowana forma kontaktu: numer telefonu autora.
+        </label>
+
+        <label>
+            <input name="author_personal_data_agree" type="checkbox" value="1" @checked(old('author_personal_data_agree'))>
+            Zgoda na przetwarzanie danych autora na potrzeby ewaluacji konsultacji społecznych.
+        </label>
+
+        <label>
+            <input name="author_read_confirm" type="checkbox" value="1" @checked(old('author_read_confirm')) required>
+            Autor potwierdza zapoznanie się z regulaminem.
+        </label>
+
+        <label for="author_contact_details_public">Imię i nazwisko rodzica lub opiekuna prawnego autora</label>
+        <input id="author_contact_details_public" name="author_contact_details_public" value="{{ old('author_contact_details_public') }}" maxlength="250">
+
+        <h2>Informacje o projekcie</h2>
 
         <label for="budget_edition_id">Edycja</label>
         <select id="budget_edition_id" name="budget_edition_id" required>
@@ -46,8 +111,17 @@
             @endforeach
         </select>
 
+        <label for="local">Typ projektu</label>
+        <select id="local" name="local" required>
+            <option value="1" @selected((int) old('local', 1) === 1)>Projekt lokalny</option>
+            <option value="2" @selected((int) old('local') === 2)>Projekt Zielonego SBO</option>
+        </select>
+
         <label for="title">Tytuł</label>
         <input id="title" name="title" value="{{ old('title') }}" required maxlength="600">
+
+        <label for="short_description">Skrócony opis</label>
+        <textarea id="short_description" name="short_description" maxlength="700">{{ old('short_description') }}</textarea>
 
         <label for="localization">Lokalizacja</label>
         <textarea id="localization" name="localization" required>{{ old('localization') }}</textarea>
@@ -88,11 +162,35 @@
         <label for="free_of_charge">Bezpłatność</label>
         <textarea id="free_of_charge" name="free_of_charge" required>{{ old('free_of_charge') }}</textarea>
 
-        <label for="cost_description">Pozycja kosztorysu</label>
-        <input id="cost_description" name="cost_description" value="{{ old('cost_description') }}" required>
+        <label for="additional_cost">Czy projekt generuje koszty utrzymania w kolejnych latach?</label>
+        <textarea id="additional_cost" name="additional_cost" maxlength="500">{{ old('additional_cost') }}</textarea>
 
-        <label for="cost_amount">Kwota</label>
-        <input id="cost_amount" name="cost_amount" value="{{ old('cost_amount') }}" type="number" step="0.01" min="0" required>
+        <h2>Szacunkowe koszty projektu</h2>
+        @foreach ($costRows as $index => $costRow)
+            <fieldset>
+                <legend>Pozycja kosztorysu {{ $index + 1 }}</legend>
+
+                <label for="cost_items_{{ $index }}_description">Składowa kosztów</label>
+                <input
+                    id="cost_items_{{ $index }}_description"
+                    name="cost_items[{{ $index }}][description]"
+                    value="{{ $costRow['description'] ?? '' }}"
+                    @required($index === 0)
+                    maxlength="1000"
+                >
+
+                <label for="cost_items_{{ $index }}_amount">Koszt brutto</label>
+                <input
+                    id="cost_items_{{ $index }}_amount"
+                    name="cost_items[{{ $index }}][amount]"
+                    value="{{ $costRow['amount'] ?? '' }}"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    @required($index === 0)
+                >
+            </fieldset>
+        @endforeach
 
         <h2>Współautorzy</h2>
         @for ($index = 0; $index < 2; $index++)
@@ -110,6 +208,15 @@
 
                 <label for="coauthor_{{ $index }}_phone">Telefon</label>
                 <input id="coauthor_{{ $index }}_phone" name="coauthors[{{ $index }}][phone]" value="{{ old("coauthors.$index.phone") }}" maxlength="30">
+
+                <label for="coauthor_{{ $index }}_street">Ulica</label>
+                <input id="coauthor_{{ $index }}_street" name="coauthors[{{ $index }}][street]" value="{{ old("coauthors.$index.street") }}" maxlength="128">
+
+                <label for="coauthor_{{ $index }}_house_no">Nr domu</label>
+                <input id="coauthor_{{ $index }}_house_no" name="coauthors[{{ $index }}][house_no]" value="{{ old("coauthors.$index.house_no") }}" maxlength="20">
+
+                <label for="coauthor_{{ $index }}_flat_no">Nr lokalu</label>
+                <input id="coauthor_{{ $index }}_flat_no" name="coauthors[{{ $index }}][flat_no]" value="{{ old("coauthors.$index.flat_no") }}" maxlength="20">
 
                 <label for="coauthor_{{ $index }}_post_code">Kod pocztowy</label>
                 <input id="coauthor_{{ $index }}_post_code" name="coauthors[{{ $index }}][post_code]" value="{{ old("coauthors.$index.post_code") }}" maxlength="6">
@@ -133,6 +240,21 @@
                 </label>
             </fieldset>
         @endfor
+
+        <label>
+            <input name="show_task_coauthors" type="checkbox" value="1" @checked(old('show_task_coauthors', true))>
+            Informacje o współautorze mają być wyświetlane.
+        </label>
+
+        <label>
+            <input name="consent_to_change" type="checkbox" value="1" @checked(old('consent_to_change'))>
+            Wyrażam zgodę na wprowadzanie zmian przez Urząd Miasta Szczecin w porozumieniu z liderem.
+        </label>
+
+        <label>
+            <input name="attachments_anonymized" type="checkbox" value="1" @checked(old('attachments_anonymized')) required>
+            Posiadam prawa pozwalające na publikację załączników i potwierdzam ich anonimizację pod kątem danych osobowych.
+        </label>
 
         <label>
             <input name="support_list" type="checkbox" value="1" @checked(old('support_list')) required>

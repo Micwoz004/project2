@@ -12,7 +12,7 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 | `taskcosts` | `project_cost_items` | Kwoty jako decimal. |
 | `statuses` | `project_status_labels` | Edytowalne nazwy statusów legacy; same wartości statusów pozostają w `ProjectStatus`. |
 | `files`, `filesprivate` | `project_files` | Połączone z flagą `is_private` i typem załącznika. |
-| `cocreators` | `project_coauthors` | Zgody i dane kontaktowe zachowane. |
+| `cocreators` | `project_coauthors` | Zgody, dane kontaktowe i adresowe zachowane. |
 | `versions` | `project_versions` | Snapshot JSON projektu, plików i kosztów; `status=0` z legacy trafia jako `null`, bo nie jest statusem projektu. |
 | `taskcorrection` | `project_corrections` | Lista pól dopuszczonych do poprawy, termin i flaga wykonania korekty. |
 | `taskchangessuggestion` | `project_change_suggestions` | Propozycje zmian projektu: stare/nowe dane, koszty i pliki w JSON oraz decyzja autora/admina. |
@@ -74,5 +74,6 @@ Każda tabela migrowana z legacy powinna zachować `legacy_id`, jeśli reprezent
 - Załączniki publiczne i prywatne są jedną tabelą z flagą `is_private`, zamiast dwóch tabel.
 - Głosowania rad/komisji są jedną tabelą `project_board_votes`, żeby uniknąć powielania tych samych pól.
 - Korekty projektów mają osobną tabelę `project_corrections`; pola `projects.need_correction`, `correction_no`, `correction_start_time`, `correction_end_time` pozostają szybką denormalizacją dla blokad edycji i kompatybilności z legacy `tasks`.
+- Dane autora składane w publicznym formularzu są utrzymywane jako snapshot JSON w `projects.authors`; `projects.creator_id` pozostaje relacją do `users`, gdy formularz jest składany w aktywnej sesji. To pozwala zachować wartości z formularza 1:1 bez wymuszania tworzenia konta użytkownika w baseline logiki.
 - Trzy słowniki imion/nazwisk są połączone w `dictionary_entries`, dlatego `legacy_id` jest unikalne tylko razem z `source_table`.
 - `legacy_id` jest unikalne i opcjonalne, co umożliwia import etapami.

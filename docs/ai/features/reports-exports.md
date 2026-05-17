@@ -21,6 +21,7 @@ Status: baseline domenowy rozpoczęty.
 4. [x] Dodać bazowe raporty bez danych wrażliwych: statusy kart i demografia zaakceptowanych kart.
 5. [x] Pokryć testami kolumny i liczności względem fixture legacy.
 6. [x] Dodać administracyjne endpointy CSV z uprawnieniem `reports.export`.
+7. [x] Dodać administracyjne endpointy XLSX generowane z tych samych danych domenowych co CSV.
 
 ## Implementacja Laravel
 
@@ -40,6 +41,7 @@ Status: baseline domenowy rozpoczęty.
 - `CategoryComparisonCsvExporter` eksportuje raport porównujący punkty po legacy kategorii głównej projektu i po wielu kategoriach z `category_project`; raport nie zawiera PII.
 - `/wyniki/export.csv` jest dostępne tylko w oknie publikacji wyników.
 - `AdminReportController` udostępnia CSV za `auth` i `reports.export`: karty głosowania z PII, projekty złożone, niewysłane weryfikacje jednostek, korekty projektów, historię projektów, manifest wyników weryfikacji i porównanie kategorii.
+- `XlsxFromCsvExporter` generuje administracyjne XLSX z tych samych strumieni danych co CSV, bez oddzielnej logiki raportowej. Endpointy `.xlsx` zachowują tę samą bramkę `reports.export` i te same reguły PII co odpowiadające im CSV.
 - Filament `/admin/wyniki` udostępnia operatorowi z `results.view` dashboard wyników; skróty do eksportów CSV kart głosowania, kategorii, projektów złożonych, manifestu weryfikacji i historii projektów są widoczne tylko przy `reports.export`.
 
 ## Inwentaryzacja legacy
@@ -129,5 +131,5 @@ Status: baseline domenowy rozpoczęty.
 
 ## Świadome braki na tym etapie
 
-- Brak administracyjnych plików XLSX i kolejek dla dużych raportów; baseline udostępnia CSV przez kontroler z uprawnieniem.
-- Brak pełnych szablonów XLSX z katalogu `raporty_sbo`; obecny baseline świadomie udostępnia CSV z tymi samymi danymi domenowymi.
+- Brak kolejek dla dużych raportów; obecny baseline generuje pliki synchronicznie przez kontroler z uprawnieniem.
+- Brak pełnych graficznych szablonów XLSX z katalogu `raporty_sbo`; obecny baseline udostępnia XLSX tabelaryczne z tymi samymi danymi domenowymi co CSV.

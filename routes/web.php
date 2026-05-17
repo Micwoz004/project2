@@ -34,10 +34,17 @@ Route::get('/raporty-publiczne', [PublicReportController::class, 'index'])->name
 
 Route::middleware('auth')->prefix('admin/reports')->name('admin.reports.')->group(function (): void {
     Route::get('/vote-cards/{budgetEdition}.csv', [AdminReportController::class, 'voteCards'])->name('vote-cards');
+    Route::get('/vote-cards/{budgetEdition}.xlsx', [AdminReportController::class, 'voteCardsXlsx'])->name('vote-cards.xlsx');
     Route::get('/submitted-projects.csv', [AdminReportController::class, 'submittedProjects'])->name('submitted-projects');
+    Route::get('/submitted-projects.xlsx', [AdminReportController::class, 'submittedProjectsXlsx'])->name('submitted-projects.xlsx');
     Route::get('/unsent-advanced-verifications.csv', [AdminReportController::class, 'unsentAdvancedVerifications'])->name('unsent-advanced-verifications');
+    Route::get('/unsent-advanced-verifications.xlsx', [AdminReportController::class, 'unsentAdvancedVerificationsXlsx'])->name('unsent-advanced-verifications.xlsx');
     Route::get('/project-corrections.csv', [AdminReportController::class, 'projectCorrections'])->name('project-corrections');
+    Route::get('/project-corrections.xlsx', [AdminReportController::class, 'projectCorrectionsXlsx'])->name('project-corrections.xlsx');
     Route::get('/project-history.csv', [AdminReportController::class, 'projectHistory'])->name('project-history');
+    Route::get('/project-history.xlsx', [AdminReportController::class, 'projectHistoryXlsx'])->name('project-history.xlsx');
     Route::get('/verification-manifest.csv', [AdminReportController::class, 'verificationManifest'])->name('verification-manifest');
+    Route::get('/verification-manifest.xlsx', [AdminReportController::class, 'verificationManifestXlsx'])->name('verification-manifest.xlsx');
     Route::get('/category-comparison/{budgetEdition}.csv', [AdminReportController::class, 'categoryComparison'])->name('category-comparison');
+    Route::get('/category-comparison/{budgetEdition}.xlsx', [AdminReportController::class, 'categoryComparisonXlsx'])->name('category-comparison.xlsx');
 });

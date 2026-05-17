@@ -7,6 +7,7 @@ use App\Domain\Dictionaries\Models\DictionaryEntry;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Results\Models\ResultPublication;
 use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
 use App\Domain\Users\Enums\SystemRole;
@@ -25,6 +26,7 @@ use App\Policies\DepartmentPolicy;
 use App\Policies\DictionaryEntryPolicy;
 use App\Policies\ProjectAreaPolicy;
 use App\Policies\ProjectPolicy;
+use App\Policies\ResultPublicationPolicy;
 use App\Policies\VoteCardPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -56,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(DictionaryEntry::class, DictionaryEntryPolicy::class);
         Gate::policy(Project::class, ProjectPolicy::class);
         Gate::policy(ProjectArea::class, ProjectAreaPolicy::class);
+        Gate::policy(ResultPublication::class, ResultPublicationPolicy::class);
         Gate::policy(VoteCard::class, VoteCardPolicy::class);
 
         Gate::define('view-results', fn (User $user) => $user->can('results.view') || $user->hasAnyRole(['admin', 'bdo']));

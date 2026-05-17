@@ -42,6 +42,7 @@ Status: baseline domenowy rozbudowany.
 - Filament page `/admin/wyniki` pokazuje administracyjny dashboard wyników dla operatorów z uprawnieniem `results.view`; linki do raportów CSV pozostają za `reports.export`.
 - Operator z `reports.export` albo rolą `admin`/`bdo` może z poziomu `/admin/wyniki` wybrać zwycięski projekt dla aktywnej grupy remisowej. Formularz przekazuje stabilny klucz grupy i listę projektów do `ResolveResultTieDecisionAction`, więc UI nie rozstrzyga reguł samodzielnie.
 - Operator z `reports.export` albo rolą `admin`/`bdo` może z poziomu `/admin/wyniki` utrwalić snapshot wyników, ale wyłącznie gdy te wyniki są już publicznie publikowalne według harmonogramu edycji.
+- `ResultPublicationResource` pokazuje read-only listę utrwalonych snapshotów wyników: edycję, wersję, liczbę punktów/projektów, operatora i czas utrwalenia. Dostęp wymaga `results.view`, `reports.export` albo roli `admin`/`bdo`.
 
 ## Świadome braki na tym etapie
 

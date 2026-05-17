@@ -25,6 +25,7 @@
         table { width: 100%; border-collapse: collapse; background: #ffffff; }
         th, td { border-bottom: 1px solid #d7dde5; padding: 10px; text-align: left; }
     </style>
+    @livewireStyles
 </head>
 <body>
 <header>
@@ -44,5 +45,6 @@
 
     {{ $slot }}
 </main>
+@livewireScripts
 </body>
 </html>

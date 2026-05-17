@@ -142,13 +142,14 @@
 - [x] Kodowa i dokumentacyjna mapa punktów wysyłki mail/SMS legacy w `LegacyCommunicationTrigger`.
 - [x] Formularz konsultacji merytorycznej w Filament zapisuje legacy `consultationInformation`.
 - [x] `VotingTokenService` ma adapter SMS: lokalny `null` provider i konfigurowalny HTTP provider dla realnej bramki.
+- [x] Publiczne `/glosowanie` renderuje Livewire flow wydania kodu SMS i oddania głosu przez usługi domenowe.
 
 ## Do pełnego parytetu
 
 - [ ] Pełny formularz projektu z autorami, mapą i zgodami 1:1 względem widoków Yii.
 - [ ] Potwierdzenie, czy anonimizacja legacy transformowała fizyczne pliki.
 - [ ] Finalny przegląd etykiet formularza formalnego z aktualną wersją urzędową.
-- [ ] Docelowy Livewire flow głosowania i integracja z realnym operatorem SMS.
+- [ ] Produkcyjna konfiguracja realnego operatora SMS na środowisku.
 - [ ] Pełny import danych bezpośrednio z dumpa MySQL/staging do PostgreSQL.
 - [ ] Pełny import przypisań ról/uprawnień z dumpa legacy.
 - [ ] Pełny import użytkowników, departamentów i RBAC bezpośrednio z dumpa legacy.

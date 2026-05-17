@@ -13,7 +13,7 @@
 
 ## Plan wdrożenia
 
-Status: baseline domenowy rozbudowany.
+Status: baseline domenowy i publiczny flow Livewire rozbudowane.
 
 1. [x] Dodać bazowy publiczny flow wyborcy, tokenu i wyboru projektów.
 2. [x] Podpiąć `VotingTokenService` pod SMS provider lub adapter testowy.
@@ -37,10 +37,9 @@ Status: baseline domenowy rozbudowany.
 - `VotingTokenService` wysyła wygenerowany kod przez `SmsProvider`. Domyślny `NullSmsProvider` obsługuje środowisko lokalne/testowe, a `HttpSmsProvider` pozwala podpiąć realną bramkę przez `SMS_DRIVER=http`, `SMS_API_URL`, `SMS_API_TOKEN`, `SMS_FROM` i `SMS_VOTING_TOKEN_MESSAGE`.
 - Jeśli provider odrzuci wysyłkę, nowo wygenerowany token jest natychmiast unieważniany, żeby nie został aktywny bez dostarczenia kodu.
 - Publiczny endpoint `POST /glosowanie` aktywuje token przez `phone + token`, przekazuje wybór projektów do `CastVoteService` i unieważnia token po skutecznym głosie.
-- Widok `/glosowanie` zawiera formularz uzyskania kodu i formularz oddania głosu na jeden projekt lokalny oraz jeden ogólnomiejski.
+- Widok `/glosowanie` renderuje komponent Livewire `PublicVotingFlow`, który obsługuje wydanie kodu SMS i oddanie głosu na jeden projekt lokalny oraz jeden ogólnomiejski przez te same usługi domenowe co endpointy POST.
 
 ## Świadome braki na tym etapie
 
-- Flow publiczny jest w Blade jako baseline; docelowe Livewire może go zastąpić bez zmiany logiki domenowej.
 - Brak produkcyjnych danych operatora SMS w repo; adapter HTTP jest gotowy konfiguracyjnie, ale wymaga wartości env na środowisku.
-- Walidacja tokenu jest domenowo gotowa, ale nie jest jeszcze podpięta do pełnego UI formularza głosowania.
+- Flow Livewire zachowuje prostą prezentację formularza; finalny UX może być dopracowany wizualnie bez zmiany logiki domenowej.

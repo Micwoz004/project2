@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Public;
 
 use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\Projects\Models\Project;
 use App\Domain\Voting\Data\VoterIdentityData;
 use App\Domain\Voting\Enums\CitizenConfirmation;
 use App\Domain\Voting\Services\CastVoteService;
@@ -20,23 +19,7 @@ class PublicVotingController extends Controller
 {
     public function welcome(): View
     {
-        $edition = BudgetEdition::query()->latest('voting_start')->first();
-
-        return view('public.voting.welcome', [
-            'edition' => $edition,
-            'localProjects' => Project::query()
-                ->with('area')
-                ->pickedForVoting()
-                ->whereHas('area', fn ($query) => $query->where('is_local', true))
-                ->orderBy('number_drawn')
-                ->get(),
-            'citywideProjects' => Project::query()
-                ->with('area')
-                ->pickedForVoting()
-                ->whereHas('area', fn ($query) => $query->where('is_local', false))
-                ->orderBy('number_drawn')
-                ->get(),
-        ]);
+        return view('public.voting.welcome');
     }
 
     public function issueToken(IssueVotingTokenRequest $request, VotingTokenService $votingTokenService): RedirectResponse

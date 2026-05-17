@@ -138,6 +138,266 @@ class ProjectResource extends Resource
         ],
     ];
 
+    /**
+     * @var array<int, string>
+     */
+    private const MERIT_VALUE_OPTIONS = [
+        0 => 'Nie',
+        1 => 'Tak',
+        2 => 'Nie dotyczy',
+    ];
+
+    /**
+     * @var array<string, array{legacy: string, label: string, comments?: bool}>
+     */
+    private const INITIAL_MERIT_ANSWER_FIELDS = [
+        'citizen_dialog_office_question_1' => [
+            'legacy' => 'citizenDialogOfficeQuestion1',
+            'label' => 'BDO: projekt polega wyłącznie na sporządzeniu projektu, planu albo dokumentacji?',
+        ],
+        'citizen_dialog_office_question_2' => [
+            'legacy' => 'citizenDialogOfficeQuestion2',
+            'label' => 'BDO: charakter projektu',
+        ],
+        'citizen_dialog_office_result' => [
+            'legacy' => 'citizenDialogOfficeResult',
+            'label' => 'BDO: czy projekt może przejść do następnego etapu?',
+        ],
+        'mayor_office_question_1' => [
+            'legacy' => 'mayorOfficeQuestion1',
+            'label' => 'Prezydent: zgodność ze Strategią Rozwoju Szczecina',
+        ],
+        'mayor_office_question_2' => [
+            'legacy' => 'mayorOfficeQuestion2',
+            'label' => 'Prezydent: mieści się w zadaniach własnych Gminy',
+        ],
+        'mayor_office_result' => [
+            'legacy' => 'mayorOfficeResult',
+            'label' => 'Prezydent: czy projekt może przejść do następnego etapu?',
+        ],
+        'environment_office_question_1' => [
+            'legacy' => 'environmentOfficeQuestion1',
+            'label' => 'Środowisko: projekt spełnia kryteria Zielonego SBO',
+        ],
+        'environment_office_question_2' => [
+            'legacy' => 'environmentOfficeQuestion2',
+            'label' => 'Środowisko: zakłada realizację innych celów niż wskazane',
+        ],
+        'environment_office_question_3' => [
+            'legacy' => 'environmentOfficeQuestion3',
+            'label' => 'Środowisko: możliwy na terenie/obiekcie objętym ochroną przyrody',
+        ],
+        'environment_office_question_4' => [
+            'legacy' => 'environmentOfficeQuestion4',
+            'label' => 'Środowisko: możliwe wyłączenie gruntu z produkcji rolnej',
+        ],
+        'environment_office_result' => [
+            'legacy' => 'environmentOfficeResult',
+            'label' => 'Środowisko: kwalifikuje się do Zielonego SBO i realizacji',
+        ],
+        'project_management_office_question_1' => [
+            'legacy' => 'projectManagementOfficeQuestion1',
+            'label' => 'Zarządzanie projektami: zgodność z Wieloletnim Programem Rozwoju',
+        ],
+        'project_management_office_question_2' => [
+            'legacy' => 'projectManagementOfficeQuestion2',
+            'label' => 'Zarządzanie projektami: inwestycja jest już w budżecie lub planach',
+        ],
+        'project_management_office_question_3' => [
+            'legacy' => 'projectManagementOfficeQuestion3',
+            'label' => 'Zarządzanie projektami: podobne działanie było już realizowane',
+        ],
+        'project_management_office_question_4' => [
+            'legacy' => 'projectManagementOfficeQuestion4',
+            'label' => 'Zarządzanie projektami: zaplanowano analogiczne zadania',
+        ],
+        'project_management_office_question_5' => [
+            'legacy' => 'projectManagementOfficeQuestion5',
+            'label' => 'Zarządzanie projektami: projekt koliduje z innymi działaniami',
+        ],
+        'project_management_office_result' => [
+            'legacy' => 'projectManagementOfficeResult',
+            'label' => 'Zarządzanie projektami: projekt mógłby zostać zrealizowany',
+        ],
+        'property_office_suboffice1_property_owner_skip' => [
+            'legacy' => 'propertyOfficeSuboffice1PropertyOwnerSkip',
+            'label' => 'Majątek 1: pominięto wskazanie właściciela działki',
+            'comments' => false,
+        ],
+        'property_office_suboffice1_question_1' => [
+            'legacy' => 'propertyOfficeSuboffice1Question1',
+            'label' => 'Majątek 1: teren przeznaczony do zbycia w drodze zamiany',
+        ],
+        'property_office_suboffice1_result' => [
+            'legacy' => 'propertyOfficeSuboffice1Result',
+            'label' => 'Majątek 1: czy projekt może przejść do następnego etapu?',
+        ],
+        'property_office_suboffice2_question_1' => [
+            'legacy' => 'propertyOfficeSuboffice2Question1',
+            'label' => 'Majątek 2: miejsce przeznaczone na sprzedaż lub w procedurze zbycia',
+        ],
+        'property_office_suboffice2_question_2' => [
+            'legacy' => 'propertyOfficeSuboffice2Question2',
+            'label' => 'Majątek 2: teren inwestycyjny albo rezerwa na inny cel',
+        ],
+        'property_office_suboffice2_question_3' => [
+            'legacy' => 'propertyOfficeSuboffice2Question3',
+            'label' => 'Majątek 2: możliwa realizacja po wydzieleniu części działki',
+        ],
+        'property_office_suboffice2_result' => [
+            'legacy' => 'propertyOfficeSuboffice2Result',
+            'label' => 'Majątek 2: czy projekt może przejść do następnego etapu?',
+        ],
+        'housing_office_question_1' => [
+            'legacy' => 'housingOfficeQuestion1',
+            'label' => 'Mieszkalnictwo: nieruchomość obciążona na rzecz osób trzecich',
+        ],
+        'housing_office_question_2' => [
+            'legacy' => 'housingOfficeQuestion2',
+            'label' => 'Mieszkalnictwo: nieruchomość przeznaczona do obciążenia',
+        ],
+        'housing_office_question_3' => [
+            'legacy' => 'housingOfficeQuestion3',
+            'label' => 'Mieszkalnictwo: realizacja może naruszać prawa osób trzecich',
+        ],
+        'housing_office_question_4' => [
+            'legacy' => 'housingOfficeQuestion4',
+            'label' => 'Mieszkalnictwo: przedstawiono właściwe oświadczenie właściciela',
+        ],
+        'housing_office_question_5' => [
+            'legacy' => 'housingOfficeQuestion5',
+            'label' => 'Mieszkalnictwo: przedstawiono zgodę instytucji',
+        ],
+        'housing_office_question_6' => [
+            'legacy' => 'housingOfficeQuestion6',
+            'label' => 'Mieszkalnictwo: teren objęty procedurą sprzedaży lokalu i gruntu',
+        ],
+        'housing_office_result' => [
+            'legacy' => 'housingOfficeResult',
+            'label' => 'Mieszkalnictwo: czy projekt może przejść do następnego etapu?',
+        ],
+        'urban_office_question_1' => [
+            'legacy' => 'urbanOfficeQuestion1',
+            'label' => 'Urbanistyka: zgodność z miejscowym planem zagospodarowania',
+        ],
+        'urban_office_question_2' => [
+            'legacy' => 'urbanOfficeQuestion2',
+            'label' => 'Urbanistyka: wymaga decyzji o warunkach zabudowy',
+        ],
+        'urban_office_result' => [
+            'legacy' => 'urbanOfficeResult',
+            'label' => 'Urbanistyka: projekt może zostać zrealizowany w lokalizacji',
+        ],
+        'antique_office_question_1' => [
+            'legacy' => 'antiqueOfficeQuestion1',
+            'label' => 'Zabytki: możliwy na terenie/obiekcie objętym ochroną zabytków',
+        ],
+        'antique_office_result' => [
+            'legacy' => 'antiqueOfficeResult',
+            'label' => 'Zabytki: projekt może zostać zrealizowany w lokalizacji',
+        ],
+    ];
+
+    /**
+     * @var array<string, array{legacy: string, label: string, comments?: bool}>
+     */
+    private const INITIAL_MERIT_TEXT_FIELDS = [
+        'mayor_office_recommendation' => [
+            'legacy' => 'mayorOfficeRecommendation',
+            'label' => 'Prezydent: rekomendacja jednostki wiodącej',
+            'comments' => true,
+        ],
+        'property_office_suboffice1_property_owner' => [
+            'legacy' => 'propertyOfficeSuboffice1PropertyOwner',
+            'label' => 'Majątek 1: właściciel albo użytkownik wieczysty działki',
+            'comments' => true,
+        ],
+        'urban_office_information' => [
+            'legacy' => 'urbanOfficeInformation',
+            'label' => 'Urbanistyka: inne informacje istotne dla realizacji projektu',
+        ],
+    ];
+
+    /**
+     * @var array<string, array{legacy: string, label: string, comments?: bool}>
+     */
+    private const FINAL_MERIT_ANSWER_FIELDS = [
+        'is_law_compliant' => [
+            'legacy' => 'isLawCompliant',
+            'label' => 'Zgodność z przepisami prawa w obszarze jednostki',
+        ],
+        'project_meet_requirements_universal_design' => [
+            'legacy' => 'projectMeetRequirementsUniversalDesign',
+            'label' => 'Uwzględnia projektowanie uniwersalne i wymagania dostępności',
+        ],
+        'is_project_feasible' => [
+            'legacy' => 'isProjectFeasible',
+            'label' => 'Możliwy do realizacji na terenie lub obiekcie objętym ochroną przyrody',
+        ],
+        'is_in_year_range' => [
+            'legacy' => 'isInYearRange',
+            'label' => 'Zakres pozwala na realizację w roku edycji',
+        ],
+        'can_start_in_year' => [
+            'legacy' => 'canStartInYear',
+            'label' => 'Realizacja inwestycji może rozpocząć się w roku edycji',
+        ],
+        'is_only_a_part' => [
+            'legacy' => 'isOnlyAPart',
+            'label' => 'Projekt jest tylko etapem większej inwestycji',
+        ],
+        'is_technology_available' => [
+            'legacy' => 'isTechnologyAvailable',
+            'label' => 'Istnieją możliwości techniczne realizacji projektu',
+        ],
+        'is_estimation_correct' => [
+            'legacy' => 'isEstimationCorrect',
+            'label' => 'Koszty projektu zostały prawidłowo oszacowane',
+        ],
+        'fits_in_budget' => [
+            'legacy' => 'fitsInBudget',
+            'label' => 'Urealniony koszt mieści się w puli właściwego obszaru',
+        ],
+        'above30percent' => [
+            'legacy' => 'above30percent',
+            'label' => 'Elementy niezwiązane z Zielonym SBO przekraczają 30% wartości',
+        ],
+        'has_additional_costs' => [
+            'legacy' => 'hasAdditionalCosts',
+            'label' => 'Projekt będzie generował koszty w kolejnych latach',
+        ],
+        'are_additional_costs_too_high' => [
+            'legacy' => 'areAdditionalCostsTooHigh',
+            'label' => 'Koszty utrzymania będą niewspółmiernie wysokie',
+        ],
+        'does_fit_thriftiness_requirement' => [
+            'legacy' => 'doesFitThriftinessRequirement',
+            'label' => 'Realizacja spełnia wymóg gospodarności',
+        ],
+        'generally_available_free_of_charge' => [
+            'legacy' => 'generallyAvailableFreeOfCharge',
+            'label' => 'Projekt spełnia wymogi ogólnodostępności i nieodpłatności',
+        ],
+        'was_task_modified' => [
+            'legacy' => 'wasTaskModified',
+            'label' => 'Jednostka wiodąca modyfikowała projekt z autorem',
+        ],
+        'lead_unit_request_opinion' => [
+            'legacy' => 'leadUnitRequestOpinion',
+            'label' => 'Jednostka wiodąca wystąpiła o opinie innych jednostek',
+        ],
+    ];
+
+    /**
+     * @var array<string, array{legacy: string, label: string, comments?: bool}>
+     */
+    private const FINAL_MERIT_TEXT_FIELDS = [
+        'additional_information' => [
+            'legacy' => 'additionalInformation',
+            'label' => 'Dodatkowe informacje istotne dla dopuszczenia projektu pod głosowanie',
+        ],
+    ];
+
     public static function getModelLabel(): string
     {
         return 'projekt';
@@ -415,7 +675,7 @@ class ProjectResource extends Resource
             self::departmentFromData($data),
             self::authenticatedUser('verification.initial.submit.rejected_guest'),
             (bool) ($data['result'] ?? false),
-            self::meritAnswersFromData($data),
+            self::meritAnswersFromData($data, self::INITIAL_MERIT_ANSWER_FIELDS, self::INITIAL_MERIT_TEXT_FIELDS),
             $data['result_comments'] ?? null,
         );
     }
@@ -430,7 +690,7 @@ class ProjectResource extends Resource
             self::departmentFromData($data),
             self::authenticatedUser('verification.final.submit.rejected_guest'),
             (bool) ($data['result'] ?? false),
-            self::meritAnswersFromData($data),
+            self::meritAnswersFromData($data, self::FINAL_MERIT_ANSWER_FIELDS, self::FINAL_MERIT_TEXT_FIELDS),
             $data['result_comments'] ?? null,
             self::costRowsFromData($data, 'corrected'),
             self::costRowsFromData($data, 'future'),
@@ -730,7 +990,7 @@ class ProjectResource extends Resource
     {
         return Action::make('submit_initial_merit_verification')
             ->label('Wyślij wstępną')
-            ->schema(self::meritVerificationSchema())
+            ->schema(self::initialMeritVerificationSchema())
             ->visible(fn (Project $record): bool => self::canSubmitInitialMeritVerification($record))
             ->action(fn (array $data, Project $record): InitialMeritVerification => self::submitInitialMeritVerificationFromAdminForm($record, $data));
     }
@@ -740,7 +1000,7 @@ class ProjectResource extends Resource
         return Action::make('submit_final_merit_verification')
             ->label('Wyślij końcową')
             ->schema([
-                ...self::meritVerificationSchema(),
+                ...self::finalMeritVerificationSchema(),
                 TextInput::make('corrected_cost_description')
                     ->label('Opis kosztu szacunkowego'),
                 TextInput::make('corrected_cost_sum')
@@ -760,7 +1020,7 @@ class ProjectResource extends Resource
     {
         return Action::make('submit_consultation_verification')
             ->label('Wyślij konsultację')
-            ->schema(self::meritVerificationSchema())
+            ->schema(self::consultationVerificationSchema())
             ->visible(fn (Project $record): bool => self::canSubmitConsultationVerification($record))
             ->action(fn (array $data, Project $record): ConsultationVerification => self::submitConsultationVerificationFromAdminForm($record, $data));
     }
@@ -831,7 +1091,42 @@ class ProjectResource extends Resource
     /**
      * @return array<int, mixed>
      */
-    private static function meritVerificationSchema(): array
+    private static function initialMeritVerificationSchema(): array
+    {
+        return [
+            ...self::meritVerificationHeaderSchema(),
+            ...self::legacyMeritAnswerSchema(self::INITIAL_MERIT_ANSWER_FIELDS, self::INITIAL_MERIT_TEXT_FIELDS),
+            ...self::meritVerificationFooterSchema(),
+        ];
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private static function finalMeritVerificationSchema(): array
+    {
+        return [
+            ...self::meritVerificationHeaderSchema(),
+            ...self::legacyMeritAnswerSchema(self::FINAL_MERIT_ANSWER_FIELDS, self::FINAL_MERIT_TEXT_FIELDS),
+            ...self::meritVerificationFooterSchema(),
+        ];
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private static function consultationVerificationSchema(): array
+    {
+        return [
+            ...self::meritVerificationHeaderSchema(),
+            ...self::meritVerificationFooterSchema(),
+        ];
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private static function meritVerificationHeaderSchema(): array
     {
         return [
             Select::make('department_id')
@@ -841,6 +1136,54 @@ class ProjectResource extends Resource
             Toggle::make('result')
                 ->label('Wynik pozytywny')
                 ->default(true),
+        ];
+    }
+
+    /**
+     * @param  array<string, array{legacy: string, label: string, comments?: bool}>  $answerFields
+     * @param  array<string, array{legacy: string, label: string, comments?: bool}>  $textFields
+     * @return array<int, mixed>
+     */
+    private static function legacyMeritAnswerSchema(array $answerFields, array $textFields): array
+    {
+        $schema = [];
+
+        foreach ($answerFields as $fieldName => $definition) {
+            $schema[] = Select::make($fieldName)
+                ->label($definition['label'])
+                ->options(self::MERIT_VALUE_OPTIONS);
+
+            if (($definition['comments'] ?? true) === true) {
+                $schema[] = Textarea::make($fieldName.'_comments')
+                    ->label('Uwagi')
+                    ->maxLength(63000)
+                    ->columnSpanFull();
+            }
+        }
+
+        foreach ($textFields as $fieldName => $definition) {
+            $schema[] = Textarea::make($fieldName)
+                ->label($definition['label'])
+                ->maxLength(63000)
+                ->columnSpanFull();
+
+            if (($definition['comments'] ?? false) === true) {
+                $schema[] = Textarea::make($fieldName.'_comments')
+                    ->label('Uwagi')
+                    ->maxLength(63000)
+                    ->columnSpanFull();
+            }
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private static function meritVerificationFooterSchema(): array
+    {
+        return [
             Textarea::make('answers_notes')
                 ->label('Treść opinii')
                 ->maxLength(5000)
@@ -1048,13 +1391,42 @@ class ProjectResource extends Resource
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array<string, string|null>
+     * @param  array<string, array{legacy: string, label: string, comments?: bool}>  $answerFields
+     * @param  array<string, array{legacy: string, label: string, comments?: bool}>  $textFields
+     * @return array<string, int|string|null>
      */
-    private static function meritAnswersFromData(array $data): array
+    private static function meritAnswersFromData(array $data, array $answerFields = [], array $textFields = []): array
     {
-        return [
+        $answers = [
             'notes' => $data['answers_notes'] ?? null,
         ];
+
+        foreach ($answerFields as $fieldName => $definition) {
+            if (array_key_exists($fieldName, $data) && $data[$fieldName] !== null && $data[$fieldName] !== '') {
+                $answers[$definition['legacy']] = (int) $data[$fieldName];
+            }
+
+            $comment = trim((string) ($data[$fieldName.'_comments'] ?? ''));
+            if ($comment !== '') {
+                $answers[$definition['legacy'].'Comments'] = $comment;
+            }
+        }
+
+        foreach ($textFields as $fieldName => $definition) {
+            $value = trim((string) ($data[$fieldName] ?? ''));
+            if ($value !== '') {
+                $answers[$definition['legacy']] = $value;
+            }
+
+            if (($definition['comments'] ?? false) === true) {
+                $comment = trim((string) ($data[$fieldName.'_comments'] ?? ''));
+                if ($comment !== '') {
+                    $answers[$definition['legacy'].'Comments'] = $comment;
+                }
+            }
+        }
+
+        return $answers;
     }
 
     /**

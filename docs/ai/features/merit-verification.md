@@ -20,7 +20,7 @@ Status: częściowo zaimplementowane w etapie 3.
 3. [x] Dodać akcje zakończenia oceny z decyzją.
 4. [x] Udostępnić bazowe formularze w Filament według roli/departamentu.
 5. [x] Pokryć testami przydziały, konsultacje, koszty i negatywne wyniki.
-6. [ ] Uzupełnić pełne formularze pól legacy w UI/DTO.
+6. [x] Uzupełnić formularze pól legacy dla kart wstępnych i końcowych w UI/DTO.
 7. [x] Dodać import fixture dla `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation` i `taskdepartmentassignment`.
 8. [x] Dodać import fixture dla `detailedverification`, `locationverification` i `verificationversion`.
 9. [x] Dodać import fixture dla `coordinatorassignment` i `verifierassignment`.
@@ -35,7 +35,7 @@ Status: częściowo zaimplementowane w etapie 3.
 - `TaskInitialMeritVerification`, `TaskFinishMeritVerification` i `TaskConsultation` mają statusy kart: `STATUS_WORKING_COPY=1` oraz `STATUS_SENT=2`.
 - Wysłanie karty ustawia `sendDate` i oznacza przydział jako zwrócony z wynikiem (`isReturned=0`, `sendDate=NOW()`).
 - Karty weryfikacji są wersjonowane przez `VerificationVersion`; importer zachowuje historyczne snapshoty, a tworzenie nowych snapshotów w akcjach Laravel zostaje do dopisania.
-- Końcowa weryfikacja zapisuje `correctedCostJson` i `futureCostJson`; przy wysłaniu każde pole kosztu musi mieć opis i sumę.
+- Końcowa weryfikacja zapisuje `correctedCostJson` i `futureCostJson`; przy wysłaniu każde pole kosztu musi mieć opis i sumę. Jeśli `hasAdditionalCosts` ma wartość `NO` albo `N/A`, legacy `parseFutureCosts()` pomijało koszty przyszłe i Laravel robi to samo.
 - Konsultacja zapisuje wynik i komentarze, ale nie zmienia bezpośrednio statusu projektu w kontrolerze karty.
 
 ## Zaimplementowany odpowiednik Laravel
@@ -57,16 +57,19 @@ Status: częściowo zaimplementowane w etapie 3.
 - `ProjectDepartmentScope` konsoliduje legacy `tasksinitialverification` i `tasksdepartments`, odtwarzając listę jednostek uprawnionych do opiniowania projektu.
 - `VerificationPressureLog` zachowuje legacy `verificationpressure`: tytuł/treść monitu, odbiorców, typ (`2` dyrektor, `3` ręczny), jednostkę i legacy ID przydziału.
 - `ProjectResource` w Filament udostępnia przydzielanie jednostek do typów `MeritInitial`, `MeritFinish` i `Consultation` oraz wysyłkę kart wstępnych, końcowych i konsultacyjnych. Widoczność akcji wymaga uprawnień weryfikacyjnych i statusów pasujących do etapu.
-- Bazowe formularze UI zapisują wynik, treść opinii, uzasadnienie negatywne oraz pojedynczą pozycję kosztu szacunkowego/przyszłego; pełne listy pól legacy nadal są przechowywane w `answers` JSON i pozostają do odwzorowania w kompletnej wersji UI.
+- Formularz wstępnej oceny merytorycznej w Filament zapisuje klucze legacy z `TaskInitialMeritVerification`: bloki BDO, Prezydenta, środowiska, zarządzania projektami, majątku, mieszkalnictwa, urbanistyki i zabytków wraz z komentarzami oraz polami tekstowymi rekomendacji/właściciela/informacji.
+- Formularz końcowej oceny merytorycznej w Filament zapisuje klucze legacy z `TaskFinishMeritVerification`: pytania prawne, dostępnościowe, wykonalnościowe, budżetowe, kosztów przyszłych, gospodarności, dostępności/nieodpłatności, modyfikacji i opinii jednostek wraz z komentarzami oraz dodatkowymi informacjami.
+- Bazowe formularze UI zapisują wynik, treść opinii, uzasadnienie negatywne oraz pojedynczą pozycję kosztu szacunkowego/przyszłego; kosztorys wielopozycyjny pozostaje w domenie i imporcie JSON, a UI ma aktualnie po jednym wierszu na typ kosztu.
 - `VerificationOverviewService` buduje administracyjny podgląd przydziałów, kart i wersji `verification_versions`; `ProjectResource` pokazuje go jako modal `Historia weryfikacji` dla użytkowników z uprawnieniami weryfikacyjnymi.
 
 ## Świadome uproszczenia na tym etapie
 
-- Pełne listy pól pytań z formularzy legacy są przechowywane w `answers` JSON. Logika statusów i wymaganych danych jest w domenie; kompletne formularze UI zostaną odwzorowane później.
+- Konsultacje nadal mają prosty formularz opinii/wyniku; pełne specjalistyczne ekrany konsultacyjne można rozbudować, jeśli w legacy widok konkretnej jednostki wymaga osobnych pól poza `TaskConsultation`.
+- UI końcowej oceny obsługuje pojedynczą pozycję kosztu szacunkowego i przyszłego; domena oraz importer nadal zachowują listy wielu pozycji.
 - Podgląd historii weryfikacji jest tekstowym modalem administracyjnym; docelowo można go rozbudować do tabel zależnych, jeśli będzie potrzebny pełny ekran analityczny.
 
 ## Zgodność do sprawdzenia
 
-- Porównać pełne payloady `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation` w imporcie legacy.
+- Porównać pełne payloady `taskinitialmeritverification`, `taskfinishmeritverification`, `taskconsultation` w imporcie legacy z wartościami zapisywanymi z nowych formularzy.
 - Dopisać wersjonowanie kart i logikę zwrotu do kopii roboczej (`setAsReturned`).
 - Uzupełnić reguły przejść statusów na poziomie koordynatora, gdy wiele departamentów ma przydziały równolegle.

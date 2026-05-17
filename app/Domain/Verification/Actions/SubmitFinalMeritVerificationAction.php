@@ -43,9 +43,11 @@ class SubmitFinalMeritVerificationAction
             'result' => $result,
         ]);
 
-        $this->assertCanSave($project, $department, $result, $resultComments, $correctedCosts, $futureCosts, $sent);
+        $futureCostsToSave = $this->futureCostsForAnswers($project, $answers, $futureCosts);
 
-        return DB::transaction(function () use ($project, $department, $actor, $result, $answers, $resultComments, $correctedCosts, $futureCosts, $sent): FinalMeritVerification {
+        $this->assertCanSave($project, $department, $result, $resultComments, $correctedCosts, $futureCostsToSave, $sent);
+
+        return DB::transaction(function () use ($project, $department, $actor, $result, $answers, $resultComments, $correctedCosts, $futureCostsToSave, $sent): FinalMeritVerification {
             $cardStatus = $sent ? VerificationCardStatus::Sent : VerificationCardStatus::WorkingCopy;
             $projectStatus = $result ? ProjectStatus::MeritVerificationAccepted : ProjectStatus::MeritVerificationRejected;
 
@@ -63,7 +65,7 @@ class SubmitFinalMeritVerificationAction
                     'answers' => [
                         ...$answers,
                         'correctedCost' => $this->normalizeCosts($correctedCosts),
-                        'futureCost' => $this->normalizeCosts($futureCosts),
+                        'futureCost' => $this->normalizeCosts($futureCostsToSave),
                     ],
                     'sent_at' => $sent ? now() : null,
                 ],
@@ -72,7 +74,7 @@ class SubmitFinalMeritVerificationAction
             $snapshotAnswers = [
                 ...$answers,
                 'correctedCost' => $this->normalizeCosts($correctedCosts),
-                'futureCost' => $this->normalizeCosts($futureCosts),
+                'futureCost' => $this->normalizeCosts($futureCostsToSave),
             ];
 
             $this->recordVerificationVersion->execute(
@@ -114,6 +116,33 @@ class SubmitFinalMeritVerificationAction
 
             return $verification;
         });
+    }
+
+    /**
+     * @param  array<string, mixed>  $answers
+     * @param  list<array{description: string, sum: int|float|string}>  $futureCosts
+     * @return list<array{description: string, sum: int|float|string}>
+     */
+    private function futureCostsForAnswers(Project $project, array $answers, array $futureCosts): array
+    {
+        if (! array_key_exists('hasAdditionalCosts', $answers)) {
+            return $futureCosts;
+        }
+
+        $hasAdditionalCosts = (int) $answers['hasAdditionalCosts'];
+
+        if (! in_array($hasAdditionalCosts, [0, 2], true)) {
+            return $futureCosts;
+        }
+
+        if ($futureCosts !== []) {
+            Log::info('verification.final.future_costs.skipped', [
+                'project_id' => $project->id,
+                'has_additional_costs' => $hasAdditionalCosts,
+            ]);
+        }
+
+        return [];
     }
 
     /**

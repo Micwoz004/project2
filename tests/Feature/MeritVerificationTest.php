@@ -162,6 +162,28 @@ it('stores final merit corrected and future costs like legacy json fields', func
             ->count())->toBe(1);
 });
 
+it('ignores future costs when final card says there are no additional costs', function (): void {
+    $actor = User::factory()->create();
+    $project = meritProject(ProjectStatus::SentForMeritVerification);
+    $department = verificationDepartment();
+
+    app(AssignVerificationDepartmentAction::class)->execute($project, $department, VerificationAssignmentType::MeritFinish);
+
+    $verification = app(SubmitFinalMeritVerificationAction::class)->execute(
+        $project,
+        $department,
+        $actor,
+        true,
+        ['hasAdditionalCosts' => 0],
+        futureCosts: [
+            ['description' => '', 'sum' => ''],
+        ],
+    );
+
+    expect($verification->answers['hasAdditionalCosts'])->toBe(0)
+        ->and($verification->answers['futureCost'])->toBe([]);
+});
+
 it('waits for all final merit departments and rejects when any sent card is negative', function (): void {
     $actor = User::factory()->create();
     $project = meritProject(ProjectStatus::DuringMeritVerification);

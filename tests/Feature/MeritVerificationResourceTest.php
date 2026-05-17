@@ -118,10 +118,22 @@ it('submits initial merit verification from filament form through domain action'
         'department_id' => $department->id,
         'result' => true,
         'answers_notes' => 'Brak uwag.',
+        'citizen_dialog_office_question_1' => 1,
+        'citizen_dialog_office_question_1_comments' => 'Nie jest samą dokumentacją.',
+        'mayor_office_recommendation' => 'Jednostka wiodąca: WIM.',
+        'mayor_office_recommendation_comments' => 'Rekomendacja z legacy.',
+        'property_office_suboffice1_property_owner_skip' => 2,
     ]);
 
     expect($verification->result)->toBeTrue()
-        ->and($verification->answers)->toBe(['notes' => 'Brak uwag.'])
+        ->and($verification->answers)->toMatchArray([
+            'notes' => 'Brak uwag.',
+            'citizenDialogOfficeQuestion1' => 1,
+            'citizenDialogOfficeQuestion1Comments' => 'Nie jest samą dokumentacją.',
+            'mayorOfficeRecommendation' => 'Jednostka wiodąca: WIM.',
+            'mayorOfficeRecommendationComments' => 'Rekomendacja z legacy.',
+            'propertyOfficeSuboffice1PropertyOwnerSkip' => 2,
+        ])
         ->and($project->refresh()->status)->toBe(ProjectStatus::SentForMeritVerification)
         ->and(VerificationVersion::query()
             ->where('verification_legacy_id', $verification->id)
@@ -144,6 +156,10 @@ it('submits final merit verification with costs from filament form through domai
         'department_id' => $department->id,
         'result' => true,
         'answers_notes' => 'Pozytywna ocena.',
+        'is_law_compliant' => 1,
+        'is_law_compliant_comments' => 'Zgodny z zakresem jednostki.',
+        'has_additional_costs' => 1,
+        'additional_information' => 'Może trafić pod głosowanie.',
         'corrected_cost_description' => 'Prace budowlane',
         'corrected_cost_sum' => '1500.50',
         'future_cost_description' => 'Utrzymanie',
@@ -151,6 +167,13 @@ it('submits final merit verification with costs from filament form through domai
     ]);
 
     expect($verification->result)->toBeTrue()
+        ->and($verification->answers)->toMatchArray([
+            'notes' => 'Pozytywna ocena.',
+            'isLawCompliant' => 1,
+            'isLawCompliantComments' => 'Zgodny z zakresem jednostki.',
+            'hasAdditionalCosts' => 1,
+            'additionalInformation' => 'Może trafić pod głosowanie.',
+        ])
         ->and($verification->answers['correctedCost'])->toBe([
             ['description' => 'Prace budowlane', 'sum' => 1500.5],
         ])

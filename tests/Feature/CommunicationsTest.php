@@ -7,6 +7,7 @@ use App\Domain\Communications\Actions\EditProjectPublicCommentAction;
 use App\Domain\Communications\Actions\MarkCorrespondenceMessageReadAction;
 use App\Domain\Communications\Actions\QueueProjectNotificationAction;
 use App\Domain\Communications\Actions\SendProjectCoauthorConfirmationAction;
+use App\Domain\Communications\Actions\SendProjectContactMessageAction;
 use App\Domain\Communications\Actions\SendProjectCorrespondenceMessageAction;
 use App\Domain\Communications\Actions\ToggleProjectPublicCommentAdminHiddenAction;
 use App\Domain\Communications\Actions\ToggleProjectPublicCommentHiddenAction;
@@ -304,6 +305,69 @@ it('sends coauthor confirmation and confirms through legacy activation route', f
     expect($coauthor->refresh()->confirm)->toBeTrue();
     Bus::assertDispatched(SendProjectNotificationJob::class);
 });
+
+it('sends public contact message to project author with legacy content prefix', function (): void {
+    Bus::fake();
+
+    $author = User::factory()->create([
+        'email' => 'author@example.test',
+    ]);
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'title' => 'Park kieszonkowy',
+    ]);
+
+    $notification = app(SendProjectContactMessageAction::class)->execute(
+        $project,
+        'sender@example.test',
+        'Projekt Park kieszonkowy',
+        'Czy projekt obejmuje nasadzenia?',
+    );
+
+    expect($notification->author_email)->toBe('author@example.test')
+        ->and($notification->sent_to_user_id)->toBe($author->id)
+        ->and($notification->subject)->toBe('Projekt Park kieszonkowy')
+        ->and($notification->body)->toContain('Otrzymałeś/aś wiadomość od sender@example.test.')
+        ->and($notification->body)->toContain('Czy projekt obejmuje nasadzenia?');
+
+    Bus::assertDispatched(SendProjectNotificationJob::class);
+});
+
+it('rejects public contact message when project author has no email', function (): void {
+    $author = User::factory()->create([
+        'email' => '',
+    ]);
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id, [
+        'creator_id' => $author->id,
+    ]);
+
+    app(SendProjectContactMessageAction::class)->execute(
+        $project,
+        'sender@example.test',
+        'Temat',
+        'Treść',
+    );
+})->throws(DomainException::class, 'Autor projektu nie podał adresu e-mail');
+
+it('rejects public contact message with invalid sender email', function (): void {
+    $author = User::factory()->create();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id, [
+        'creator_id' => $author->id,
+    ]);
+
+    app(SendProjectContactMessageAction::class)->execute(
+        $project,
+        'not-an-email',
+        'Temat',
+        'Treść',
+    );
+})->throws(DomainException::class, 'Nieprawidłowy adres e-mail.');
 
 it('rejects invalid coauthor confirmation pairs', function (): void {
     app(ConfirmProjectCoauthorAction::class)->execute('missing@example.test', 'bad-hash');

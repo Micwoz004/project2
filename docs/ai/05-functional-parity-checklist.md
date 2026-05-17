@@ -145,6 +145,7 @@
 - [x] Publiczne zgłoszenie projektu obsługuje wielowierszowy kosztorys i agreguje go do pól zgodnych z legacy.
 - [x] Publiczne zgłoszenie projektu zapisuje adresowe pola współautorów z widoku Yii.
 - [x] Współautor otrzymuje mail z kompatybilnym linkiem `/activation/confirmCocreator`, a potwierdzenie email+hash ustawia `confirm=true`.
+- [x] Publiczna wiadomość do autora projektu waliduje pola jak `ContactForm` i zapisuje mail z legacy prefiksem nadawcy.
 - [x] Składanie projektu waliduje limit kosztu obszaru i rozwiązuje Zielone SBO do obszaru ogólnomiejskiego bez użycia stałego ID legacy.
 - [x] Korekta kosztorysu projektu podmienia pozycje kosztów i przelicza sumę.
 - [x] Publiczna korekta autora obsługuje odblokowane typy załączników legacy.

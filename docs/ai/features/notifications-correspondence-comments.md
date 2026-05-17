@@ -26,6 +26,7 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 9. [x] Dodać import fixture dla monitów weryfikacyjnych `verificationpressure`.
 10. [x] Uzupełnić pełną mapę wszystkich punktów wysyłki mail/SMS względem kontrolerów legacy.
 11. [x] Dodać wysyłkę i obsługę potwierdzenia współautora z triggera `cocreator.confirmation`.
+12. [x] Dodać publiczną wiadomość do autora projektu z triggera `project.contact_message`.
 
 ## Implementacja Laravel
 
@@ -43,6 +44,7 @@ Status: baseline domenowy, import fixture i pierwsza kolejka mailowa wdrożone.
 - `SendProjectNotificationJob` wysyła wiadomość przez Laravel Mail i zapisuje ślad w `MailLog`, zachowując audyt legacy `maillogs`.
 - `SendProjectCorrespondenceMessageAction` po zapisie korespondencji kolejkuje powiadomienie mailowe do adresata.
 - `SendProjectCoauthorConfirmationAction` obsługuje trigger `cocreator.confirmation`: generuje brakujący hash współautora, zapisuje notyfikację, wysyła mail przez kolejkę i używa kompatybilnego linku `/activation/confirmCocreator`.
+- `SendProjectContactMessageAction` obsługuje trigger `project.contact_message`: waliduje `topic`, `email`, `content` jak legacy `ContactForm`, wymaga adresu e-mail autora projektu i zapisuje wiadomość z legacy prefiksem `Otrzymałeś/aś wiadomość od ...`.
 - Logi zapisują identyfikatory projektu/użytkownika/wiadomości, ale nie zapisują treści wiadomości ani komentarzy.
 
 ## Mapa punktów wysyłki legacy

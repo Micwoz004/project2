@@ -16,6 +16,7 @@ use App\Domain\Projects\Services\PublicProjectMapQuery;
 use App\Domain\Projects\Support\LegacyProjectFormText;
 use App\Domain\Results\Services\ResultsCalculator;
 use App\Domain\Results\Services\ResultsPublicationService;
+use App\Domain\Settings\Models\CostGuideItem;
 use App\Domain\Settings\Models\PublicAnnouncement;
 use App\Domain\Settings\Models\PublicPage;
 use App\Http\Controllers\Controller;
@@ -95,6 +96,7 @@ class PublicSpaController extends Controller
             'categories' => $this->optionsPayload(Category::query()->orderBy('name')->get()),
             'announcements' => $this->announcementsPayload($announcements),
             'pages' => $this->pagesPayload($pages),
+            'costGuideItems' => $this->costGuideItemsPayload(),
             'legacyText' => $request->path() === 'projekty/zglos'
                 ? LegacyProjectFormText::publicSubmissionStatements()
                 : [],
@@ -485,6 +487,25 @@ class PublicSpaController extends Controller
                 'slug' => $page->slug,
                 'url' => route('public.info.show', $page->slug),
                 'body' => $page->body,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function costGuideItemsPayload(): array
+    {
+        return CostGuideItem::query()
+            ->published()
+            ->orderBy('sort')
+            ->orderBy('label')
+            ->get()
+            ->map(fn (CostGuideItem $item): array => [
+                'id' => $item->id,
+                'label' => $item->label,
+                'priceRange' => $item->price_range,
             ])
             ->values()
             ->all();

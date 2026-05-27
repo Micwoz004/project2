@@ -8,6 +8,7 @@
 </head>
 <body>
     <div id="bo-spa-root"></div>
+    @include('all-in-one-accessibility::frontend-widget')
     <noscript>
         <main>
             <h1>Budżet Obywatelski Miasta</h1>

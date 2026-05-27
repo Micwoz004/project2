@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7507c7fb71964c66380c341995239a3b",
+    "content-hash": "b6159f0e09ceadf43b26c6e7572f3392",
     "packages": [
         {
             "name": "blade-ui-kit/blade-heroicons",
@@ -5029,6 +5029,67 @@
             "time": "2022-12-17T21:53:22+00:00"
         },
         {
+            "name": "skynettechnologies/allinoneaccessibility",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/shakti-jha/all-in-one-accessibility.git",
+                "reference": "d733f9ba049f9cb54d034a94a3dea06c4c6cad26"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/shakti-jha/all-in-one-accessibility/zipball/d733f9ba049f9cb54d034a94a3dea06c4c6cad26",
+                "reference": "d733f9ba049f9cb54d034a94a3dea06c4c6cad26",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^5.0",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.15.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Skynettechnologies\\AllinOneAccessibility\\AllinOneAccessibilityServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Skynettechnologies\\AllinOneAccessibility\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Skynet Technologies USA LLC",
+                    "email": "support@skynettechnologies.com",
+                    "homepage": "https://skynettechnologies.com"
+                }
+            ],
+            "description": "Quick Web Accessibility Implementation with All In One Accessibility!",
+            "keywords": [
+                "Accessibility",
+                "All",
+                "One",
+                "accessibility",
+                "filament",
+                "in",
+                "plugin",
+                "wcag"
+            ],
+            "support": {
+                "email": "hello@skynettechnologies.com",
+                "source": "https://github.com/shakti-jha/all-in-one-accessibility/tree/main",
+                "issues": "https://github.com/shakti-jha/all-in-one-accessibility/issues"
+            },
+            "time": "2026-04-16T04:56:30+00:00"
+        },
+        {
             "name": "spatie/invade",
             "version": "2.1.0",
             "source": {
@@ -5089,16 +5150,16 @@
         },
         {
             "name": "spatie/laravel-package-tools",
-            "version": "1.93.0",
+            "version": "1.93.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-package-tools.git",
-                "reference": "0d097bce95b2bf6802fb1d83e1e753b0f5a948e7"
+                "reference": "d5552849801f2642aea710557463234b59ef65eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-package-tools/zipball/0d097bce95b2bf6802fb1d83e1e753b0f5a948e7",
-                "reference": "0d097bce95b2bf6802fb1d83e1e753b0f5a948e7",
+                "url": "https://api.github.com/repos/spatie/laravel-package-tools/zipball/d5552849801f2642aea710557463234b59ef65eb",
+                "reference": "d5552849801f2642aea710557463234b59ef65eb",
                 "shasum": ""
             },
             "require": {
@@ -5138,7 +5199,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-package-tools/issues",
-                "source": "https://github.com/spatie/laravel-package-tools/tree/1.93.0"
+                "source": "https://github.com/spatie/laravel-package-tools/tree/1.93.1"
             },
             "funding": [
                 {
@@ -5146,7 +5207,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-21T12:49:54+00:00"
+            "time": "2026-05-19T14:06:37+00:00"
         },
         {
             "name": "spatie/laravel-permission",
@@ -11788,7 +11849,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "skynettechnologies/allinoneaccessibility": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

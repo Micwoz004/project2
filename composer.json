@@ -11,6 +11,7 @@
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.0",
+        "skynettechnologies/allinoneaccessibility": "dev-main",
         "spatie/laravel-permission": "^6.0"
     },
     "require-dev": {
@@ -93,5 +94,11 @@
         "platform-check": false
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": {
+        "skynettechnologies-all-in-one-accessibility": {
+            "type": "vcs",
+            "url": "https://github.com/shakti-jha/all-in-one-accessibility"
+        }
+    }
 }

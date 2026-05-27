@@ -2,10 +2,12 @@
 
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Settings\Models\CostGuideItem;
 use App\Domain\Settings\Models\PublicAnnouncement;
 use App\Domain\Settings\Models\PublicPage;
 use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
 use App\Domain\Users\Enums\SystemPermission;
+use App\Filament\Resources\CostGuideItems\CostGuideItemResource;
 use App\Filament\Resources\PublicAnnouncements\PublicAnnouncementResource;
 use App\Filament\Resources\PublicPages\PublicPageResource;
 use App\Models\User;
@@ -32,6 +34,28 @@ it('renders public homepage with current edition schedule and published announce
         ->assertSee('window.BO_SPA', false)
         ->assertSee('Start naboru projektów')
         ->assertSee('Projekty');
+});
+
+it('renders cost guide items from admin content', function (): void {
+    CostGuideItem::query()->create([
+        'label' => 'Kosz parkowy premium',
+        'price_range' => '3-8 tys. zł',
+        'is_published' => true,
+        'sort' => 10,
+    ]);
+    CostGuideItem::query()->create([
+        'label' => 'Robocza pozycja',
+        'price_range' => '1 zł',
+        'is_published' => false,
+        'sort' => 20,
+    ]);
+
+    $response = $this->get(route('public.home'))
+        ->assertOk()
+        ->assertSee('Kosz parkowy premium')
+        ->assertDontSee('Robocza pozycja');
+
+    expect($response->getContent())->toContain('3-8 tys. z\\u0142');
 });
 
 it('shows only published public announcements', function (): void {
@@ -96,6 +120,11 @@ it('guards public content resources with settings permissions', function (): voi
         'body' => '<p>Treść.</p>',
         'is_published' => true,
     ]);
+    CostGuideItem::query()->create([
+        'label' => 'Pozycja admin',
+        'price_range' => '1-2 tys. zł',
+        'is_published' => true,
+    ]);
 
     $manager = User::factory()->create(['status' => true]);
     $manager->givePermissionTo(SystemPermission::AdminAccess->value);
@@ -113,11 +142,20 @@ it('guards public content resources with settings permissions', function (): voi
         ->assertOk()
         ->assertSee('Strona admin');
 
+    $this->actingAs($manager)
+        ->get(CostGuideItemResource::getUrl(panel: 'admin'))
+        ->assertOk()
+        ->assertSee('Pozycja admin');
+
     $this->actingAs($viewer)
         ->get(PublicAnnouncementResource::getUrl(panel: 'admin'))
         ->assertForbidden();
 
     $this->actingAs($viewer)
         ->get(PublicPageResource::getUrl(panel: 'admin'))
+        ->assertForbidden();
+
+    $this->actingAs($viewer)
+        ->get(CostGuideItemResource::getUrl(panel: 'admin'))
         ->assertForbidden();
 });

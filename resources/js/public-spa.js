@@ -1,5 +1,6 @@
 const state = window.BO_SPA || {};
 const root = document.getElementById('bo-spa-root');
+let cleanupNavDropdown = null;
 
 const t = {
     pl: {
@@ -110,6 +111,53 @@ function active(path) {
     return current === path || current.startsWith(`${path}/`);
 }
 
+const infoMenuSlugs = [
+    'o-budzecie',
+    'budzet-krok-po-kroku',
+    'harmonogram',
+    'zglaszanie-projektow',
+    'glosowanie',
+    'faq',
+    'pomoc-i-kontakt',
+];
+
+function infoMenuItems() {
+    const pages = state.pages || [];
+    const selected = infoMenuSlugs
+        .map((slug) => pages.find((page) => page.slug === slug))
+        .filter(Boolean);
+
+    return (selected.length ? selected : pages.slice(0, 7)).map((page) => ({
+        title: page.title,
+        url: page.url || `/informacje/${page.slug}`,
+    }));
+}
+
+function renderInfoDropdown(label) {
+    const items = infoMenuItems();
+    const isActive = active('/informacje');
+
+    return `
+        <li class="nav-item nav-item-dropdown">
+            <button class="nav-link nav-dropdown-toggle" type="button" data-nav-dropdown aria-expanded="false" ${isActive ? 'aria-current="page"' : ''}>
+                <span>${label}</span>
+            </button>
+            <div class="nav-dropdown-menu" data-nav-dropdown-menu>
+                <p class="nav-dropdown-eyebrow">Najważniejsze informacje</p>
+                <ul>
+                    ${items.map((item) => `
+                        <li>
+                            <a class="nav-dropdown-link" href="${escapeHtml(item.url)}" data-spa-link>
+                                ${escapeHtml(item.title)}
+                            </a>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        </li>
+    `;
+}
+
 function projectIcon(category) {
     const label = String(category || '').toLocaleLowerCase('pl-PL');
     if (label.includes('sport')) {
@@ -161,6 +209,7 @@ function layout(content) {
                     <li><button class="contrast-button" type="button" data-contrast-toggle aria-pressed="${document.body.dataset.contrast === 'high'}">Kontrast</button></li>
                     <li><button class="font-button" type="button" data-font-toggle aria-pressed="${document.body.dataset.font === 'large'}">A+</button></li>
                 </ul>
+                <div class="aioa-topbar-slot" data-aioa-slot aria-label="Widget dostępności"></div>
                 <ul class="lang-list" aria-label="Wybór języka">
                     ${['pl', 'uk', 'en', 'de'].map((lang) => `
                         <li><button class="lang-button" type="button" data-lang="${lang}" aria-pressed="${document.documentElement.lang === lang}">${langLabel(lang)}</button></li>
@@ -180,7 +229,7 @@ function layout(content) {
                 <ul class="nav-list">
                     <li><a class="nav-link" href="${href('home')}" data-spa-link ${active('/') ? 'aria-current="page"' : ''} data-i18n="navHome">${c.navHome}</a></li>
                     <li><a class="nav-link" href="${href('projects')}" data-spa-link ${active('/projekty') || active('/projekt') ? 'aria-current="page"' : ''} data-i18n="navProjects">${c.navProjects}</a></li>
-                    <li><a class="nav-link" href="/informacje/o-budzecie" data-spa-link ${active('/informacje') ? 'aria-current="page"' : ''} data-i18n="navInfo">${c.navInfo}</a></li>
+                    ${renderInfoDropdown(c.navInfo)}
                     <li><a class="btn btn-primary" href="${href('submit')}" data-spa-link data-i18n="navSubmit">${c.navSubmit}</a></li>
                 </ul>
             </nav>
@@ -299,13 +348,14 @@ function homeView() {
 }
 
 function priceGuide() {
-    const items = [
-        ['Stojak rowerowy', '700-1 500 zł'],
-        ['Ławka z montażem', '2-6 tys. zł'],
-        ['Drzewo z pielęgnacją', '1-3 tys. zł'],
-        ['Warsztaty sąsiedzkie', '5-20 tys. zł'],
-        ['Doświetlenie przejścia', '30-90 tys. zł'],
+    const fallbackItems = [
+        { label: 'Stojak rowerowy', priceRange: '700-1 500 zł' },
+        { label: 'Ławka z montażem', priceRange: '2-6 tys. zł' },
+        { label: 'Drzewo z pielęgnacją', priceRange: '1-3 tys. zł' },
+        { label: 'Warsztaty sąsiedzkie', priceRange: '5-20 tys. zł' },
+        { label: 'Doświetlenie przejścia', priceRange: '30-90 tys. zł' },
     ];
+    const items = state.costGuideItems?.length ? state.costGuideItems : fallbackItems;
 
     return `
         <section class="section price-guide" aria-labelledby="price-title">
@@ -322,10 +372,10 @@ function priceGuide() {
                         <strong>orientacyjnie</strong>
                     </div>
                     <ul class="price-list">
-                        ${items.map(([label, value]) => `
+                        ${items.map((item) => `
                             <li>
-                                <span>${label}</span>
-                                <strong>${value}</strong>
+                                <span>${escapeHtml(item.label)}</span>
+                                <strong>${escapeHtml(item.priceRange)}</strong>
                             </li>
                         `).join('')}
                     </ul>
@@ -944,6 +994,40 @@ function bindActions() {
         });
     });
 
+    cleanupNavDropdown?.();
+    cleanupNavDropdown = null;
+
+    const dropdown = document.querySelector('[data-nav-dropdown]');
+    const dropdownItem = dropdown?.closest('.nav-item-dropdown');
+    const closeDropdown = () => {
+        dropdownItem?.classList.remove('is-open');
+        dropdown?.setAttribute('aria-expanded', 'false');
+    };
+    const toggleDropdown = (event) => {
+        event.stopPropagation();
+        const isOpen = dropdownItem?.classList.toggle('is-open') || false;
+        dropdown.setAttribute('aria-expanded', String(isOpen));
+    };
+    const closeOnOutsideClick = (event) => {
+        if (!dropdownItem || dropdownItem.contains(event.target)) return;
+        closeDropdown();
+    };
+    const closeOnEscape = (event) => {
+        if (event.key !== 'Escape') return;
+        closeDropdown();
+    };
+
+    if (dropdown) {
+        dropdown.addEventListener('click', toggleDropdown);
+        document.addEventListener('click', closeOnOutsideClick);
+        document.addEventListener('keydown', closeOnEscape);
+        cleanupNavDropdown = () => {
+            dropdown.removeEventListener('click', toggleDropdown);
+            document.removeEventListener('click', closeOnOutsideClick);
+            document.removeEventListener('keydown', closeOnEscape);
+        };
+    }
+
     document.querySelectorAll('[data-lang]').forEach((button) => {
         button.addEventListener('click', () => {
             document.documentElement.lang = button.dataset.lang || 'pl';
@@ -1029,9 +1113,23 @@ function bindActions() {
     }
 }
 
+function mountAllInOneAccessibilityWidget() {
+    const slot = document.querySelector('[data-aioa-slot]');
+    const toggle = document.getElementById('accessibility_settings_toggle');
+
+    if (!slot || !toggle || toggle.parentElement === slot) {
+        return;
+    }
+
+    toggle.setAttribute('aria-label', toggle.getAttribute('aria-label') || 'Otwórz widget dostępności');
+    toggle.setAttribute('title', toggle.getAttribute('title') || 'Ułatwienia dostępności');
+    slot.appendChild(toggle);
+}
+
 function render() {
     root.innerHTML = layout(renderRoute());
     bindActions();
+    mountAllInOneAccessibilityWidget();
 }
 
 function init() {
@@ -1040,6 +1138,9 @@ function init() {
     document.body.dataset.contrast = document.body.dataset.contrast || 'base';
     document.body.dataset.font = document.body.dataset.font || 'base';
     render();
+
+    const observer = new MutationObserver(mountAllInOneAccessibilityWidget);
+    observer.observe(document.body, { childList: true, subtree: true });
 }
 
 window.addEventListener('popstate', render);

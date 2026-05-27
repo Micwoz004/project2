@@ -20,7 +20,7 @@ set -euo pipefail
 RUN_TESTS=false
 MAINTENANCE_ENABLED=false
 APP_RUNTIME_USER="${APP_RUNTIME_USER:-www-data}"
-PHP_BIN="${APP_PHP_BIN:-/usr/bin/php8.5}"
+PHP_BIN="${APP_PHP_BIN:-/usr/bin/php}"
 COMPOSER_BIN="${APP_COMPOSER_BIN:-/usr/bin/composer}"
 DEPLOY_REQUIRE_SUPERVISORCTL="${DEPLOY_REQUIRE_SUPERVISORCTL:-false}"
 

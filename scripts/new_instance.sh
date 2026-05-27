@@ -9,10 +9,10 @@ BRANCH_DEFAULT="master"
 WEB_ROOT_DEFAULT="/var/www/bo"
 APP_OS_USER_DEFAULT="www-data"
 DB_OWNER_DEFAULT="sbo"
-PHP_BIN_DEFAULT="/usr/bin/php8.5"
+PHP_BIN_DEFAULT="/usr/bin/php"
 COMPOSER_BIN_DEFAULT="/usr/bin/composer"
-PHP_FPM_SERVICE_DEFAULT="php8.5-fpm"
-PHP_FPM_SOCK_DEFAULT="/run/php/php8.5-fpm.sock"
+PHP_FPM_SERVICE_DEFAULT="php8.4-fpm"
+PHP_FPM_SOCK_DEFAULT="/run/php/php-fpm.sock"
 REPO_URL_DEFAULT="git@github.com:Micwoz004/project2.git"
 
 INSTANCE=""
@@ -65,10 +65,10 @@ Options:
   --repo URL                 Git repository URL. Default: git@github.com:Micwoz004/project2.git
   --branch BRANCH            Git branch. Default: master
   --web-root PATH            Base web root. Default: /var/www/bo
-  --php-bin PATH             PHP binary. Default: /usr/bin/php8.5
+  --php-bin PATH             PHP binary. Default: /usr/bin/php
   --composer-bin PATH        Composer binary. Default: /usr/bin/composer
-  --php-fpm-service NAME     PHP-FPM service. Default: php8.5-fpm
-  --php-fpm-sock PATH        PHP-FPM socket. Default: /run/php/php8.5-fpm.sock
+  --php-fpm-service NAME     PHP-FPM service. Default: php8.4-fpm
+  --php-fpm-sock PATH        PHP-FPM socket. Default: /run/php/php-fpm.sock
   --certbot-email EMAIL      Enable Let's Encrypt certificate with this email
   --no-www                   Do not add www.DOMAIN to nginx/certbot
   --no-certbot               Skip Let's Encrypt certificate

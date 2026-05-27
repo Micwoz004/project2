@@ -11,6 +11,8 @@ use App\Domain\Projects\Models\ProjectChangeSuggestion;
 use App\Domain\Results\Models\ResultPublication;
 use App\Domain\Settings\Models\ApplicationSetting;
 use App\Domain\Settings\Models\ContentPage;
+use App\Domain\Settings\Models\PublicAnnouncement;
+use App\Domain\Settings\Models\PublicPage;
 use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\BoardType;
@@ -30,6 +32,8 @@ use App\Policies\ProjectAppealPolicy;
 use App\Policies\ProjectAreaPolicy;
 use App\Policies\ProjectChangeSuggestionPolicy;
 use App\Policies\ProjectPolicy;
+use App\Policies\PublicAnnouncementPolicy;
+use App\Policies\PublicPagePolicy;
 use App\Policies\ResultPublicationPolicy;
 use App\Policies\VoteCardPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -64,6 +68,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ProjectArea::class, ProjectAreaPolicy::class);
         Gate::policy(ProjectAppeal::class, ProjectAppealPolicy::class);
         Gate::policy(ProjectChangeSuggestion::class, ProjectChangeSuggestionPolicy::class);
+        Gate::policy(PublicAnnouncement::class, PublicAnnouncementPolicy::class);
+        Gate::policy(PublicPage::class, PublicPagePolicy::class);
         Gate::policy(ResultPublication::class, ResultPublicationPolicy::class);
         Gate::policy(VoteCard::class, VoteCardPolicy::class);
 

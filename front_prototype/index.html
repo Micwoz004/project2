@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Budżet Obywatelski Miasta — prototyp publiczny</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+/* civic-campaign/tokens.css
+ * Competitor-inspired municipal participatory budget visual system.
+ * Photo hero, green action flow, yellow campaign accents, red schedule band.
+ */
+
+:root {
+  --bg: #f5f5f2;
+  --surface: #ffffff;
+  --surface-warm: #f4c600;
+  --fg: #262626;
+  --fg-2: #4a4a4a;
+  --muted: #747474;
+  --meta: #11884a;
+  --border: #e1e1dc;
+  --border-soft: #eeeeea;
+  --accent: #168e45;
+  --accent-on: #ffffff;
+  --accent-hover: #0f7838;
+  --accent-active: #095f2a;
+  --success: #2aa238;
+  --warn: #f5bd00;
+  --danger: #d6262e;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Aptos Display", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "Aptos", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 17px;
+  --text-lg: 20px;
+  --text-xl: 26px;
+  --text-2xl: 40px;
+  --text-3xl: 58px;
+  --text-4xl: 84px;
+  --leading-body: 1.55;
+  --leading-tight: 1.06;
+  --tracking-display: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 96px;
+  --section-y-tablet: 68px;
+  --section-y-phone: 48px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 18px 44px rgba(29, 24, 54, 0.14);
+  --focus-ring: 0 0 0 4px rgba(255, 107, 0, 0.26);
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1180px;
+  --container-gutter-desktop: 36px;
+  --container-gutter-tablet: 24px;
+  --container-gutter-phone: 16px;
+}
+  </style>
+  <link rel="stylesheet" href="assets/site.css?v=home-polish-2" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Przejdź do treści</a>
+  <div class="topbar" aria-label="Narzędzia dostępności">
+    <div class="topbar-inner">
+      <ul class="utility-list">
+        <li><a class="utility-link" href="#main">Treść</a></li>
+        <li><button class="contrast-button" type="button" data-contrast-toggle aria-pressed="false">Kontrast</button></li>
+        <li><button class="font-button" type="button" data-font-toggle aria-pressed="false">A+</button></li>
+      </ul>
+      <ul class="lang-list" aria-label="Wybór języka">
+        <li><button class="lang-button" type="button" data-lang="pl" aria-pressed="true">PL</button></li>
+        <li><button class="lang-button" type="button" data-lang="uk" aria-pressed="false">UA</button></li>
+        <li><button class="lang-button" type="button" data-lang="en" aria-pressed="false">EN</button></li>
+        <li><button class="lang-button" type="button" data-lang="de" aria-pressed="false">DE</button></li>
+      </ul>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Budżet Obywatelski Miasta">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span class="brand-text">
+        <span class="brand-city">Miasto</span>
+        <span class="brand-sub">miejsce na logotyp i herb</span>
+      </span>
+    </a>
+    <nav aria-label="Główna nawigacja">
+      <ul class="nav-list">
+        <li><a class="nav-link" href="index.html" aria-current="page" data-i18n="navHome">Start</a></li>
+        <li><a class="nav-link" href="screens/projects.html" data-i18n="navProjects">Projekty</a></li>
+        <li><a class="nav-link" href="screens/info.html" data-i18n="navInfo">Informacje</a></li>
+        <li><a class="btn btn-primary" href="screens/projects.html#submit" data-i18n="navSubmit">Zgłoś projekt</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main" class="page-shell">
+    <section class="campaign-hero" aria-labelledby="hero-title">
+      <div class="hero-panel">
+        <p class="eyebrow">Edycja 2027</p>
+        <h1 id="hero-title">Budżet Obywatelski w Twoim Mieście</h1>
+        <p class="lead">Zgłoś swój projekt, sprawdź listę zadań i zagłosuj na pomysły, które zmienią najbliższą okolicę. Ten serwis jest gotowy do podmiany logo, zdjęć i lokalnych danych miasta.</p>
+        <div class="hero-actions" aria-label="Najważniejsze akcje">
+          <a class="btn btn-primary" href="screens/projects.html#submit">Dodaj zadanie</a>
+          <a class="btn btn-secondary" href="screens/projects.html">Lista projektów</a>
+          <a class="btn btn-secondary" href="screens/info.html">Jak to działa?</a>
+        </div>
+        <div class="countdown-card" aria-label="Odliczanie do końca etapu">
+          <span><strong>25</strong> dni</span>
+          <span><strong>09</strong> godzin</span>
+          <span><strong>59</strong> minut</span>
+        </div>
+      </div>
+    </section>
+
+    <article class="news-strip" aria-labelledby="news-title">
+      <div class="news-thumb" aria-hidden="true">BO<br />2027</div>
+      <div>
+        <span class="notice-date">Aktualności</span>
+        <h3 id="news-title">Rusza nabór projektów mieszkańców</h3>
+        <p>Przygotuj opis, lokalizację i szacunkowy koszt. W razie wątpliwości skorzystaj z dyżurów konsultacyjnych lub punktu pomocy w urzędzie.</p>
+        <a class="btn btn-primary" href="screens/projects.html#submit">Złóż projekt</a>
+      </div>
+    </article>
+
+    <section class="knowledge-section" aria-labelledby="knowledge-title">
+      <div class="knowledge-grid">
+        <article class="knowledge-card">
+          <p class="eyebrow">Co warto wiedzieć</p>
+          <h2 id="knowledge-title">Budżet krok po kroku</h2>
+          <div class="knowledge-list">
+            <div class="knowledge-item">
+              <span class="icon-bubble" aria-hidden="true">1</span>
+              <div>
+                <h3>Czym jest budżet obywatelski?</h3>
+                <p>Mieszkańcy zgłaszają pomysły, a potem wybierają projekty finansowane z miejskiej puli.</p>
+              </div>
+            </div>
+            <div class="knowledge-item">
+              <span class="icon-bubble" aria-hidden="true">2</span>
+              <div>
+                <h3>Kto może zgłosić projekt?</h3>
+                <p>Reguły zależą od miasta, dlatego ekran zostawia miejsce na lokalne wymagania i dokumenty.</p>
+              </div>
+            </div>
+            <div class="knowledge-item">
+              <span class="icon-bubble" aria-hidden="true">3</span>
+              <div>
+                <h3>Kiedy głosować?</h3>
+                <p>Serwis prowadzi mieszkańca przez etap zgłoszeń, weryfikację, listę projektów i głosowanie.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+        <aside class="city-personality" aria-label="Miejsce na charakter miasta">
+          <div class="city-badge">Logo miasta</div>
+          <h3>Tu wstawiasz herb, zdjęcie, hasło i lokalne komunikaty</h3>
+          <p>Ten blok nadaje charakter konkretnej gminie bez wiązania całego produktu z jednym miastem.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="action-band" aria-labelledby="submit-title">
+      <div class="action-band-inner">
+        <div>
+          <p class="eyebrow">Jak zgłosić projekt?</p>
+          <h2 id="submit-title">Wymyśl zadanie dla swojej okolicy</h2>
+          <p class="lead">Opisz problem, wskaż miejsce, dodaj koszt i wyślij projekt do weryfikacji. Najważniejsza akcja ma być widoczna od razu, tak jak w najlepszych serwisach BO.</p>
+          <div class="action-row">
+            <a class="btn btn-primary" href="screens/projects.html#submit">Zabierz głos</a>
+            <a class="btn btn-secondary" href="screens/info.html">Sprawdź zasady</a>
+          </div>
+        </div>
+        <div class="submit-illustration" aria-hidden="true">
+          <div class="paper-line"></div>
+          <div class="paper-line"></div>
+          <div class="paper-line"></div>
+          <div class="paper-line"></div>
+          <h3>Formularz projektu</h3>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="cost-title">
+      <div class="section-head centered">
+        <p class="eyebrow">Ile kosztuje miasto?</p>
+        <h2 id="cost-title">Projekty są konkretne i zrozumiałe</h2>
+        <p class="lead">Wzorem konkurencji pokazujemy tematykę przez duże, przyjazne ilustracje: zieleń, mobilność, dostępność, sport, kultura i sąsiedzkie spotkania.</p>
+      </div>
+      <div class="cost-grid">
+        <div class="cost-visual">
+          <img src="assets/civic-projects-illustration.png" alt="Mieszkańcy planujący projekty miejskie w przestrzeni publicznej" />
+        </div>
+        <div class="cost-callouts">
+          <article class="callout">
+            <h3>Zieleń i odpoczynek</h3>
+            <p>Parki kieszonkowe, ławki, drzewa, retencja i cień w upalne dni.</p>
+          </article>
+          <article class="callout">
+            <h3>Bezpieczna mobilność</h3>
+            <p>Przejścia, drogi rowerowe, stojaki i doświetlenie tras do szkół.</p>
+          </article>
+          <article class="callout">
+            <h3>Dostępność</h3>
+            <p>Podjazdy, czytelna informacja, kontrast i udogodnienia dla wszystkich mieszkańców.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="map-title">
+      <div class="map-band">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Mapa realizacji</p>
+            <h2 id="map-title">Pokaż projekty w przestrzeni miasta</h2>
+          </div>
+          <p class="lead">Mapa jest celowo schematyczna. W docelowym wdrożeniu podmienisz ją na integrację GIS albo prostą mapę z pinezkami.</p>
+        </div>
+        <div class="map-graphic" role="img" aria-label="Schematyczna mapa miasta z trzema pinezkami projektów">
+          <span class="pin"></span>
+          <span class="pin"></span>
+          <span class="pin"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="schedule-band" aria-labelledby="process-title">
+      <p class="eyebrow">Harmonogram</p>
+      <h2 id="process-title">Od pomysłu do wyników</h2>
+      <p class="lead">Kolorowy pas etapów jest jednym z najmocniejszych elementów referencji. Tutaj pełni tę samą rolę: od razu pokazuje, gdzie jesteśmy w procesie.</p>
+      <div class="schedule-steps">
+        <article class="stage is-active" aria-current="step">
+          <span class="stage-index">01</span>
+          <span class="stage-status">Aktywny etap</span>
+          <h3>Zgłaszanie</h3>
+          <p>od 15.05 do 21.06</p>
+        </article>
+        <article class="stage">
+          <span class="stage-index">02</span>
+          <h3>Weryfikacja</h3>
+          <p>od 24.06 do 04.09</p>
+        </article>
+        <article class="stage">
+          <span class="stage-index">03</span>
+          <h3>Lista</h3>
+          <p>do 24.09</p>
+        </article>
+        <article class="stage">
+          <span class="stage-index">04</span>
+          <h3>Głosowanie</h3>
+          <p>od 04.10 do 27.10</p>
+        </article>
+        <article class="stage">
+          <span class="stage-index">05</span>
+          <h3>Wyniki</h3>
+          <p>do 06.11</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section budget-walkthrough" aria-labelledby="walkthrough-title">
+      <p class="eyebrow">Budżet krok po kroku</p>
+      <h2 id="walkthrough-title">Od pomysłu mieszkańca do realizacji</h2>
+      <div class="walkthrough-grid">
+        <article>
+          <span>01</span>
+          <h3>Zgłoś zadanie</h3>
+          <p>Opisz potrzebę, wskaż lokalizację i dodaj szacunkowy koszt.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>Sprawdź weryfikację</h3>
+          <p>Urzędnicy publikują status, uwagi i decyzję dla każdego projektu.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Oddaj głos</h3>
+          <p>Mieszkańcy wybierają zadania dla swojego miasta lub dzielnicy.</p>
+        </article>
+        <article>
+          <span>04</span>
+          <h3>Śledź realizację</h3>
+          <p>Po wynikach serwis pokazuje etap prac, koszty i lokalizację.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="notices-title">
+      <div class="section-head">
+        <h2 id="notices-title">Ogłoszenia</h2>
+        <p class="lead">To miejsce na lokalne komunikaty urzędu: dyżury, zmiany terminów, wyniki i informacje o konsultacjach.</p>
+      </div>
+      <div class="news-grid">
+        <article class="notice-card featured">
+          <span class="notice-date">12 czerwca</span>
+          <h3>Rusza nabór projektów do kolejnej edycji</h3>
+          <p>Miasto zaprasza mieszkańców do zgłaszania pomysłów na działania w przestrzeni publicznej, kulturze, sporcie, edukacji i zieleni.</p>
+          <a class="btn btn-primary" href="screens/projects.html#submit">Przejdź do formularza</a>
+        </article>
+        <article class="notice-card">
+          <span class="notice-date">28 maja</span>
+          <h3>Dyżury konsultacyjne</h3>
+          <p>W punktach miejskich można skonsultować opis projektu, kosztorys i wymagane załączniki.</p>
+          <a class="btn btn-secondary" href="screens/info.html">Sprawdź zasady</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="final-title">
+      <div class="final-cta">
+        <p class="eyebrow">Zgłoś zadanie</p>
+        <h2 id="final-title">Masz pomysł? Zacznij od formularza.</h2>
+        <p class="lead">Najkrótsza ścieżka mieszkańca powinna kończyć się konkretną akcją, nie kolejną ścianą tekstu.</p>
+        <a class="btn btn-primary" href="screens/projects.html#submit">Zaproponuj projekt</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Budżet Obywatelski Miasta. Prototyp publicznej części serwisu dla mieszkańca.</p>
+      <a href="screens/info.html">Deklaracja dostępności</a>
+    </div>
+  </footer>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <script src="assets/site.js"></script>
+</body>
+</html>

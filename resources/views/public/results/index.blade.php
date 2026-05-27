@@ -2,7 +2,7 @@
     <section class="page-hero">
         <div>
             <h1 class="page-title">Wyniki</h1>
-            <p class="page-summary">Publiczne wyniki są pokazywane dopiero po osiągnięciu etapu publikacji edycji. Zestawienie korzysta wyłącznie z zaakceptowanych kart głosowania.</p>
+            <p class="page-summary">Publiczne wyniki są pokazywane po osiągnięciu etapu publikacji edycji i obejmują wyłącznie zaakceptowane karty głosowania.</p>
         </div>
         @if ($edition && $resultsPublished)
             <div class="actions">
@@ -16,6 +16,14 @@
     @elseif (! $resultsPublished)
         <p class="panel">Wyniki nie zostały jeszcze opublikowane.</p>
     @else
+        <section class="section">
+            <div class="section-heading">
+                <div>
+                    <h2>Ranking projektów</h2>
+                    <p>Zestawienie punktów naliczonych dla projektów w aktualnie publikowanej edycji.</p>
+                </div>
+            </div>
+        </section>
         <div class="table-wrap">
             <table>
                 <thead>

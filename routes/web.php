@@ -5,18 +5,21 @@ use App\Http\Controllers\Admin\AdminReportExportDownloadController;
 use App\Http\Controllers\Public\PublicCoauthorConfirmationController;
 use App\Http\Controllers\Public\PublicProjectCommentController;
 use App\Http\Controllers\Public\PublicProjectController;
-use App\Http\Controllers\Public\PublicReportController;
 use App\Http\Controllers\Public\PublicResultsController;
+use App\Http\Controllers\Public\PublicSpaController;
 use App\Http\Controllers\Public\PublicVotingController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/projekty');
+Route::get('/', PublicSpaController::class)->name('public.home');
+Route::get('/ogloszenia', PublicSpaController::class)->name('public.announcements.index');
+Route::get('/ogloszenia/{slug}', PublicSpaController::class)->name('public.announcements.show');
+Route::get('/informacje/{slug}', PublicSpaController::class)->name('public.info.show');
 
-Route::get('/projekty', [PublicProjectController::class, 'index'])->name('public.projects.index');
-Route::get('/projekt/{project}', [PublicProjectController::class, 'show'])->name('public.projects.show');
-Route::get('/projekty-mapa', [PublicProjectController::class, 'map'])->name('public.projects.map');
+Route::get('/projekty', PublicSpaController::class)->name('public.projects.index');
+Route::get('/projekt/{project}', PublicSpaController::class)->name('public.projects.show');
+Route::get('/projekty-mapa', PublicSpaController::class)->name('public.projects.map');
 Route::get('/activation/confirmCocreator', PublicCoauthorConfirmationController::class)->name('public.coauthors.confirm');
-Route::get('/projekty/zglos', [PublicProjectController::class, 'create'])->name('public.projects.create');
+Route::get('/projekty/zglos', PublicSpaController::class)->name('public.projects.create');
 Route::post('/projekty/zglos', [PublicProjectController::class, 'store'])->name('public.projects.store');
 Route::middleware('auth')->group(function (): void {
     Route::post('/projekt/{project}/komentarze', [PublicProjectCommentController::class, 'store'])->name('public.projects.comments.store');
@@ -25,13 +28,13 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/moje-projekty/{project}/korekta', [PublicProjectController::class, 'editCorrection'])->name('public.projects.corrections.edit');
     Route::put('/moje-projekty/{project}/korekta', [PublicProjectController::class, 'updateCorrection'])->name('public.projects.corrections.update');
 });
-Route::get('/glosowanie', [PublicVotingController::class, 'welcome'])->name('public.voting.welcome');
+Route::get('/glosowanie', PublicSpaController::class)->name('public.voting.welcome');
 Route::post('/glosowanie/kod-sms', [PublicVotingController::class, 'issueToken'])->name('public.voting.token');
 Route::get('/voting/activateSession/{id}/{tokenStr}', [PublicVotingController::class, 'activateEmailToken'])->name('public.voting.email-token.activate');
 Route::post('/glosowanie', [PublicVotingController::class, 'cast'])->name('public.voting.cast');
-Route::get('/wyniki', [PublicResultsController::class, 'index'])->name('public.results.index');
+Route::get('/wyniki', PublicSpaController::class)->name('public.results.index');
 Route::get('/wyniki/export.csv', [PublicResultsController::class, 'export'])->name('public.results.export');
-Route::get('/raporty-publiczne', [PublicReportController::class, 'index'])->name('public.reports.index');
+Route::get('/raporty-publiczne', PublicSpaController::class)->name('public.reports.index');
 
 Route::middleware('auth')->prefix('admin/reports')->name('admin.reports.')->group(function (): void {
     Route::get('/exports/{reportExport}/download', AdminReportExportDownloadController::class)->name('exports.download');

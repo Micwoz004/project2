@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Szczegóły projektu — Budżet Obywatelski Miasta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+/* civic-campaign/tokens.css
+ * Competitor-inspired municipal participatory budget visual system.
+ * Photo hero, green action flow, yellow campaign accents, red schedule band.
+ */
+
+:root {
+  --bg: #f5f5f2;
+  --surface: #ffffff;
+  --surface-warm: #f4c600;
+  --fg: #262626;
+  --fg-2: #4a4a4a;
+  --muted: #747474;
+  --meta: #11884a;
+  --border: #e1e1dc;
+  --border-soft: #eeeeea;
+  --accent: #168e45;
+  --accent-on: #ffffff;
+  --accent-hover: #0f7838;
+  --accent-active: #095f2a;
+  --success: #2aa238;
+  --warn: #f5bd00;
+  --danger: #d6262e;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Aptos Display", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "Aptos", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 17px;
+  --text-lg: 20px;
+  --text-xl: 26px;
+  --text-2xl: 40px;
+  --text-3xl: 58px;
+  --text-4xl: 84px;
+  --leading-body: 1.55;
+  --leading-tight: 1.02;
+  --tracking-display: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 96px;
+  --section-y-tablet: 68px;
+  --section-y-phone: 48px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 18px 44px rgba(29, 24, 54, 0.14);
+  --focus-ring: 0 0 0 4px rgba(255, 107, 0, 0.26);
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1180px;
+  --container-gutter-desktop: 36px;
+  --container-gutter-tablet: 24px;
+  --container-gutter-phone: 16px;
+}
+  </style>
+  <link rel="stylesheet" href="../assets/site.css?v=home-polish-2" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Przejdź do treści</a>
+  <div class="topbar" aria-label="Narzędzia dostępności">
+    <div class="topbar-inner">
+      <ul class="utility-list">
+        <li><a class="utility-link" href="#main">Treść</a></li>
+        <li><button class="contrast-button" type="button" data-contrast-toggle aria-pressed="false">Kontrast</button></li>
+        <li><button class="font-button" type="button" data-font-toggle aria-pressed="false">A+</button></li>
+      </ul>
+      <ul class="lang-list" aria-label="Wybór języka">
+        <li><button class="lang-button" type="button" data-lang="pl" aria-pressed="true">PL</button></li>
+        <li><button class="lang-button" type="button" data-lang="uk" aria-pressed="false">UA</button></li>
+        <li><button class="lang-button" type="button" data-lang="en" aria-pressed="false">EN</button></li>
+        <li><button class="lang-button" type="button" data-lang="de" aria-pressed="false">DE</button></li>
+      </ul>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Budżet Obywatelski Miasta">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span class="brand-text">
+        <span class="brand-city">Miasto</span>
+        <span class="brand-sub">miejsce na logotyp i herb</span>
+      </span>
+    </a>
+    <nav aria-label="Główna nawigacja">
+      <ul class="nav-list">
+        <li><a class="nav-link" href="../index.html" data-i18n="navHome">Start</a></li>
+        <li><a class="nav-link" href="projects.html" aria-current="page" data-i18n="navProjects">Projekty</a></li>
+        <li><a class="nav-link" href="info.html" data-i18n="navInfo">Informacje</a></li>
+        <li><a class="btn btn-primary" href="projects.html#submit" data-i18n="navSubmit">Zgłoś projekt</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main" class="page-shell">
+    <section class="section" aria-labelledby="detail-title">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Projekt nr 042 · do głosowania</p>
+          <h1 id="detail-title">Park kieszonkowy przy ulicy Sąsiedzkiej.</h1>
+        </div>
+        <p class="lead">Widok szczegółu daje mieszkańcowi jasny opis, koszt, lokalizację, status i dokumenty. Dla urzędu zostawia miejsce na komunikaty weryfikacyjne i historię zmian.</p>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-main">
+          <section class="panel" aria-labelledby="summary-title">
+            <h2 id="summary-title">Opis projektu</h2>
+            <p>Projekt zakłada stworzenie małej zielonej przestrzeni odpoczynku z drzewami, ławkami, stojakami rowerowymi, poidełkiem i niską zielenią retencyjną. Zakres jest generyczny: może działać w centrum, na osiedlu lub przy instytucji miejskiej.</p>
+          </section>
+
+          <section class="panel" aria-labelledby="location-title">
+            <h2 id="location-title">Lokalizacja</h2>
+            <div class="map-graphic" role="img" aria-label="Schematyczna mapa z trzema punktami lokalizacji projektu">
+              <span class="pin"></span>
+              <span class="pin"></span>
+              <span class="pin"></span>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="tabs-title">
+            <h2 id="tabs-title">Dokumenty i przebieg</h2>
+            <div class="tab-row" role="tablist" data-tabs aria-label="Zakładki szczegółów projektu">
+              <button class="btn btn-secondary" role="tab" type="button" aria-selected="true" aria-pressed="true" aria-controls="tab-costs">Kosztorys</button>
+              <button class="btn btn-secondary" role="tab" type="button" aria-selected="false" aria-pressed="false" aria-controls="tab-history">Historia</button>
+              <button class="btn btn-secondary" role="tab" type="button" aria-selected="false" aria-pressed="false" aria-controls="tab-files">Załączniki</button>
+            </div>
+            <div id="tab-costs" class="tab-panel">
+              <ul class="meta-list">
+                <li><span>Nasadzenia i przygotowanie gruntu</span><strong>210 000 zł</strong></li>
+                <li><span>Mała architektura</span><strong>120 000 zł</strong></li>
+                <li><span>Dokumentacja i nadzór</span><strong>90 000 zł</strong></li>
+              </ul>
+            </div>
+            <div id="tab-history" class="tab-panel" hidden>
+              <ul class="meta-list">
+                <li><span>Projekt zgłoszony</span><strong>12.06</strong></li>
+                <li><span>Ocena formalna</span><strong>pozytywna</strong></li>
+                <li><span>Ocena merytoryczna</span><strong>pozytywna</strong></li>
+              </ul>
+            </div>
+            <div id="tab-files" class="tab-panel" hidden>
+              <ul class="meta-list">
+                <li><span>Mapa poglądowa</span><a href="#">PDF</a></li>
+                <li><span>Kosztorys uproszczony</span><a href="#">XLS</a></li>
+                <li><span>Opinia jednostki</span><a href="#">PDF</a></li>
+              </ul>
+            </div>
+          </section>
+        </div>
+
+        <aside class="detail-aside" aria-labelledby="vote-title">
+          <span class="status status-live">Do głosowania</span>
+          <h2 id="vote-title">Karta projektu</h2>
+          <ul class="meta-list">
+            <li><span>Kategoria</span><strong>Zieleń</strong></li>
+            <li><span>Obszar</span><strong>Osiedle północ</strong></li>
+            <li><span>Koszt</span><strong>420 000 zł</strong></li>
+            <li><span>Autor</span><strong>Mieszkaniec</strong></li>
+          </ul>
+          <div class="project-actions">
+            <button class="btn btn-primary" type="button" data-save-action>Dodaj do głosu</button>
+            <button class="btn btn-secondary" type="button" data-save-action>Obserwuj</button>
+            <a class="btn btn-secondary" href="projects.html">Wróć do listy</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Szczegół projektu z mapą, kartą kosztów, historią i stanami głosowania.</p>
+      <a href="info.html">Zasady głosowania</a>
+    </div>
+  </footer>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <script src="../assets/site.js"></script>
+</body>
+</html>

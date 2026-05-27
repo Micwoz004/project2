@@ -2,7 +2,27 @@
     <section class="page-hero">
         <div>
             <h1 class="page-title">Zgłoś projekt</h1>
-            <p class="page-summary">Formularz zachowuje reguły legacy: dane autora, lokalizację, kosztorys, zgody, współautorów i wymagane załączniki.</p>
+            <p class="page-summary">Formularz ma być czytelny i spokojny. Po lewej informacja organizacyjna, po prawej pełny formularz zgłoszenia projektu.</p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="feature-grid">
+            <article class="info-tile">
+                <span class="info-tile-icon">1</span>
+                <h3>Dane kontaktowe</h3>
+                <p class="muted">Podaj dane autora i wybierz publiczną formę kontaktu.</p>
+            </article>
+            <article class="info-tile">
+                <span class="info-tile-icon">2</span>
+                <h3>Opis projektu</h3>
+                <p class="muted">Opisz miejsce, cel, dostępność, odbiorców i szacunkowe koszty.</p>
+            </article>
+            <article class="info-tile">
+                <span class="info-tile-icon">3</span>
+                <h3>Załączniki</h3>
+                <p class="muted">Dodaj listę poparcia i pozostałe dokumenty wymagane dla projektu.</p>
+            </article>
         </div>
     </section>
 
@@ -26,13 +46,31 @@
         ]);
     @endphp
 
-    <form class="panel form-panel" method="post" action="{{ route('public.projects.store') }}" enctype="multipart/form-data">
-        @csrf
+    <section class="submission-shell">
+        <aside class="submission-sidebar">
+            <div class="submission-sidebar-panel">
+                <p>Przed wysłaniem</p>
+                <h2>Przygotuj opis pomysłu, lokalizację, kosztorys i wymagane załączniki.</h2>
+                <ul class="submission-checklist">
+                    <li>Wybierz właściwy obszar i kategorię projektu.</li>
+                    <li>Opisz dostępność, odbiorców i uzasadnienie.</li>
+                    <li>Dodaj listę poparcia i pozostałe dokumenty.</li>
+                </ul>
+            </div>
+            <div class="submission-sidebar-panel subtle">
+                <p>Po wysłaniu</p>
+                <h3>Projekt trafi do weryfikacji formalnej i merytorycznej.</h3>
+                <p class="muted">Jeżeli proces wymaga uzupełnień, mieszkaniec wróci do projektu przez ścieżkę korekty.</p>
+            </div>
+        </aside>
 
-        <h2>Dane kontaktowe autora</h2>
+        <form class="panel form-panel form-panel-strong" method="post" action="{{ route('public.projects.store') }}" enctype="multipart/form-data">
+            @csrf
 
-        <label for="author_first_name">Imię autora</label>
-        <input id="author_first_name" name="author_first_name" value="{{ old('author_first_name') }}" required maxlength="127">
+            <h2>Dane kontaktowe autora</h2>
+
+            <label for="author_first_name">Imię autora</label>
+            <input id="author_first_name" name="author_first_name" value="{{ old('author_first_name') }}" required maxlength="127">
 
         <label for="author_last_name">Nazwisko autora</label>
         <input id="author_last_name" name="author_last_name" value="{{ old('author_last_name') }}" required maxlength="127">
@@ -290,6 +328,7 @@
         <label for="attachment_files">Pozostałe załączniki</label>
         <input id="attachment_files" name="attachment_files[]" type="file" multiple>
 
-        <p><button type="submit">Złóż projekt</button></p>
-    </form>
+            <p><button type="submit">Złóż projekt</button></p>
+        </form>
+    </section>
 </x-public.layout>

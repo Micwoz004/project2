@@ -1,8 +1,8 @@
 <x-public.layout title="Mapa projektów SBO">
     <section class="page-hero">
         <div>
-            <h1 class="page-title">Mapa projektów SBO Szczecin</h1>
-            <p class="page-summary">Lista projektów z rozpoznaną lokalizacją. Dane mapy pozostają zgodne z legacy i mogą pochodzić ze współrzędnych albo zapisów JSON.</p>
+            <h1 class="page-title">Mapa projektów</h1>
+            <p class="page-summary">Zobacz projekty z rozpoznaną lokalizacją. Dane mogą pochodzić ze współrzędnych albo zapisów mapowych zaimportowanych ze starego systemu.</p>
         </div>
         <div class="actions">
             <a class="button secondary" href="{{ route('public.projects.index') }}">Lista projektów</a>
@@ -63,6 +63,12 @@
             'url' => route('public.projects.show', $item['project']),
         ]);
     @endphp
+
+    @if ($mapProjects->isNotEmpty())
+        <section class="section">
+            <div class="map-canvas" data-map-canvas data-map-count="{{ $mapPayload->count() }}"></div>
+        </section>
+    @endif
 
     <section class="panel" data-map-projects-count="{{ $mapPayload->count() }}">
         <h2>Projekty z lokalizacją</h2>

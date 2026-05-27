@@ -1,0 +1,26 @@
+{
+  "kind": "critique-panel",
+  "score": 4,
+  "axes": {
+    "clarity": {
+      "score": 4,
+      "notes": "Cztery ekrany odpowiadaja bezposrednio briefowi: start, katalog, szczegol projektu, informacje."
+    },
+    "hierarchy": {
+      "score": 4,
+      "notes": "Pierwszy ekran ma mocniejsze trzy akcje w hero, licznik nie ma juz bialych przerw, a numery w sekcji wiedzy sa bardziej czytelne."
+    },
+    "typography": {
+      "score": 4,
+      "notes": "Home i podstrony laduja ten sam zestaw fontow oraz ten sam cache-buster CSS, co stabilizuje wyglad nawigacji."
+    },
+    "motion": {
+      "score": 3,
+      "notes": "Motion jest celowo oszczedny: toast, hover, focus. Brak ozdobnych przejsc przez wymagania WCAG."
+    },
+    "brand": {
+      "score": 4,
+      "notes": "CTA, licznik i elementy numerowane sa blizej kampanijnego stylu konkurencji bez zmiany ogolnego kierunku miejskiego."
+    }
+  }
+}

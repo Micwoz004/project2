@@ -1,6 +1,7 @@
 const state = window.BO_SPA || {};
 const root = document.getElementById('bo-spa-root');
 let cleanupNavDropdown = null;
+let cleanupMobileNav = null;
 
 const t = {
     pl: {
@@ -225,7 +226,11 @@ function layout(content) {
                     <span class="brand-sub">miejsce na logotyp i herb</span>
                 </span>
             </a>
-            <nav aria-label="Główna nawigacja">
+            <button class="nav-toggle" type="button" data-nav-toggle aria-controls="primary-navigation" aria-expanded="false">
+                <span class="nav-toggle-icon" aria-hidden="true"></span>
+                <span class="nav-toggle-label">Menu</span>
+            </button>
+            <nav id="primary-navigation" class="main-nav" data-nav-menu aria-label="Główna nawigacja">
                 <ul class="nav-list">
                     <li><a class="nav-link" href="${href('home')}" data-spa-link ${active('/') ? 'aria-current="page"' : ''} data-i18n="navHome">${c.navHome}</a></li>
                     <li><a class="nav-link" href="${href('projects')}" data-spa-link ${active('/projekty') || active('/projekt') ? 'aria-current="page"' : ''} data-i18n="navProjects">${c.navProjects}</a></li>
@@ -996,6 +1001,8 @@ function bindActions() {
 
     cleanupNavDropdown?.();
     cleanupNavDropdown = null;
+    cleanupMobileNav?.();
+    cleanupMobileNav = null;
 
     const dropdown = document.querySelector('[data-nav-dropdown]');
     const dropdownItem = dropdown?.closest('.nav-item-dropdown');
@@ -1025,6 +1032,49 @@ function bindActions() {
             dropdown.removeEventListener('click', toggleDropdown);
             document.removeEventListener('click', closeOnOutsideClick);
             document.removeEventListener('keydown', closeOnEscape);
+        };
+    }
+
+    const navToggle = document.querySelector('[data-nav-toggle]');
+    const navMenu = document.querySelector('[data-nav-menu]');
+    const siteHeader = navToggle?.closest('.site-header');
+    const closeMobileNav = () => {
+        siteHeader?.classList.remove('is-nav-open');
+        navToggle?.setAttribute('aria-expanded', 'false');
+        closeDropdown();
+    };
+    const toggleMobileNav = (event) => {
+        event.stopPropagation();
+        const isOpen = siteHeader?.classList.toggle('is-nav-open') || false;
+        navToggle.setAttribute('aria-expanded', String(isOpen));
+        if (!isOpen) {
+            closeDropdown();
+        }
+    };
+    const closeMobileNavOnOutsideClick = (event) => {
+        if (!siteHeader || siteHeader.contains(event.target)) return;
+        closeMobileNav();
+    };
+    const closeMobileNavOnEscape = (event) => {
+        if (event.key !== 'Escape') return;
+        closeMobileNav();
+    };
+    const closeMobileNavOnLinkClick = (event) => {
+        const link = event.target.closest('a');
+        if (!link) return;
+        closeMobileNav();
+    };
+
+    if (navToggle && navMenu) {
+        navToggle.addEventListener('click', toggleMobileNav);
+        navMenu.addEventListener('click', closeMobileNavOnLinkClick);
+        document.addEventListener('click', closeMobileNavOnOutsideClick);
+        document.addEventListener('keydown', closeMobileNavOnEscape);
+        cleanupMobileNav = () => {
+            navToggle.removeEventListener('click', toggleMobileNav);
+            navMenu.removeEventListener('click', closeMobileNavOnLinkClick);
+            document.removeEventListener('click', closeMobileNavOnOutsideClick);
+            document.removeEventListener('keydown', closeMobileNavOnEscape);
         };
     }
 

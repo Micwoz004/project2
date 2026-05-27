@@ -78,7 +78,7 @@ composer_install() {
 }
 
 npm_ci() {
-    run_as_runtime_user npm ci --no-audit --no-fund --prefer-offline
+    run_as_runtime_user env npm_config_registry="https://registry.npmjs.org/" npm ci --no-audit --no-fund --prefer-offline
 }
 
 npm_build() {

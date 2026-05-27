@@ -402,7 +402,7 @@ step_install_dependencies_and_build() {
   (
     cd "$APP_DIR"
     run_as_app_user env COMPOSER_HOME="${APP_DIR}/.composer" "$PHP_BIN" "$(command -v "$COMPOSER_BIN")" install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-progress
-    run_as_app_user env npm_config_cache="${APP_DIR}/.npm" npm ci --no-audit --no-fund --prefer-offline
+    run_as_app_user env npm_config_cache="${APP_DIR}/.npm" npm_config_registry="https://registry.npmjs.org/" npm ci --no-audit --no-fund --prefer-offline
     run_as_app_user npm run build
   )
 }

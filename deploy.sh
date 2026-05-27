@@ -21,6 +21,7 @@ RUN_TESTS=false
 MAINTENANCE_ENABLED=false
 APP_RUNTIME_USER="${APP_RUNTIME_USER:-www-data}"
 PHP_BIN="${APP_PHP_BIN:-/usr/bin/php8.5}"
+COMPOSER_BIN="${APP_COMPOSER_BIN:-/usr/bin/composer}"
 DEPLOY_REQUIRE_SUPERVISORCTL="${DEPLOY_REQUIRE_SUPERVISORCTL:-false}"
 
 usage() {
@@ -73,7 +74,7 @@ artisan() {
 }
 
 composer_install() {
-    run_as_runtime_user composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-progress
+    run_as_runtime_user "$PHP_BIN" "$(command -v "$COMPOSER_BIN")" install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-progress
 }
 
 npm_ci() {
@@ -115,6 +116,11 @@ preflight_deploy_runtime() {
 
     if [ ! -x "$PHP_BIN" ] && ! command -v "$PHP_BIN" >/dev/null 2>&1; then
         echo "[ERROR] PHP binary not found: $PHP_BIN"
+        exit 1
+    fi
+
+    if ! command -v "$COMPOSER_BIN" >/dev/null 2>&1; then
+        echo "[ERROR] Composer binary not found: $COMPOSER_BIN"
         exit 1
     fi
 

@@ -10,6 +10,7 @@ WEB_ROOT_DEFAULT="/var/www/bo"
 APP_OS_USER_DEFAULT="www-data"
 DB_OWNER_DEFAULT="sbo"
 PHP_BIN_DEFAULT="/usr/bin/php8.5"
+COMPOSER_BIN_DEFAULT="/usr/bin/composer"
 PHP_FPM_SERVICE_DEFAULT="php8.5-fpm"
 PHP_FPM_SOCK_DEFAULT="/run/php/php8.5-fpm.sock"
 REPO_URL_DEFAULT="git@github.com:Micwoz004/project2.git"
@@ -26,6 +27,7 @@ DB_PASSWORD=""
 DB_NEW=""
 DB_TEMPLATE=""
 PHP_BIN="$PHP_BIN_DEFAULT"
+COMPOSER_BIN="$COMPOSER_BIN_DEFAULT"
 PHP_FPM_SERVICE="$PHP_FPM_SERVICE_DEFAULT"
 PHP_FPM_SOCK="$PHP_FPM_SOCK_DEFAULT"
 ENABLE_CERTBOT="true"
@@ -64,6 +66,7 @@ Options:
   --branch BRANCH            Git branch. Default: master
   --web-root PATH            Base web root. Default: /var/www/bo
   --php-bin PATH             PHP binary. Default: /usr/bin/php8.5
+  --composer-bin PATH        Composer binary. Default: /usr/bin/composer
   --php-fpm-service NAME     PHP-FPM service. Default: php8.5-fpm
   --php-fpm-sock PATH        PHP-FPM socket. Default: /run/php/php8.5-fpm.sock
   --certbot-email EMAIL      Enable Let's Encrypt certificate with this email
@@ -125,6 +128,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --php-bin)
       PHP_BIN="${2:-}"
+      shift 2
+      ;;
+    --composer-bin)
+      COMPOSER_BIN="${2:-}"
       shift 2
       ;;
     --php-fpm-service)
@@ -275,7 +282,7 @@ assert_database_values_ok() {
 
 ensure_system_requirements() {
   require_command git
-  require_command composer
+  require_command "$COMPOSER_BIN"
   require_command npm
   require_command nginx
   require_command psql
@@ -394,7 +401,7 @@ step_install_dependencies_and_build() {
 
   (
     cd "$APP_DIR"
-    run_as_app_user env COMPOSER_HOME="${APP_DIR}/.composer" composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-progress
+    run_as_app_user env COMPOSER_HOME="${APP_DIR}/.composer" "$PHP_BIN" "$(command -v "$COMPOSER_BIN")" install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-progress
     run_as_app_user env npm_config_cache="${APP_DIR}/.npm" npm ci --no-audit --no-fund --prefer-offline
     run_as_app_user npm run build
   )

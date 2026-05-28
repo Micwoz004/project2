@@ -2653,6 +2653,184 @@ body {
   margin: 0;
 }
 
+@keyframes civic-hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes civic-hero-sheen {
+  from {
+    opacity: 0;
+    transform: translate3d(-18%, 18%, 0) rotate(-10deg) scale(0.92);
+  }
+
+  48% {
+    opacity: 0.34;
+  }
+
+  to {
+    opacity: 0.16;
+    transform: translate3d(10%, -8%, 0) rotate(-10deg) scale(1.08);
+  }
+}
+
+@keyframes civic-quiet-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.campaign-hero::after {
+  content: "";
+  position: absolute;
+  inset: 18% -12% auto auto;
+  z-index: 0;
+  width: min(560px, 46vw);
+  height: min(420px, 38vw);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 198, 0, 0.28) 0 18%, rgba(255, 255, 255, 0.13) 19% 46%, transparent 68%);
+  filter: blur(4px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: civic-hero-sheen 1600ms cubic-bezier(0.2, 0.8, 0.2, 1) 180ms both;
+}
+
+.hero-panel > * {
+  --hero-motion-order: 0;
+  opacity: 0;
+  animation: civic-hero-rise 680ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(110ms + (var(--hero-motion-order) * 85ms));
+}
+
+.hero-panel .lead {
+  --hero-motion-order: 2;
+}
+
+.hero-actions {
+  --hero-motion-order: 3;
+}
+
+.countdown-card {
+  --hero-motion-order: 4;
+}
+
+.hero-panel h1 {
+  --hero-motion-order: 1;
+}
+
+.home-reveal {
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(28px) scale(0.985);
+  transition:
+    opacity 760ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 760ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 760ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--motion-order, 0) * 70ms);
+  will-change: opacity, filter, transform;
+}
+
+.home-reveal.is-visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) scale(1);
+}
+
+.news-strip,
+.knowledge-card,
+.city-personality,
+.callout,
+.price-board,
+.map-band,
+.final-cta {
+  transition:
+    transform var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard);
+}
+
+.news-strip:hover,
+.knowledge-card:hover,
+.city-personality:hover,
+.callout:hover,
+.price-board:hover,
+.map-band:hover,
+.final-cta:hover {
+  transform: translateY(-4px);
+}
+
+.city-badge {
+  animation: civic-quiet-float 6s ease-in-out infinite;
+}
+
+.submit-illustration,
+.cost-visual img,
+.map-graphic {
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.submit-illustration.home-reveal.is-visible,
+.submit-illustration:hover,
+.cost-visual:hover img,
+.map-band:hover .map-graphic {
+  transform: translateY(-6px);
+}
+
+.stage.is-active.home-reveal.is-visible {
+  transform: translateY(-12px);
+}
+
+.schedule-steps::before {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1) 180ms;
+}
+
+.schedule-band:has(.stage.is-visible) .schedule-steps::before {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campaign-hero::after,
+  .hero-panel > *,
+  .city-badge {
+    animation: none !important;
+  }
+
+  .hero-panel > *,
+  .home-reveal {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  .home-reveal,
+  .news-strip,
+  .knowledge-card,
+  .city-personality,
+  .callout,
+  .price-board,
+  .map-band,
+  .final-cta,
+  .submit-illustration,
+  .cost-visual img,
+  .map-graphic,
+  .schedule-steps::before {
+    transition: none !important;
+  }
+}
+
 @media (max-width: 1024px) {
   .site-header {
     margin-bottom: -64px;

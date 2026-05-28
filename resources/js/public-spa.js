@@ -2,6 +2,7 @@ const state = window.BO_SPA || {};
 const root = document.getElementById('bo-spa-root');
 let cleanupNavDropdown = null;
 let cleanupMobileNav = null;
+let cleanupRevealMotion = null;
 
 const t = {
     pl: {
@@ -1760,6 +1761,9 @@ function showToast(message) {
 }
 
 function bindActions() {
+    cleanupRevealMotion?.();
+    cleanupRevealMotion = null;
+
     document.querySelectorAll('[data-spa-link]').forEach((link) => {
         link.addEventListener('click', (event) => {
             const url = new URL(link.href, window.location.origin);
@@ -1949,6 +1953,54 @@ function bindActions() {
         }, 0));
         filter();
     }
+
+    bindHomeMotion();
+}
+
+function bindHomeMotion() {
+    if (currentPath() !== '/') return;
+
+    const revealItems = Array.from(document.querySelectorAll([
+        '.news-strip',
+        '.knowledge-card',
+        '.city-personality',
+        '.action-band-inner > *',
+        '.cost-grid > *',
+        '.price-board',
+        '.map-band',
+        '.schedule-band > .eyebrow',
+        '.schedule-band > h2',
+        '.schedule-band > .lead',
+        '.stage',
+        '.final-cta',
+    ].join(',')));
+
+    if (!revealItems.length) return;
+
+    revealItems.forEach((item, index) => {
+        item.classList.add('home-reveal');
+        item.style.setProperty('--motion-order', String(index % 5));
+    });
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+        revealItems.forEach((item) => item.classList.add('is-visible'));
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+        });
+    }, {
+        rootMargin: '0px 0px -12% 0px',
+        threshold: 0.18,
+    });
+
+    revealItems.forEach((item) => observer.observe(item));
+    cleanupRevealMotion = () => observer.disconnect();
 }
 
 function mountAllInOneAccessibilityWidget() {

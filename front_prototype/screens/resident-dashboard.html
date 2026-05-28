@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panel mieszkańca — Budżet Obywatelski Miasta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css?v=resident-polish-1" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Przejdź do treści</a>
+  <div class="topbar" aria-label="Narzędzia dostępności">
+    <div class="topbar-inner">
+      <ul class="utility-list">
+        <li><a class="utility-link" href="#main">Treść</a></li>
+        <li><button class="contrast-button" type="button" data-contrast-toggle aria-pressed="false">Kontrast</button></li>
+        <li><button class="font-button" type="button" data-font-toggle aria-pressed="false">A+</button></li>
+      </ul>
+      <ul class="lang-list" aria-label="Wybór języka">
+        <li><button class="lang-button" type="button" data-lang="pl" aria-pressed="true">PL</button></li>
+        <li><button class="lang-button" type="button" data-lang="uk" aria-pressed="false">UA</button></li>
+        <li><button class="lang-button" type="button" data-lang="en" aria-pressed="false">EN</button></li>
+        <li><button class="lang-button" type="button" data-lang="de" aria-pressed="false">DE</button></li>
+      </ul>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Budżet Obywatelski Miasta">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span class="brand-text">
+        <span class="brand-city">Miasto</span>
+        <span class="brand-sub">panel mieszkańca</span>
+      </span>
+    </a>
+    <nav aria-label="Nawigacja mieszkańca">
+      <ul class="nav-list">
+        <li><a class="nav-link" href="../index.html">Start</a></li>
+        <li><a class="nav-link" href="projects.html">Projekty</a></li>
+        <li><a class="nav-link" href="resident-dashboard.html" aria-current="page">Panel</a></li>
+        <li><a class="nav-link" href="resident-projects.html">Moje projekty</a></li>
+        <li><a class="nav-link" href="resident-account.html">Konto</a></li>
+        <li><a class="btn btn-primary" href="resident-submit.html">Zgłoś projekt</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main" class="page-shell resident-shell">
+    <section class="resident-hero" aria-labelledby="resident-title">
+      <div>
+        <p class="eyebrow">Jesteś zalogowany jako mieszkaniec</p>
+        <h1 id="resident-title">Dokończ zgłoszenie albo sprawdź swoje projekty.</h1>
+        <p class="lead">Panel prowadzi mieszkańca przez najważniejsze akcje: zgłoszenie projektu, uzupełnienie danych, śledzenie weryfikacji i zarządzanie kontem.</p>
+        <div class="resident-actions">
+          <a class="btn btn-primary" href="resident-submit.html">Nowy projekt</a>
+          <a class="btn btn-secondary" href="resident-projects.html">Moje projekty</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="resident-grid" aria-label="Podsumowanie konta">
+      <article class="resident-stat">
+        <span>Wersje robocze</span>
+        <strong>1</strong>
+        <p>Projekt parku kieszonkowego wymaga uzupełnienia kosztu i lokalizacji.</p>
+      </article>
+      <article class="resident-stat">
+        <span>W weryfikacji</span>
+        <strong>2</strong>
+        <p>Urząd sprawdza zakres, działkę i zgodność projektów z zasadami miasta.</p>
+      </article>
+      <article class="resident-stat">
+        <span>Obserwowane</span>
+        <strong>6</strong>
+        <p>Projekty, przy których chcesz dostać informację o zmianie statusu.</p>
+      </article>
+    </section>
+
+    <section class="resident-layout" aria-labelledby="next-title">
+      <div class="resident-main">
+        <div class="section-head compact">
+          <div>
+            <p class="eyebrow">Co dalej?</p>
+            <h2 id="next-title">Twoje najważniejsze sprawy</h2>
+          </div>
+          <p class="lead">Zamiast administracyjnej tabeli pokazujemy mieszkańcowi jasne zadania i jeden następny krok.</p>
+        </div>
+
+        <article class="task-card is-priority">
+          <div>
+            <span class="status status-waiting">Do uzupełnienia</span>
+            <h3>Zielony skwer przy bibliotece</h3>
+            <p>Brakuje krótkiego uzasadnienia oraz szacunku kosztu utrzymania po realizacji.</p>
+          </div>
+          <a class="btn btn-primary" href="resident-submit.html">Kontynuuj</a>
+        </article>
+
+        <article class="task-card">
+          <div>
+            <span class="status status-live">Komunikat</span>
+            <h3>Dyżur konsultacyjny w środę</h3>
+            <p>Możesz skonsultować opis projektu, kosztorys i załączniki przed wysłaniem.</p>
+          </div>
+          <a class="btn btn-secondary" href="info.html">Zasady</a>
+        </article>
+      </div>
+
+    </section>
+
+    <section class="resident-support-grid" aria-label="Terminy i stan konta">
+      <aside class="deadline-card deadline-card-inline" aria-label="Najbliższy termin">
+        <span class="status status-live">Aktywny etap</span>
+        <strong>21 czerwca</strong>
+        <p>ostatni dzień zgłaszania projektów w edycji 2027</p>
+      </aside>
+
+      <aside class="resident-aside resident-aside-static" aria-labelledby="account-state-title">
+        <h2 id="account-state-title">Stan konta</h2>
+        <ul class="check-list">
+          <li class="is-done">Profil podstawowy uzupełniony</li>
+          <li class="is-done">Adres e-mail potwierdzony</li>
+          <li>Adres zamieszkania do weryfikacji</li>
+          <li>Zgody komunikacyjne do wyboru</li>
+        </ul>
+        <a class="btn btn-secondary" href="resident-account.html">Zarządzaj kontem</a>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Panel mieszkańca. Formularze, moje projekty i konto użytkownika.</p>
+      <a href="resident-account.html">Ustawienia konta</a>
+    </div>
+  </footer>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <script src="../assets/site.js"></script>
+</body>
+</html>

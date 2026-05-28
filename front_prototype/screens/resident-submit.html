@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zgłoś projekt — Panel mieszkańca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css?v=resident-polish-1" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Przejdź do treści</a>
+  <div class="topbar" aria-label="Narzędzia dostępności">
+    <div class="topbar-inner">
+      <ul class="utility-list">
+        <li><a class="utility-link" href="#main">Treść</a></li>
+        <li><button class="contrast-button" type="button" data-contrast-toggle aria-pressed="false">Kontrast</button></li>
+        <li><button class="font-button" type="button" data-font-toggle aria-pressed="false">A+</button></li>
+      </ul>
+      <ul class="lang-list" aria-label="Wybór języka">
+        <li><button class="lang-button" type="button" data-lang="pl" aria-pressed="true">PL</button></li>
+        <li><button class="lang-button" type="button" data-lang="uk" aria-pressed="false">UA</button></li>
+        <li><button class="lang-button" type="button" data-lang="en" aria-pressed="false">EN</button></li>
+        <li><button class="lang-button" type="button" data-lang="de" aria-pressed="false">DE</button></li>
+      </ul>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Budżet Obywatelski Miasta">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span class="brand-text">
+        <span class="brand-city">Miasto</span>
+        <span class="brand-sub">panel mieszkańca</span>
+      </span>
+    </a>
+    <nav aria-label="Nawigacja mieszkańca">
+      <ul class="nav-list">
+        <li><a class="nav-link" href="../index.html">Start</a></li>
+        <li><a class="nav-link" href="projects.html">Projekty</a></li>
+        <li><a class="nav-link" href="resident-dashboard.html">Panel</a></li>
+        <li><a class="nav-link" href="resident-projects.html">Moje projekty</a></li>
+        <li><a class="nav-link" href="resident-account.html">Konto</a></li>
+        <li><a class="btn btn-primary" href="resident-submit.html" aria-current="page">Zgłoś projekt</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main" class="page-shell resident-shell">
+    <section class="resident-page-head" aria-labelledby="submit-resident-title">
+      <p class="eyebrow">Formularz mieszkańca</p>
+      <h1 id="submit-resident-title">Zgłoś projekt do budżetu obywatelskiego.</h1>
+      <p class="lead">Formularz ma roboczy zapis, walidację wymaganych pól, koszt orientacyjny i jasne sekcje. To ekran mieszkańca, nie panel administratora.</p>
+    </section>
+
+    <section class="form-workspace" aria-label="Formularz zgłaszania projektu">
+      <aside class="step-sidebar">
+        <span class="status status-live">Roboczy</span>
+        <h2>Postęp zgłoszenia</h2>
+        <ol class="step-list">
+          <li class="is-active">Opis projektu</li>
+          <li>Lokalizacja</li>
+          <li>Koszt i załączniki</li>
+          <li>Oświadczenia</li>
+        </ol>
+        <p>Możesz zapisać wersję roboczą i wrócić do formularza przed końcem naboru.</p>
+      </aside>
+
+      <form class="resident-form" data-submit-demo data-budget-form>
+        <fieldset>
+          <legend>Opis projektu</legend>
+          <div class="field">
+            <label for="resident-project-name">Nazwa projektu</label>
+            <input id="resident-project-name" name="resident-project-name" required placeholder="np. Zielony skwer przy bibliotece" />
+          </div>
+          <div class="field">
+            <label for="resident-category">Kategoria</label>
+            <select id="resident-category" name="resident-category" required>
+              <option value="">Wybierz kategorię</option>
+              <option>Zieleń i klimat</option>
+              <option>Bezpieczeństwo i mobilność</option>
+              <option>Kultura i edukacja</option>
+              <option>Sport i rekreacja</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="resident-summary">Krótki opis</label>
+            <textarea id="resident-summary" name="resident-summary" required maxlength="600" data-count-source="summary-count" placeholder="Opisz problem, rozwiązanie i mieszkańców, którzy skorzystają z projektu."></textarea>
+            <p class="form-hint"><span id="summary-count" data-count-output>0</span>/600 znaków</p>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Lokalizacja</legend>
+          <div class="two-col">
+            <div class="field">
+              <label for="resident-area">Obszar miasta</label>
+              <select id="resident-area" name="resident-area" required>
+                <option value="">Wybierz obszar</option>
+                <option>Całe miasto</option>
+                <option>Centrum</option>
+                <option>Osiedle północ</option>
+                <option>Osiedle południe</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="resident-address">Adres lub punkt orientacyjny</label>
+              <input id="resident-address" name="resident-address" required placeholder="np. okolice biblioteki miejskiej" />
+            </div>
+          </div>
+          <div class="map-mini" role="img" aria-label="Miejsce na mapę lokalizacji projektu">
+            <span class="pin"></span>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Koszt i załączniki</legend>
+          <div class="two-col">
+            <div class="field">
+              <label for="resident-cost-build">Koszt realizacji</label>
+              <input id="resident-cost-build" name="resident-cost-build" inputmode="numeric" data-budget-input placeholder="np. 250000" />
+            </div>
+            <div class="field">
+              <label for="resident-cost-maintenance">Koszt utrzymania</label>
+              <input id="resident-cost-maintenance" name="resident-cost-maintenance" inputmode="numeric" data-budget-input placeholder="np. 15000" />
+            </div>
+          </div>
+          <div class="budget-summary">
+            <span>Szacowany koszt łącznie</span>
+            <strong data-budget-total>0 zł</strong>
+          </div>
+          <div class="field">
+            <label for="resident-attachments">Załączniki</label>
+            <input id="resident-attachments" name="resident-attachments" type="file" multiple />
+            <p class="form-hint">Dodaj zdjęcie, szkic, kosztorys albo dokument pomocniczy. W prototypie pliki nie są wysyłane.</p>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Oświadczenia</legend>
+          <label class="check-row">
+            <input type="checkbox" required />
+            <span>Potwierdzam, że projekt dotyczy zadania możliwego do realizacji przez miasto.</span>
+          </label>
+          <label class="check-row">
+            <input type="checkbox" />
+            <span>Chcę otrzymywać powiadomienia o zmianie statusu projektu.</span>
+          </label>
+        </fieldset>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" type="button" data-save-action>Zapisz roboczo</button>
+          <button class="btn btn-primary" type="submit">Wyślij do weryfikacji</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Formularz zgłoszenia projektu dla mieszkańca.</p>
+      <a href="resident-projects.html">Moje projekty</a>
+    </div>
+  </footer>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <script src="../assets/site.js"></script>
+</body>
+</html>

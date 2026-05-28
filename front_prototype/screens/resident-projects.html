@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Moje projekty — Panel mieszkańca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css?v=resident-heads-1" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Przejdź do treści</a>
+  <div class="topbar" aria-label="Narzędzia dostępności">
+    <div class="topbar-inner">
+      <ul class="utility-list">
+        <li><a class="utility-link" href="#main">Treść</a></li>
+        <li><button class="contrast-button" type="button" data-contrast-toggle aria-pressed="false">Kontrast</button></li>
+        <li><button class="font-button" type="button" data-font-toggle aria-pressed="false">A+</button></li>
+      </ul>
+      <ul class="lang-list" aria-label="Wybór języka">
+        <li><button class="lang-button" type="button" data-lang="pl" aria-pressed="true">PL</button></li>
+        <li><button class="lang-button" type="button" data-lang="uk" aria-pressed="false">UA</button></li>
+        <li><button class="lang-button" type="button" data-lang="en" aria-pressed="false">EN</button></li>
+        <li><button class="lang-button" type="button" data-lang="de" aria-pressed="false">DE</button></li>
+      </ul>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Budżet Obywatelski Miasta">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span class="brand-text">
+        <span class="brand-city">Miasto</span>
+        <span class="brand-sub">panel mieszkańca</span>
+      </span>
+    </a>
+    <nav aria-label="Nawigacja mieszkańca">
+      <ul class="nav-list">
+        <li><a class="nav-link" href="../index.html">Start</a></li>
+        <li><a class="nav-link" href="projects.html">Projekty</a></li>
+        <li><a class="nav-link" href="resident-dashboard.html">Panel</a></li>
+        <li><a class="nav-link" href="resident-projects.html" aria-current="page">Moje projekty</a></li>
+        <li><a class="nav-link" href="resident-account.html">Konto</a></li>
+        <li><a class="btn btn-primary" href="resident-submit.html">Zgłoś projekt</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main" class="page-shell resident-shell">
+    <section class="resident-page-head" aria-labelledby="my-projects-title">
+      <p class="eyebrow">Moje projekty</p>
+      <h1 id="my-projects-title">Moje projekty</h1>
+      <p class="lead">Statusy zgłoszeń, terminy odpowiedzi i szybkie akcje w jednym widoku.</p>
+    </section>
+
+    <section class="resident-project-layout" aria-label="Lista moich projektów">
+      <aside class="filter-panel resident-filter" aria-labelledby="my-filter-title">
+        <h2 id="my-filter-title">Filtry</h2>
+        <form data-project-filters>
+          <div class="field">
+            <label for="my-query">Szukaj</label>
+            <input id="my-query" name="query" type="search" placeholder="Nazwa, kategoria, osiedle" />
+          </div>
+          <div class="field">
+            <label for="my-category">Kategoria</label>
+            <select id="my-category" name="category">
+              <option value="">Wszystkie</option>
+              <option value="green">Zieleń</option>
+              <option value="mobility">Mobilność</option>
+              <option value="culture">Kultura</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="my-status">Status</label>
+            <select id="my-status" name="status">
+              <option value="">Wszystkie</option>
+              <option value="draft">Roboczy</option>
+              <option value="waiting">W weryfikacji</option>
+              <option value="returned">Do poprawy</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" type="reset">Wyczyść</button>
+        </form>
+        <p class="form-hint"><span data-result-count>0</span> projektów</p>
+      </aside>
+
+      <div class="resident-project-results">
+        <p class="panel" data-empty hidden>Nie znaleziono projektów dla tych filtrów.</p>
+        <div class="my-project-list">
+          <article class="my-project-card" data-project-card data-category="green" data-status="returned" data-search="zielony skwer biblioteka park zielen koszt">
+            <div class="my-project-top">
+              <span class="status status-returned">Do poprawy</span>
+              <span class="notice-date">Odpowiedz do 18.06</span>
+            </div>
+            <h2>Zielony skwer przy bibliotece</h2>
+            <p>Urzędnik poprosił o doprecyzowanie kosztu utrzymania i wskazanie działki.</p>
+            <div class="progress-line" aria-label="Kompletność projektu">
+              <span style="width: 68%"></span>
+            </div>
+            <div class="project-actions">
+              <a class="btn btn-primary" href="resident-submit.html">Uzupełnij</a>
+              <button class="btn btn-secondary" type="button" data-save-action>Pobierz PDF</button>
+            </div>
+          </article>
+
+          <article class="my-project-card" data-project-card data-category="mobility" data-status="waiting" data-search="bezpieczne przejscie szkola mobilnosc oswietlenie">
+            <div class="my-project-top">
+              <span class="status status-waiting">W weryfikacji</span>
+              <span class="notice-date">Etap formalny</span>
+            </div>
+            <h2>Bezpieczne przejście przy szkole</h2>
+            <p>Projekt jest sprawdzany pod kątem własności terenu i zgodności z organizacją ruchu.</p>
+            <div class="progress-line" aria-label="Kompletność projektu">
+              <span style="width: 100%"></span>
+            </div>
+            <div class="project-actions">
+              <a class="btn btn-secondary" href="project-detail.html">Podgląd</a>
+              <button class="btn btn-secondary" type="button" data-save-action>Obserwuj</button>
+            </div>
+          </article>
+
+          <article class="my-project-card" data-project-card data-category="culture" data-status="draft" data-search="warsztaty biblioteka kultura seniorzy mlodziez">
+            <div class="my-project-top">
+              <span class="status status-draft">Roboczy</span>
+              <span class="notice-date">Niezłożony</span>
+            </div>
+            <h2>Warsztaty sąsiedzkie w bibliotece</h2>
+            <p>Brakuje opisu grup odbiorców, harmonogramu i załączników z kosztorysem.</p>
+            <div class="progress-line" aria-label="Kompletność projektu">
+              <span style="width: 42%"></span>
+            </div>
+            <div class="project-actions">
+              <a class="btn btn-primary" href="resident-submit.html">Edytuj</a>
+              <button class="btn btn-secondary" type="button" data-save-action>Usuń roboczy</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Lista projektów zgłoszonych przez zalogowanego mieszkańca.</p>
+      <a href="resident-submit.html">Dodaj kolejny projekt</a>
+    </div>
+  </footer>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <script src="../assets/site.js"></script>
+</body>
+</html>

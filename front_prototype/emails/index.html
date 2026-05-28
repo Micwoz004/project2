@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Szablony maili - Budżet Obywatelski</title>
+  <style>
+    :root {
+      --bg: #f5f5f2;
+      --surface: #fff;
+      --fg: #262626;
+      --muted: #60605d;
+      --border: #e1e1dc;
+      --green: #168e45;
+      --yellow: #f4c600;
+      --red: #d6262e;
+      --dark: #262626;
+      --font-display: "Barlow Condensed", "Arial Narrow", "Aptos Display", system-ui, sans-serif;
+      --font-body: "Source Sans 3", "Aptos", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    .hero {
+      background: linear-gradient(135deg, rgba(22,142,69,.95), rgba(38,38,38,.82)), url("../assets/civic-hero-city.png");
+      background-size: cover;
+      background-position: center;
+      color: white;
+      padding: 76px max(28px, calc((100vw - 1180px) / 2)) 64px;
+    }
+    .hero span {
+      display: inline-flex;
+      border-radius: 999px;
+      background: var(--yellow);
+      color: var(--dark);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    h1 {
+      max-width: 780px;
+      margin: 20px 0 0;
+      font-family: var(--font-display);
+      font-size: clamp(48px, 8vw, 92px);
+      line-height: .96;
+      letter-spacing: 0;
+    }
+    .lead {
+      max-width: 760px;
+      margin: 22px 0 0;
+      font-size: 21px;
+      line-height: 1.48;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 42px 28px 72px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .mail-card {
+      min-height: 196px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 22px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--surface);
+      padding: 26px;
+      box-shadow: 0 16px 42px rgba(38,38,38,.08);
+    }
+    .audience {
+      display: inline-flex;
+      width: fit-content;
+      border-radius: 999px;
+      background: #e7f6ed;
+      color: var(--green);
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    h2 {
+      margin: 14px 0 8px;
+      font-family: var(--font-display);
+      font-size: 36px;
+      line-height: 1;
+    }
+    p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+    a {
+      width: fit-content;
+      border-radius: 999px;
+      background: var(--green);
+      color: white;
+      padding: 12px 18px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    @media (max-width: 760px) {
+      .grid { grid-template-columns: 1fr; }
+      .hero { padding-top: 54px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <span>Pakiet komunikacji</span>
+    <h1>Szablony maili Budżetu Obywatelskiego</h1>
+    <p class="lead">Zestaw transakcyjnych wiadomośći dla mieszkancow i urzędnikow: aktywacja konta, reset hasła, statusy projektow, głosowanie oraz kolejka weryfikacji.</p>
+  </header>
+  <main>
+    <section class="grid" aria-label="Lista szablonow maili">
+
+      <article class="mail-card">
+        <div>
+          <span class="audience">Mieszkaniec</span>
+          <h2>Potwierdź adres e-mail</h2>
+          <p>Potwierdź adres e-mail w serwisie Budżet Obywatelski</p>
+        </div>
+        <a href="./resident-email-verification.html">Otwórz szablon</a>
+      </article>
+      <article class="mail-card">
+        <div>
+          <span class="audience">Mieszkaniec</span>
+          <h2>Ustaw nowe hasło</h2>
+          <p>Ustaw nowe hasło do konta mieszkańca</p>
+        </div>
+        <a href="./resident-password-reset.html">Otwórz szablon</a>
+      </article>
+      <article class="mail-card">
+        <div>
+          <span class="audience">Mieszkaniec</span>
+          <h2>Projekt jest już w systemie</h2>
+          <p>Twoj projekt został przyjęty do weryfikacji</p>
+        </div>
+        <a href="./resident-project-submitted.html">Otwórz szablon</a>
+      </article>
+      <article class="mail-card">
+        <div>
+          <span class="audience">Mieszkaniec</span>
+          <h2>Projekt został opublikowany</h2>
+          <p>Twoj projekt został opublikowany</p>
+        </div>
+        <a href="./resident-project-published.html">Otwórz szablon</a>
+      </article>
+      <article class="mail-card">
+        <div>
+          <span class="audience">Mieszkaniec</span>
+          <h2>Projekt wymaga uzupełnienia</h2>
+          <p>Uzupełnij informacje w zgłoszonym projekcie</p>
+        </div>
+        <a href="./resident-project-needs-correction.html">Otwórz szablon</a>
+      </article>
+      <article class="mail-card">
+        <div>
+          <span class="audience">Mieszkaniec</span>
+          <h2>Głosowanie jest otwarte</h2>
+          <p>Ruszyło głosowanie w Budzecie Obywatelskim</p>
+        </div>
+        <a href="./resident-voting-started.html">Otwórz szablon</a>
+      </article>
+      <article class="mail-card">
+        <div>
+          <span class="audience">Urzędnik</span>
+          <h2>Nowy projekt do weryfikacji</h2>
+          <p>Nowy projekt czeka na weryfikację</p>
+        </div>
+        <a href="./official-new-project.html">Otwórz szablon</a>
+      </article>
+      <article class="mail-card">
+        <div>
+          <span class="audience">Urzędnik</span>
+          <h2>Termin weryfikacji jest blisko</h2>
+          <p>Zbliża sie termin weryfikacji projektu</p>
+        </div>
+        <a href="./official-verification-deadline.html">Otwórz szablon</a>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

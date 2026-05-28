@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Konto mieszkańca — Budżet Obywatelski Miasta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css?v=resident-heads-1" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Przejdź do treści</a>
+  <div class="topbar" aria-label="Narzędzia dostępności">
+    <div class="topbar-inner">
+      <ul class="utility-list">
+        <li><a class="utility-link" href="#main">Treść</a></li>
+        <li><button class="contrast-button" type="button" data-contrast-toggle aria-pressed="false">Kontrast</button></li>
+        <li><button class="font-button" type="button" data-font-toggle aria-pressed="false">A+</button></li>
+      </ul>
+      <ul class="lang-list" aria-label="Wybór języka">
+        <li><button class="lang-button" type="button" data-lang="pl" aria-pressed="true">PL</button></li>
+        <li><button class="lang-button" type="button" data-lang="uk" aria-pressed="false">UA</button></li>
+        <li><button class="lang-button" type="button" data-lang="en" aria-pressed="false">EN</button></li>
+        <li><button class="lang-button" type="button" data-lang="de" aria-pressed="false">DE</button></li>
+      </ul>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Budżet Obywatelski Miasta">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span class="brand-text">
+        <span class="brand-city">Miasto</span>
+        <span class="brand-sub">panel mieszkańca</span>
+      </span>
+    </a>
+    <nav aria-label="Nawigacja mieszkańca">
+      <ul class="nav-list">
+        <li><a class="nav-link" href="../index.html">Start</a></li>
+        <li><a class="nav-link" href="projects.html">Projekty</a></li>
+        <li><a class="nav-link" href="resident-dashboard.html">Panel</a></li>
+        <li><a class="nav-link" href="resident-projects.html">Moje projekty</a></li>
+        <li><a class="nav-link" href="resident-account.html" aria-current="page">Konto</a></li>
+        <li><a class="btn btn-primary" href="resident-submit.html">Zgłoś projekt</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main" class="page-shell resident-shell">
+    <section class="resident-page-head" aria-labelledby="account-title">
+      <p class="eyebrow">Konto mieszkańca</p>
+      <h1 id="account-title">Konto mieszkańca</h1>
+      <p class="lead">Dane kontaktowe, język, powiadomienia i podstawowe bezpieczeństwo.</p>
+    </section>
+
+    <section class="account-grid" aria-label="Zarządzanie kontem">
+      <form class="resident-form account-form" data-submit-demo>
+        <fieldset>
+          <legend>Dane podstawowe</legend>
+          <div class="two-col">
+            <div class="field">
+              <label for="first-name">Imię</label>
+              <input id="first-name" name="first-name" required value="Anna" />
+            </div>
+            <div class="field">
+              <label for="last-name">Nazwisko</label>
+              <input id="last-name" name="last-name" required value="Kowalska" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="email">Adres e-mail</label>
+            <input id="email" name="email" type="email" required value="anna.kowalska@example.com" />
+          </div>
+          <div class="field">
+            <label for="district">Obszar miasta</label>
+            <select id="district" name="district">
+              <option>Centrum</option>
+              <option>Osiedle północ</option>
+              <option>Osiedle południe</option>
+              <option>Całe miasto</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Preferencje</legend>
+          <div class="field">
+            <label for="preferred-language">Domyślny język</label>
+            <select id="preferred-language" name="preferred-language">
+              <option>Polski</option>
+              <option>Українська</option>
+              <option>English</option>
+              <option>Deutsch</option>
+            </select>
+          </div>
+          <label class="check-row">
+            <input type="checkbox" checked />
+            <span>Powiadom mnie o zmianie statusu moich projektów.</span>
+          </label>
+          <label class="check-row">
+            <input type="checkbox" checked />
+            <span>Wyślij przypomnienie przed końcem zgłaszania projektów.</span>
+          </label>
+          <label class="check-row">
+            <input type="checkbox" />
+            <span>Chcę otrzymywać ogłoszenia o konsultacjach i wynikach.</span>
+          </label>
+        </fieldset>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Zapisz ustawienia</button>
+        </div>
+      </form>
+
+      <aside class="account-side">
+        <article class="identity-card">
+          <span class="status status-live">Konto aktywne</span>
+          <h2>Anna Kowalska</h2>
+          <p>Adres e-mail potwierdzony. Profil może wymagać dodatkowej weryfikacji przed głosowaniem, zależnie od zasad miasta.</p>
+        </article>
+        <article class="security-card">
+          <h2>Bezpieczeństwo</h2>
+          <ul class="check-list">
+            <li class="is-done">Hasło ustawione</li>
+            <li class="is-done">E-mail potwierdzony</li>
+            <li>Weryfikacja mieszkańca przed głosowaniem</li>
+          </ul>
+          <button class="btn btn-secondary" type="button" data-save-action>Zmień hasło</button>
+        </article>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Ustawienia konta mieszkańca.</p>
+      <a href="resident-dashboard.html">Wróć do panelu</a>
+    </div>
+  </footer>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <script src="../assets/site.js"></script>
+</body>
+</html>

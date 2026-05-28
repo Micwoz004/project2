@@ -2185,3 +2185,515 @@ body {
     border-radius: 4px;
   }
 }
+
+/* Resident area: logged-in citizen pages. */
+.resident-shell {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 42px 32px 96px;
+}
+
+.resident-hero,
+.resident-page-head,
+.resident-grid,
+.resident-layout,
+.form-workspace,
+.account-grid {
+  margin-top: 34px;
+}
+
+.resident-hero {
+  min-height: 420px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr);
+  gap: 34px;
+  align-items: center;
+  padding: 48px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 82% 12%, rgba(244, 198, 0, 0.32), transparent 28%),
+    linear-gradient(135deg, #fff 0%, #f3f3ef 58%, #dff0e5 100%);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.12);
+}
+
+.resident-hero h1 {
+  max-width: 15ch;
+}
+
+.resident-hero h1 {
+  font-size: clamp(54px, 6.4vw, 78px);
+}
+
+.resident-page-head h1 {
+  max-width: none;
+  font-size: clamp(34px, 3.6vw, 48px);
+}
+
+.resident-hero .lead {
+  max-width: 760px;
+}
+
+.resident-page-head .lead {
+  max-width: 940px;
+}
+
+.resident-actions,
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+
+.deadline-card,
+.resident-aside,
+.step-sidebar,
+.account-side article {
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.12);
+}
+
+.deadline-card {
+  min-height: 260px;
+  display: grid;
+  align-content: center;
+  gap: 16px;
+  padding: 30px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78)),
+    url("civic-projects-illustration.png") center / cover no-repeat;
+}
+
+.deadline-card-inline {
+  min-height: 300px;
+}
+
+.deadline-card strong {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 5vw, 64px);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.resident-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.resident-stat {
+  min-height: 210px;
+  padding: 26px;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.1);
+}
+
+.resident-stat span,
+.my-project-top,
+.step-list,
+.check-list {
+  font-family: var(--font-mono);
+}
+
+.resident-stat span {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.resident-stat strong {
+  display: block;
+  margin: 14px 0 10px;
+  font-family: var(--font-display);
+  font-size: 70px;
+  line-height: 0.9;
+}
+
+.resident-layout,
+.form-workspace,
+.account-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 26px;
+  align-items: start;
+}
+
+.resident-layout {
+  display: block;
+}
+
+.resident-main {
+  display: grid;
+  gap: 18px;
+}
+
+.resident-support-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.7fr);
+  gap: 26px;
+  align-items: stretch;
+  margin-top: 26px;
+}
+
+.section-head.compact {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.5fr);
+  margin-bottom: 6px;
+}
+
+.task-card,
+.my-project-card {
+  display: grid;
+  gap: 18px;
+  padding: 26px;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.1);
+}
+
+.task-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.task-card.is-priority {
+  background: #f4c600;
+}
+
+.resident-aside {
+  position: sticky;
+  top: 96px;
+  padding: 26px;
+  background: #1d1d1b;
+  color: #fff;
+}
+
+.resident-aside-static {
+  position: static;
+}
+
+.resident-aside h2,
+.resident-aside p {
+  color: #fff;
+}
+
+.check-list {
+  display: grid;
+  gap: 12px;
+  margin: 22px 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.check-list li {
+  position: relative;
+  padding-left: 28px;
+}
+
+.check-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.check-list li.is-done::before {
+  background: #f4c600;
+  border-color: #f4c600;
+  box-shadow: inset 0 0 0 4px #1d1d1b;
+}
+
+.resident-page-head {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: 28px 0 4px;
+}
+
+.form-workspace {
+  grid-template-columns: 300px minmax(0, 1fr);
+}
+
+.step-sidebar {
+  position: sticky;
+  top: 96px;
+  padding: 26px;
+  background: #f4c600;
+}
+
+.step-sidebar h2 {
+  margin-top: 16px;
+}
+
+.step-list {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0;
+  padding-left: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.step-list li {
+  padding: 8px 0;
+}
+
+.step-list li.is-active {
+  color: #168e45;
+}
+
+.resident-form {
+  display: grid;
+  gap: 20px;
+}
+
+.resident-form fieldset {
+  margin: 0;
+  padding: 26px;
+  border: 0;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.1);
+}
+
+.resident-form legend {
+  padding: 0;
+  margin-bottom: 18px;
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.map-mini {
+  min-height: 210px;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 34% 48%, rgba(22, 142, 69, 0.14) 0 46px, transparent 47px),
+    linear-gradient(34deg, transparent 48%, rgba(0, 0, 0, 0.08) 49% 51%, transparent 52%),
+    linear-gradient(-21deg, transparent 44%, rgba(0, 0, 0, 0.06) 45% 51%, transparent 52%),
+    #f2f2ee;
+  position: relative;
+  overflow: hidden;
+}
+
+.budget-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  border-radius: 8px;
+  background: #168e45;
+  color: #fff;
+}
+
+.budget-summary span {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.budget-summary strong {
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.check-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  margin: 14px 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.check-row input {
+  width: 20px;
+  min-height: 20px;
+  margin-top: 3px;
+}
+
+.resident-project-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+}
+
+.resident-filter {
+  position: static;
+}
+
+.resident-filter form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.resident-filter .field {
+  margin-bottom: 0;
+}
+
+.resident-filter .form-hint {
+  margin: 16px 0 0;
+}
+
+.resident-project-results {
+  width: 100%;
+}
+
+.my-project-list {
+  display: grid;
+  gap: 18px;
+  width: 100%;
+}
+
+.my-project-card {
+  min-height: 260px;
+}
+
+.my-project-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.my-project-card h2 {
+  font-size: clamp(34px, 4vw, 48px);
+}
+
+.progress-line {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e4e4df;
+}
+
+.progress-line span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #168e45, #f4c600);
+}
+
+.status-draft {
+  background: color-mix(in oklab, var(--muted), white 82%);
+  color: var(--muted);
+}
+
+.status-returned {
+  background: color-mix(in oklab, var(--danger), white 84%);
+  color: var(--danger);
+}
+
+.account-grid {
+  grid-template-columns: minmax(0, 1fr) 360px;
+}
+
+.account-side {
+  display: grid;
+  gap: 18px;
+}
+
+.identity-card,
+.security-card {
+  padding: 26px;
+}
+
+.identity-card {
+  background: #f4c600 !important;
+}
+
+.security-card {
+  background: #fff !important;
+}
+
+@media (max-width: 980px) {
+  .resident-shell {
+    padding-inline: 24px;
+  }
+
+	  .resident-hero,
+	  .resident-layout,
+	  .form-workspace,
+	  .account-grid,
+	  .resident-support-grid,
+	  .resident-project-layout {
+	    grid-template-columns: 1fr;
+	  }
+
+	  .resident-filter form {
+	    grid-template-columns: repeat(2, minmax(0, 1fr));
+	  }
+
+  .deadline-card,
+  .resident-aside,
+  .step-sidebar,
+  .resident-filter {
+    position: static;
+  }
+
+  .resident-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-head.compact {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .resident-shell {
+    padding: 24px 16px 72px;
+  }
+
+  .resident-hero,
+  .resident-form fieldset,
+  .task-card,
+  .my-project-card {
+    padding: 22px;
+  }
+
+	  .task-card,
+	  .two-col,
+	  .resident-filter form {
+	    grid-template-columns: 1fr;
+	  }
+
+	  .resident-hero h1 {
+	    font-size: clamp(38px, 11vw, 54px);
+	  }
+
+	  .resident-page-head h1 {
+	    font-size: clamp(32px, 9vw, 42px);
+	  }
+	}

@@ -4,23 +4,23 @@
   "axes": {
     "clarity": {
       "score": 4,
-      "notes": "Cztery ekrany odpowiadaja bezposrednio briefowi: start, katalog, szczegol projektu, informacje."
+      "notes": "Ekrany mieszkańca mają teraz czytelniejszy podział: hero bez terminu, pełnoszeroką listę spraw oraz osobny dolny moduł terminu i stanu konta."
     },
     "hierarchy": {
       "score": 4,
-      "notes": "Pierwszy ekran ma mocniejsze trzy akcje w hero, licznik nie ma juz bialych przerw, a numery w sekcji wiedzy sa bardziej czytelne."
+      "notes": "Zmniejszone nagłówki uwalniają miejsce na treść, a lista moich projektów ma pełną szerokość zamiast konkurować z bocznym filtrem."
     },
     "typography": {
       "score": 4,
-      "notes": "Home i podstrony laduja ten sam zestaw fontow oraz ten sam cache-buster CSS, co stabilizuje wyglad nawigacji."
+      "notes": "Skala nagłówków części zalogowanej jest spokojniejsza i lepiej pasuje do ekranów zadaniowych mieszkańca."
     },
     "motion": {
-      "score": 3,
-      "notes": "Motion jest celowo oszczedny: toast, hover, focus. Brak ozdobnych przejsc przez wymagania WCAG."
+      "score": 4,
+      "notes": "Nie dodawano nowych animacji; poprawka dotyczy layoutu, hierarchii i responsywności."
     },
     "brand": {
       "score": 4,
-      "notes": "CTA, licznik i elementy numerowane sa blizej kampanijnego stylu konkurencji bez zmiany ogolnego kierunku miejskiego."
+      "notes": "Zachowano kampanijny styl BO, ale komponenty panelu mieszkańca są bardziej użytkowe i mniej ciężkie wizualnie."
     }
   }
 }

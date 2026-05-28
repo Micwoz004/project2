@@ -219,10 +219,50 @@
     });
   }
 
+  function initResidentFormHelpers() {
+    document.querySelectorAll("[data-count-source]").forEach((field) => {
+      const output = document.getElementById(field.dataset.countSource);
+      if (!output) return;
+      const update = () => {
+        output.textContent = String(field.value.length);
+      };
+      field.addEventListener("input", update);
+      update();
+    });
+
+    document.querySelectorAll("[data-budget-form]").forEach((form) => {
+      const inputs = Array.from(form.querySelectorAll("[data-budget-input]"));
+      const total = form.querySelector("[data-budget-total]");
+      if (!inputs.length || !total) return;
+
+      const format = new Intl.NumberFormat("pl-PL", {
+        style: "currency",
+        currency: "PLN",
+        maximumFractionDigits: 0
+      });
+
+      function parseAmount(value) {
+        const normalized = String(value || "").replace(/\s/g, "").replace(",", ".");
+        const number = Number(normalized);
+        return Number.isFinite(number) ? number : 0;
+      }
+
+      function update() {
+        const sum = inputs.reduce((acc, input) => acc + parseAmount(input.value), 0);
+        total.textContent = format.format(sum);
+      }
+
+      inputs.forEach((input) => input.addEventListener("input", update));
+      form.addEventListener("reset", () => setTimeout(update, 0));
+      update();
+    });
+  }
+
   initLanguage();
   initA11yToggles();
   initProjectFilters();
   initTabs();
   initAccordions();
   initActions();
+  initResidentFormHelpers();
 })();

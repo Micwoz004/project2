@@ -1641,7 +1641,8 @@ textarea {
 }
 
 .content-page h1 {
-  max-width: 16ch;
+  max-width: none;
+  white-space: nowrap;
   font-size: clamp(40px, 4.6vw, 60px);
   line-height: 0.98;
 }
@@ -2546,6 +2547,87 @@ body {
   color: #171717;
 }
 
+.content-page > .schedule-band {
+  margin-top: 20px;
+  padding: 26px 28px 28px;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 96% 10%, rgba(244, 198, 0, 0.2), transparent 26%),
+    linear-gradient(135deg, #bc1f28 0%, #8f1724 100%);
+  text-align: left;
+}
+
+.content-page > .schedule-band .eyebrow {
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.content-page > .schedule-band h2 {
+  max-width: none;
+  margin: 0;
+  font-size: clamp(28px, 3vw, 36px);
+  line-height: 0.96;
+}
+
+.content-page > .schedule-band .lead {
+  max-width: 620px;
+  margin: 8px 0 0;
+  font-size: 16px;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.content-page > .schedule-band .schedule-steps {
+  max-width: none;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.content-page > .schedule-band .schedule-steps::before {
+  display: none;
+}
+
+.content-page > .schedule-band .stage {
+  min-height: 118px;
+  gap: 8px;
+  padding: 14px 12px 12px;
+  border-radius: 8px;
+  box-shadow: 0 10px 20px rgba(43, 0, 0, 0.14);
+  transform: none;
+}
+
+.content-page > .schedule-band .stage::before {
+  height: 5px;
+}
+
+.content-page > .schedule-band .stage::after {
+  inset: 5px 0 auto;
+}
+
+.content-page > .schedule-band .stage-index {
+  width: 34px;
+  height: 34px;
+  margin: 2px 0 3px;
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.18);
+  font-size: 10px;
+}
+
+.content-page > .schedule-band .stage-status {
+  padding: 4px 7px;
+  font-size: 9px;
+}
+
+.content-page > .schedule-band .stage h3 {
+  font-size: clamp(18px, 1.7vw, 22px);
+  line-height: 0.96;
+}
+
+.content-page > .schedule-band .stage p {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
 .budget-walkthrough {
   padding-top: 74px;
   text-align: center;
@@ -2867,6 +2949,36 @@ body {
 
   .stage.is-active {
     transform: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .content-page h1 {
+    white-space: normal;
+  }
+
+  .content-page > .schedule-band {
+    padding: 22px 18px;
+  }
+
+  .content-page > .schedule-band .schedule-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .content-page > .schedule-band .stage {
+    min-height: auto;
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+    gap: 4px 10px;
+  }
+
+  .content-page > .schedule-band .stage-index {
+    grid-row: span 2;
+    margin: 0;
+  }
+
+  .content-page > .schedule-band .stage-status {
+    grid-column: 2;
   }
 }
 

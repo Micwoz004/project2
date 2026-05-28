@@ -1594,6 +1594,128 @@ function announcementDetailView() {
     `;
 }
 
+function fallbackFaqItems() {
+    return [
+        {
+            question: 'Kto może zgłosić projekt?',
+            answer: '<p>Projekt może zgłosić mieszkaniec miasta. Szczegółowe warunki, w tym wiek lub wymagane zgody, należy opisać w lokalnym regulaminie.</p>',
+        },
+        {
+            question: 'Czy projekt musi być inwestycją?',
+            answer: '<p>Nie zawsze. W budżecie obywatelskim można prezentować zarówno zadania inwestycyjne, jak i działania społeczne, edukacyjne, sportowe lub kulturalne.</p>',
+        },
+        {
+            question: 'Co oznacza ogólnodostępność?',
+            answer: '<p>Efekt projektu powinien być dostępny dla szerokiej grupy mieszkańców, bez opłat i bez zamkniętego, prywatnego charakteru.</p>',
+        },
+        {
+            question: 'Czy można poprawić projekt po wysłaniu?',
+            answer: '<p>W typowym procesie urząd może poprosić autora o uzupełnienie braków lub doprecyzowanie zakresu w czasie weryfikacji.</p>',
+        },
+        {
+            question: 'Jak wybierane są projekty do realizacji?',
+            answer: '<p>Po głosowaniu projekty są układane według poparcia mieszkańców i finansowane do wyczerpania puli środków przewidzianej dla danej kategorii.</p>',
+        },
+    ];
+}
+
+function parseFaqItems(body) {
+    const template = document.createElement('template');
+    template.innerHTML = String(body || '').trim();
+
+    const intro = [];
+    const items = [];
+    let current = null;
+
+    Array.from(template.content.childNodes).forEach((node) => {
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+            const text = node.textContent?.trim();
+            if (!text) return;
+            const textHtml = escapeHtml(text);
+            if (current) {
+                current.answer.push(textHtml);
+            } else {
+                intro.push(textHtml);
+            }
+
+            return;
+        }
+
+        const element = node;
+        const tagName = element.tagName.toLowerCase();
+
+        if (/^h[2-4]$/.test(tagName)) {
+            if (current?.question) {
+                items.push(current);
+            }
+
+            current = {
+                question: element.textContent.trim(),
+                answer: [],
+            };
+
+            return;
+        }
+
+        if (current) {
+            current.answer.push(element.outerHTML);
+        } else {
+            intro.push(element.outerHTML);
+        }
+    });
+
+    if (current?.question) {
+        items.push(current);
+    }
+
+    return {
+        introHtml: intro.join(''),
+        items: items
+            .filter((item) => item.question)
+            .map((item) => ({
+                question: item.question,
+                answer: item.answer.join('') || '<p>Odpowiedź zostanie uzupełniona przez urząd miasta.</p>',
+            })),
+    };
+}
+
+function renderFaqContent(page) {
+    const parsed = parseFaqItems(page?.body);
+    const items = parsed.items.length ? parsed.items : fallbackFaqItems();
+
+    return `
+        <div class="faq-content" aria-label="Najczęstsze pytania">
+            <div class="faq-overview">
+                <div>
+                    <p class="faq-kicker">FAQ mieszkańca</p>
+                    <h2>Najczęstsze pytania w jednym miejscu</h2>
+                </div>
+                <p>Krótko, konkretnie i w kolejności, w jakiej mieszkaniec zwykle przechodzi przez proces.</p>
+            </div>
+            ${parsed.introHtml ? `<div class="faq-note">${parsed.introHtml}</div>` : ''}
+            <div class="faq-list">
+                ${items.map((item, index) => `
+                    <article class="faq-item">
+                        <span class="faq-number" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
+                        <div class="faq-copy">
+                            <h2>${escapeHtml(item.question)}</h2>
+                            <div class="faq-answer">${html(item.answer)}</div>
+                        </div>
+                    </article>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function renderInfoContent(page) {
+    if (page?.slug === 'faq') {
+        return renderFaqContent(page);
+    }
+
+    return `<div class="panel content-body">${page?.body ? html(page.body) : '<p>Tu pojawią się lokalne zasady, dokumenty, harmonogram i najważniejsze informacje dla mieszkańców.</p>'}</div>`;
+}
+
 function infoView() {
     const page = getInfoPageFromPath();
     return `
@@ -1603,7 +1725,7 @@ function infoView() {
             <div class="info-layout">
                 ${renderInfoSubnav(page?.slug)}
                 <div class="info-main">
-                    <div class="panel content-body">${page?.body ? html(page.body) : '<p>Tu pojawią się lokalne zasady, dokumenty, harmonogram i najważniejsze informacje dla mieszkańców.</p>'}</div>
+                    ${renderInfoContent(page)}
                     ${scheduleBand('schedule-band-compact')}
                 </div>
             </div>

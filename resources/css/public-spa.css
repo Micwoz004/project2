@@ -759,6 +759,15 @@ h3 {
   justify-items: center;
 }
 
+.projects-section-head {
+  grid-template-columns: 1fr;
+}
+
+.projects-section-head h1 {
+  max-width: none;
+  white-space: nowrap;
+}
+
 .news-strip,
 .knowledge-card,
 .action-band,
@@ -1786,6 +1795,10 @@ textarea {
 
   .hero-panel {
     width: min(760px, calc(100% - 72px));
+  }
+
+  .projects-section-head h1 {
+    white-space: normal;
   }
 
   .stats-grid,

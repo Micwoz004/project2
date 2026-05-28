@@ -467,12 +467,11 @@ function projectsView() {
     const selectedQuery = queryValue('q');
     return `
         <section class="section" aria-labelledby="projects-title">
-            <div class="section-head">
+            <div class="section-head projects-section-head">
                 <div>
                     <p class="eyebrow">Katalog projektów</p>
-                    <h1 id="projects-title">Wybierz projekt do sprawdzenia.</h1>
+                    <h1 id="projects-title">Wybierz projekt do sprawdzenia</h1>
                 </div>
-                <p class="lead">Lista pokazuje kategorie, statusy, szacunkowe koszty i obszary miasta. Filtry działają lokalnie, bez przeładowania strony.</p>
             </div>
             <div class="project-layout">
                 <aside class="filter-panel" aria-labelledby="filter-title">
@@ -516,13 +515,6 @@ function projectsView() {
                     </div>
                 </section>
             </div>
-        </section>
-        <section id="submit" class="section">
-            <div class="section-head">
-                <h2>Zgłoś projekt</h2>
-                <p class="lead">Pełny formularz jest dostępny jako osobny widok SPA i korzysta z istniejącej walidacji Laravel.</p>
-            </div>
-            <a class="btn btn-primary" href="${href('submit')}" data-spa-link>Przejdź do formularza</a>
         </section>
     `;
 }

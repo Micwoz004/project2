@@ -1964,9 +1964,9 @@ body {
 }
 
 .topbar {
-  background: #d7eadf;
-  border-bottom: 1px solid #b4d2bf;
-  color: #143923;
+  background: #25952d;
+  border-bottom: 1px solid #177f24;
+  color: #fff;
 }
 
 .topbar-inner {
@@ -1989,7 +1989,7 @@ body {
 }
 
 .topbar-label {
-  color: #28553a;
+  color: rgba(255, 255, 255, 0.82);
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
@@ -2004,10 +2004,10 @@ body {
 .font-button {
   min-height: 34px;
   border-radius: 999px;
-  border-color: #a4c6af;
-  background: #edf7f1;
+  border-color: rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.13);
   padding: 0 13px;
-  color: #183c29;
+  color: #fff;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
@@ -2019,9 +2019,9 @@ body {
 .lang-button:hover,
 .contrast-button:hover,
 .font-button:hover {
-  border-color: #9bc3a6;
-  background: #e4f2ea;
-  color: #163b27;
+  border-color: rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
 }
 
 .lang-button {

@@ -135,6 +135,7 @@ function infoMenuItems() {
         .filter(Boolean);
 
     return (selected.length ? selected : pages.slice(0, 7)).map((page) => ({
+        slug: page.slug,
         title: page.title,
         url: page.url || `/informacje/${page.slug}`,
     }));
@@ -162,6 +163,32 @@ function renderInfoDropdown(label) {
                 </ul>
             </div>
         </li>
+    `;
+}
+
+function renderInfoSubnav(activeSlug) {
+    const items = infoMenuItems();
+    if (!items.length) return '';
+
+    return `
+        <aside class="info-subnav" aria-labelledby="info-subnav-title">
+            <p id="info-subnav-title" class="info-subnav-title">Informacje</p>
+            <nav aria-label="Podstrony informacyjne">
+                <ul>
+                    ${items.map((item) => {
+                        const itemPath = new URL(item.url, window.location.origin).pathname;
+                        const isCurrent = item.slug === activeSlug || currentPath() === itemPath;
+                        return `
+                            <li>
+                                <a href="${escapeHtml(item.url)}" data-spa-link ${isCurrent ? 'aria-current="page"' : ''}>
+                                    ${escapeHtml(item.title)}
+                                </a>
+                            </li>
+                        `;
+                    }).join('')}
+                </ul>
+            </nav>
+        </aside>
     `;
 }
 
@@ -429,9 +456,9 @@ function mapBand() {
     `;
 }
 
-function scheduleBand() {
+function scheduleBand(modifier = '') {
     return `
-        <section class="schedule-band" aria-labelledby="process-title">
+        <section class="schedule-band${modifier ? ` ${modifier}` : ''}" aria-labelledby="process-title">
             <p class="eyebrow">Harmonogram</p>
             <h2 id="process-title">Od pomysłu do wyników</h2>
             <p class="lead">Kolorowy pas etapów od razu pokazuje, gdzie jesteśmy w procesie.</p>
@@ -1570,11 +1597,16 @@ function announcementDetailView() {
 function infoView() {
     const page = getInfoPageFromPath();
     return `
-        <section class="section content-page" aria-labelledby="info-title">
+        <section class="section content-page info-page" aria-labelledby="info-title">
             <p class="eyebrow">Informacje</p>
             <h1 id="info-title">${escapeHtml(page?.title || 'O budżecie obywatelskim')}</h1>
-            <div class="panel content-body">${page?.body ? html(page.body) : '<p>Tu pojawią się lokalne zasady, dokumenty, harmonogram i najważniejsze informacje dla mieszkańców.</p>'}</div>
-            ${scheduleBand()}
+            <div class="info-layout">
+                ${renderInfoSubnav(page?.slug)}
+                <div class="info-main">
+                    <div class="panel content-body">${page?.body ? html(page.body) : '<p>Tu pojawią się lokalne zasady, dokumenty, harmonogram i najważniejsze informacje dla mieszkańców.</p>'}</div>
+                    ${scheduleBand('schedule-band-compact')}
+                </div>
+            </div>
         </section>
     `;
 }

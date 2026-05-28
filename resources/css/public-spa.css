@@ -1640,11 +1640,80 @@ textarea {
   max-width: 920px;
 }
 
+.info-page {
+  max-width: var(--container-max);
+}
+
 .content-page h1 {
   max-width: none;
   white-space: nowrap;
   font-size: clamp(40px, 4.6vw, 60px);
   line-height: 0.98;
+}
+
+.info-layout {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: var(--space-6);
+}
+
+.info-main {
+  min-width: 0;
+}
+
+.info-layout .content-body {
+  margin-top: 0;
+}
+
+.info-subnav {
+  position: sticky;
+  top: 112px;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-left: 5px solid #168e45;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.09);
+}
+
+.info-subnav-title {
+  margin: 0;
+  color: #168e45;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.info-subnav ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.info-subnav a {
+  display: block;
+  padding: 9px 10px;
+  border-radius: 6px;
+  color: #2a2a27;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.18;
+  text-decoration: none;
+}
+
+.info-subnav a:hover,
+.info-subnav a:focus-visible,
+.info-subnav a[aria-current="page"] {
+  background: #eef7ef;
+  color: #168e45;
 }
 
 .content-page .content-body h2 {
@@ -2547,7 +2616,7 @@ body {
   color: #171717;
 }
 
-.content-page > .schedule-band {
+.schedule-band-compact {
   margin-top: 20px;
   padding: 26px 28px 28px;
   border-radius: 8px;
@@ -2557,19 +2626,19 @@ body {
   text-align: left;
 }
 
-.content-page > .schedule-band .eyebrow {
+.schedule-band-compact .eyebrow {
   margin-bottom: 6px;
   font-size: 12px;
 }
 
-.content-page > .schedule-band h2 {
+.schedule-band-compact h2 {
   max-width: none;
   margin: 0;
   font-size: clamp(28px, 3vw, 36px);
   line-height: 0.96;
 }
 
-.content-page > .schedule-band .lead {
+.schedule-band-compact .lead {
   max-width: 620px;
   margin: 8px 0 0;
   font-size: 16px;
@@ -2577,18 +2646,18 @@ body {
   text-align: left;
 }
 
-.content-page > .schedule-band .schedule-steps {
+.schedule-band-compact .schedule-steps {
   max-width: none;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
 }
 
-.content-page > .schedule-band .schedule-steps::before {
+.schedule-band-compact .schedule-steps::before {
   display: none;
 }
 
-.content-page > .schedule-band .stage {
+.schedule-band-compact .stage {
   min-height: 118px;
   gap: 8px;
   padding: 14px 12px 12px;
@@ -2597,15 +2666,15 @@ body {
   transform: none;
 }
 
-.content-page > .schedule-band .stage::before {
+.schedule-band-compact .stage::before {
   height: 5px;
 }
 
-.content-page > .schedule-band .stage::after {
+.schedule-band-compact .stage::after {
   inset: 5px 0 auto;
 }
 
-.content-page > .schedule-band .stage-index {
+.schedule-band-compact .stage-index {
   width: 34px;
   height: 34px;
   margin: 2px 0 3px;
@@ -2613,17 +2682,20 @@ body {
   font-size: 10px;
 }
 
-.content-page > .schedule-band .stage-status {
+.schedule-band-compact .stage-status {
   padding: 4px 7px;
   font-size: 9px;
 }
 
-.content-page > .schedule-band .stage h3 {
-  font-size: clamp(18px, 1.7vw, 22px);
-  line-height: 0.96;
+.schedule-band-compact .stage h3 {
+  font-family: var(--font-body);
+  font-size: clamp(16px, 1.45vw, 18px);
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.12;
 }
 
-.content-page > .schedule-band .stage p {
+.schedule-band-compact .stage p {
   font-size: 13px;
   line-height: 1.2;
 }
@@ -2953,36 +3025,52 @@ body {
 }
 
 @media (max-width: 760px) {
+  .info-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .info-subnav {
+    position: static;
+  }
+
+  .info-subnav ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .content-page h1 {
     white-space: normal;
   }
 
-  .content-page > .schedule-band {
+  .schedule-band-compact {
     padding: 22px 18px;
   }
 
-  .content-page > .schedule-band .schedule-steps {
+  .schedule-band-compact .schedule-steps {
     grid-template-columns: 1fr;
   }
 
-  .content-page > .schedule-band .stage {
+  .schedule-band-compact .stage {
     min-height: auto;
     grid-template-columns: 42px minmax(0, 1fr);
     align-items: center;
     gap: 4px 10px;
   }
 
-  .content-page > .schedule-band .stage-index {
+  .schedule-band-compact .stage-index {
     grid-row: span 2;
     margin: 0;
   }
 
-  .content-page > .schedule-band .stage-status {
+  .schedule-band-compact .stage-status {
     grid-column: 2;
   }
 }
 
 @media (max-width: 680px) {
+  .info-subnav ul {
+    grid-template-columns: 1fr;
+  }
+
   .topbar-inner {
     min-height: auto;
     padding-top: 8px;

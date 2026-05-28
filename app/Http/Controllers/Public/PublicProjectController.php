@@ -81,26 +81,6 @@ class PublicProjectController extends Controller
         ]);
     }
 
-    public function editCorrection(Project $project): View
-    {
-        Gate::authorize('update', $project);
-
-        $correction = $project->corrections()
-            ->where('correction_done', false)
-            ->where('correction_deadline', '>', now())
-            ->latest()
-            ->first();
-
-        abort_unless($correction instanceof ProjectCorrection, 404);
-
-        return view('public.projects.correction', [
-            'project' => $project->load(['area', 'category', 'costItems']),
-            'correction' => $correction,
-            'areas' => ProjectArea::query()->orderBy('name')->get(),
-            'categories' => Category::query()->orderBy('name')->get(),
-        ]);
-    }
-
     public function updateCorrection(
         UpdatePublicProjectCorrectionRequest $request,
         Project $project,

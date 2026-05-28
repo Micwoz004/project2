@@ -2,6 +2,7 @@
 
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\ProjectArea;
+use App\Domain\Projects\Models\ProjectCorrection;
 use App\Domain\Settings\Models\CostGuideItem;
 use App\Domain\Settings\Models\PublicAnnouncement;
 use App\Domain\Settings\Models\PublicPage;
@@ -11,6 +12,10 @@ use App\Filament\Resources\CostGuideItems\CostGuideItemResource;
 use App\Filament\Resources\PublicAnnouncements\PublicAnnouncementResource;
 use App\Filament\Resources\PublicPages\PublicPageResource;
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 
 it('renders public homepage with current edition schedule and published announcements', function (): void {
     $edition = budgetEdition();
@@ -158,4 +163,167 @@ it('guards public content resources with settings permissions', function (): voi
     $this->actingAs($viewer)
         ->get(CostGuideItemResource::getUrl(panel: 'admin'))
         ->assertForbidden();
+});
+
+it('renders logged resident dashboard and project list from owned projects', function (): void {
+    $user = User::factory()->create([
+        'status' => true,
+        'first_name' => 'Anna',
+        'last_name' => 'Kowalska',
+    ]);
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id, [
+        'creator_id' => $user->id,
+        'title' => 'Park z korektą',
+        'status' => ProjectStatus::Submitted,
+    ]);
+    ProjectCorrection::query()->create([
+        'project_id' => $project->id,
+        'allowed_fields' => ['description'],
+        'notes' => 'Uzupełnij opis lokalizacji.',
+        'correction_deadline' => now()->addDays(7),
+        'correction_done' => false,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('public.resident.dashboard'))
+        ->assertOk()
+        ->assertSee('Park z korekt\\u0105', false)
+        ->assertSee('Uzupe\\u0142nij opis lokalizacji.', false)
+        ->assertSee('"corrections":1', false);
+
+    $this->actingAs($user)
+        ->get(route('public.resident.projects'))
+        ->assertOk()
+        ->assertSee('bo-spa-root')
+        ->assertSee('Park z korekt\\u0105', false);
+});
+
+it('updates resident account data and password from public account form', function (): void {
+    $user = User::factory()->create([
+        'status' => true,
+        'password' => Hash::make('password'),
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('public.resident.account.update'), [
+            'first_name' => 'Anna',
+            'last_name' => 'Nowak',
+            'email' => 'anna.nowak@example.test',
+            'phone' => '500600700',
+            'street' => 'Miejska',
+            'house_no' => '12',
+            'flat_no' => '4',
+            'post_code' => '12-345',
+            'city' => 'Miasto',
+            'current_password' => 'password',
+            'password' => 'nowe-bezpieczne-haslo',
+            'password_confirmation' => 'nowe-bezpieczne-haslo',
+        ])
+        ->assertRedirect(route('public.resident.account'))
+        ->assertSessionHas('status', 'Dane konta zostały zapisane.');
+
+    $user->refresh();
+
+    expect($user->name)->toBe('Anna Nowak')
+        ->and($user->email)->toBe('anna.nowak@example.test')
+        ->and($user->city)->toBe('Miasto')
+        ->and(Hash::check('nowe-bezpieczne-haslo', $user->password))->toBeTrue();
+});
+
+it('logs regular resident into public resident panel without admin permission', function (): void {
+    $user = User::factory()->create([
+        'status' => true,
+        'email' => 'resident@example.test',
+        'password' => Hash::make('password'),
+    ]);
+
+    $this->post(route('public.resident.login'), [
+        'email' => 'resident@example.test',
+        'password' => 'password',
+    ])
+        ->assertRedirect(route('public.resident.dashboard'));
+
+    $this->assertAuthenticatedAs($user);
+});
+
+it('renders guest resident account entry screens as SPA routes', function (): void {
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertSee('bo-spa-root')
+        ->assertSee('rejestracja')
+        ->assertSee('haslo\\/reset', false);
+
+    $this->get(route('register'))
+        ->assertOk()
+        ->assertSee('bo-spa-root')
+        ->assertSee('rejestracja');
+
+    $this->get(route('password.request'))
+        ->assertOk()
+        ->assertSee('bo-spa-root')
+        ->assertSee('haslo\\/reset', false);
+});
+
+it('registers resident from public registration form', function (): void {
+    $this->post(route('public.resident.register'), [
+        'first_name' => 'Jan',
+        'last_name' => 'Kowalski',
+        'email' => 'jan.kowalski@example.test',
+        'password' => 'bezpieczne-haslo-testowe',
+        'password_confirmation' => 'bezpieczne-haslo-testowe',
+    ])
+        ->assertRedirect(route('public.resident.dashboard'))
+        ->assertSessionHas('status', 'Konto mieszkańca zostało utworzone.');
+
+    $user = User::query()->where('email', 'jan.kowalski@example.test')->firstOrFail();
+
+    expect($user->first_name)->toBe('Jan')
+        ->and($user->last_name)->toBe('Kowalski')
+        ->and(Hash::check('bezpieczne-haslo-testowe', $user->password))->toBeTrue();
+
+    $this->assertAuthenticatedAs($user);
+});
+
+it('renders flash status below resident header after registration redirect', function (): void {
+    $user = User::factory()->create(['status' => true]);
+
+    $this->actingAs($user)
+        ->withSession(['status' => 'Konto mieszkańca zostało utworzone.'])
+        ->get(route('public.resident.dashboard'))
+        ->assertOk()
+        ->assertSee('window.BO_SPA', false)
+        ->assertSee('Konto mieszka\\u0144ca zosta\\u0142o utworzone.', false);
+});
+
+it('sends resident password reset link and updates password with token', function (): void {
+    Notification::fake();
+
+    $user = User::factory()->create([
+        'email' => 'resident-reset@example.test',
+        'password' => Hash::make('old-password'),
+        'status' => true,
+    ]);
+
+    $this->post(route('password.email'), [
+        'email' => 'resident-reset@example.test',
+    ])
+        ->assertRedirect()
+        ->assertSessionHas('status', 'Jeśli konto istnieje, wyślemy wiadomość z linkiem do ustawienia nowego hasła.');
+
+    Notification::assertSentTo($user, ResetPassword::class);
+
+    $token = Password::createToken($user);
+
+    $this->post(route('password.update'), [
+        'token' => $token,
+        'email' => 'resident-reset@example.test',
+        'password' => 'nowe-haslo-reset',
+        'password_confirmation' => 'nowe-haslo-reset',
+    ])
+        ->assertRedirect(route('login'))
+        ->assertSessionHas('status', 'Hasło zostało zmienione. Możesz się zalogować.');
+
+    expect(Hash::check('nowe-haslo-reset', $user->refresh()->password))->toBeTrue();
 });

@@ -98,6 +98,11 @@ function href(key) {
     return state.links?.[key] || '#';
 }
 
+function oldValue(name, fallback = '') {
+    const old = state.app?.old || {};
+    return old[name] ?? fallback ?? '';
+}
+
 function currentPath() {
     return window.location.pathname.replace(/\/$/, '') || '/';
 }
@@ -201,6 +206,19 @@ function getInfoPageFromPath() {
 
 function layout(content) {
     const c = copy();
+    const residentNav = state.app?.authenticated ? `
+        <li><a class="nav-link" href="${href('residentDashboard')}" data-spa-link ${active('/panel') ? 'aria-current="page"' : ''}>Panel</a></li>
+        <li><a class="nav-link" href="${href('residentProjects')}" data-spa-link ${active('/moje-projekty') && !active('/moje-projekty/zglos') ? 'aria-current="page"' : ''}>Moje projekty</a></li>
+        <li><a class="nav-link" href="${href('residentAccount')}" data-spa-link ${active('/konto') ? 'aria-current="page"' : ''}>Konto</a></li>
+        <li>
+            <form class="nav-form" method="post" action="${href('logout')}">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                <button class="nav-link nav-button" type="submit">Wyloguj</button>
+            </form>
+        </li>
+    ` : `
+        <li><a class="nav-link" href="${href('login')}" data-spa-link ${active('/login') ? 'aria-current="page"' : ''}>Zaloguj</a></li>
+    `;
     return `
         <a class="skip-link" href="#main">Przejdź do treści</a>
         <div class="topbar" aria-label="Narzędzia dostępności">
@@ -232,15 +250,15 @@ function layout(content) {
             </button>
             <nav id="primary-navigation" class="main-nav" data-nav-menu aria-label="Główna nawigacja">
                 <ul class="nav-list">
-                    <li><a class="nav-link" href="${href('home')}" data-spa-link ${active('/') ? 'aria-current="page"' : ''} data-i18n="navHome">${c.navHome}</a></li>
                     <li><a class="nav-link" href="${href('projects')}" data-spa-link ${active('/projekty') || active('/projekt') ? 'aria-current="page"' : ''} data-i18n="navProjects">${c.navProjects}</a></li>
                     ${renderInfoDropdown(c.navInfo)}
-                    <li><a class="btn btn-primary" href="${href('submit')}" data-spa-link data-i18n="navSubmit">${c.navSubmit}</a></li>
+                    ${residentNav}
+                    <li><a class="btn btn-primary" href="${state.app?.authenticated ? href('residentSubmit') : href('submit')}" data-spa-link data-i18n="navSubmit">${c.navSubmit}</a></li>
                 </ul>
             </nav>
         </header>
         <main id="main" class="page-shell">
-            ${state.app?.flash ? `<p class="panel">${escapeHtml(state.app.flash)}</p>` : ''}
+            ${state.app?.flash ? `<p class="spa-flash" role="status">${escapeHtml(state.app.flash)}</p>` : ''}
             ${content}
         </main>
         <footer class="site-footer">
@@ -766,6 +784,759 @@ function textareaField(name, label, required, value) {
     `;
 }
 
+function residentProfile() {
+    return state.resident?.profile || {};
+}
+
+function loginView() {
+    const errors = Object.values(state.app?.errors || {}).flat();
+    return `
+        <section class="resident-page-head login-page-head" aria-labelledby="login-title">
+            <p class="eyebrow">Konto mieszkańca</p>
+            <h1 id="login-title">Zaloguj się do panelu mieszkańca.</h1>
+            <p class="lead">Po zalogowaniu możesz zgłosić projekt, śledzić status swoich spraw i zaktualizować dane kontaktowe.</p>
+        </section>
+
+        ${errors.length ? `<div class="panel form-errors">${errors.map((error) => `<p>${escapeHtml(error)}</p>`).join('')}</div>` : ''}
+
+        <section class="account-grid login-grid" aria-label="Logowanie mieszkańca">
+            <form class="resident-form account-form login-form" method="post" action="${href('loginPost')}">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                <fieldset>
+                    <legend>Logowanie</legend>
+                    <div class="field">
+                        <label for="email">Adres e-mail</label>
+                        <input id="email" name="email" type="email" required autocomplete="email" value="${escapeHtml(oldValue('email'))}">
+                    </div>
+                    <div class="field">
+                        <label for="password">Hasło</label>
+                        <input id="password" name="password" type="password" required autocomplete="current-password">
+                    </div>
+                    <label class="check-row"><input name="remember" type="checkbox" value="1"><span>Zapamiętaj mnie na tym urządzeniu.</span></label>
+                </fieldset>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Zaloguj</button>
+                </div>
+            </form>
+
+            <aside class="account-side login-side">
+                <article class="identity-card">
+                    <span class="status status-live">Konto mieszkańca</span>
+                    <h2>Zaloguj się</h2>
+                    <div class="login-help-actions" aria-label="Pomoc przy logowaniu">
+                        <a href="${href('passwordRequest')}" data-spa-link>Nie pamiętasz hasła?</a>
+                        <a href="${href('register')}" data-spa-link>Załóż konto mieszkańca</a>
+                    </div>
+                </article>
+            </aside>
+        </section>
+    `;
+}
+
+function registerView() {
+    const errors = Object.values(state.app?.errors || {}).flat();
+    return `
+        <section class="resident-page-head login-page-head" aria-labelledby="register-title">
+            <p class="eyebrow">Rejestracja mieszkańca</p>
+            <h1 id="register-title">Załóż konto mieszkańca.</h1>
+            <p class="lead">Konto pozwala zgłaszać projekty, śledzić ich status i obsługiwać korekty w jednym panelu.</p>
+        </section>
+
+        ${errors.length ? `<div class="panel form-errors">${errors.map((error) => `<p>${escapeHtml(error)}</p>`).join('')}</div>` : ''}
+
+        <section class="account-grid login-grid" aria-label="Rejestracja mieszkańca">
+            <form class="resident-form account-form login-form" method="post" action="${href('registerPost')}">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                <fieldset>
+                    <legend>Rejestracja</legend>
+                    <div class="two-col">
+                        <div class="field">
+                            <label for="first_name">Imię</label>
+                            <input id="first_name" name="first_name" required maxlength="127" autocomplete="given-name" value="${escapeHtml(oldValue('first_name'))}">
+                        </div>
+                        <div class="field">
+                            <label for="last_name">Nazwisko</label>
+                            <input id="last_name" name="last_name" required maxlength="127" autocomplete="family-name" value="${escapeHtml(oldValue('last_name'))}">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="email">Adres e-mail</label>
+                        <input id="email" name="email" type="email" required autocomplete="email" value="${escapeHtml(oldValue('email'))}">
+                    </div>
+                    <div class="two-col">
+                        <div class="field">
+                            <label for="password">Hasło</label>
+                            <input id="password" name="password" type="password" required autocomplete="new-password">
+                        </div>
+                        <div class="field">
+                            <label for="password_confirmation">Powtórz hasło</label>
+                            <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password">
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Załóż konto</button>
+                    <a class="btn btn-secondary" href="${href('login')}" data-spa-link>Wróć do logowania</a>
+                </div>
+            </form>
+
+            <aside class="account-side login-side">
+                <article class="identity-card">
+                    <span class="status status-live">Nowe konto</span>
+                    <h2>Panel mieszkańca</h2>
+                    <p>Po rejestracji od razu przejdziesz do swojego panelu i formularza zgłoszenia projektu.</p>
+                </article>
+            </aside>
+        </section>
+    `;
+}
+
+function passwordRequestView() {
+    const errors = Object.values(state.app?.errors || {}).flat();
+    return `
+        <section class="resident-page-head login-page-head" aria-labelledby="password-request-title">
+            <p class="eyebrow">Reset hasła</p>
+            <h1 id="password-request-title">Ustaw nowe hasło do konta.</h1>
+            <p class="lead">Podaj adres e-mail konta mieszkańca. Jeśli konto istnieje, wyślemy link do ustawienia nowego hasła.</p>
+        </section>
+
+        ${errors.length ? `<div class="panel form-errors">${errors.map((error) => `<p>${escapeHtml(error)}</p>`).join('')}</div>` : ''}
+
+        <section class="account-grid login-grid" aria-label="Reset hasła">
+            <form class="resident-form account-form login-form" method="post" action="${href('passwordEmail')}">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                <fieldset>
+                    <legend>Reset hasła</legend>
+                    <div class="field">
+                        <label for="email">Adres e-mail</label>
+                        <input id="email" name="email" type="email" required autocomplete="email" value="${escapeHtml(oldValue('email'))}">
+                    </div>
+                </fieldset>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Wyślij link</button>
+                    <a class="btn btn-secondary" href="${href('login')}" data-spa-link>Wróć do logowania</a>
+                </div>
+            </form>
+
+            <aside class="account-side login-side">
+                <article class="identity-card">
+                    <span class="status status-live">Pomoc</span>
+                    <h2>Link e-mail</h2>
+                    <p>Link resetujący hasło jest czasowy. Po zmianie hasła zalogujesz się już nowymi danymi.</p>
+                </article>
+            </aside>
+        </section>
+    `;
+}
+
+function passwordResetView() {
+    const errors = Object.values(state.app?.errors || {}).flat();
+    const token = currentPath().split('/').pop();
+    return `
+        <section class="resident-page-head login-page-head" aria-labelledby="password-reset-title">
+            <p class="eyebrow">Nowe hasło</p>
+            <h1 id="password-reset-title">Wpisz nowe hasło.</h1>
+            <p class="lead">Po zapisaniu wrócisz do ekranu logowania mieszkańca.</p>
+        </section>
+
+        ${errors.length ? `<div class="panel form-errors">${errors.map((error) => `<p>${escapeHtml(error)}</p>`).join('')}</div>` : ''}
+
+        <section class="account-grid login-grid" aria-label="Ustawienie nowego hasła">
+            <form class="resident-form account-form login-form" method="post" action="${href('passwordUpdate')}">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                <input type="hidden" name="token" value="${escapeHtml(token)}">
+                <fieldset>
+                    <legend>Nowe hasło</legend>
+                    <div class="field">
+                        <label for="email">Adres e-mail</label>
+                        <input id="email" name="email" type="email" required autocomplete="email" value="${escapeHtml(oldValue('email', queryValue('email')))}">
+                    </div>
+                    <div class="two-col">
+                        <div class="field">
+                            <label for="password">Nowe hasło</label>
+                            <input id="password" name="password" type="password" required autocomplete="new-password">
+                        </div>
+                        <div class="field">
+                            <label for="password_confirmation">Powtórz nowe hasło</label>
+                            <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password">
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Zmień hasło</button>
+                </div>
+            </form>
+
+            <aside class="account-side login-side">
+                <article class="identity-card">
+                    <span class="status status-live">Bezpieczeństwo</span>
+                    <h2>Nowe dane</h2>
+                    <p>Użyj hasła innego niż w pozostałych serwisach i zachowaj je tylko dla siebie.</p>
+                </article>
+            </aside>
+        </section>
+    `;
+}
+
+function residentName() {
+    const profile = residentProfile();
+    return [profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.name || 'Mieszkaniec';
+}
+
+function residentDashboardView() {
+    const projects = state.resident?.projects || [];
+    const priority = projects.find((project) => project.status === 'returned') || projects.find((project) => project.status === 'draft') || projects[0];
+    const nextDeadline = state.edition?.stateDate || 'Wkrótce';
+    return `
+        <section class="resident-hero" aria-labelledby="resident-title">
+            <div>
+                <p class="eyebrow">Jesteś zalogowany jako mieszkaniec</p>
+                <h1 id="resident-title">Dokończ zgłoszenie albo sprawdź swoje projekty.</h1>
+                <p class="lead">Panel prowadzi przez zgłoszenie projektu, korektę, status weryfikacji i dane konta.</p>
+                <div class="resident-actions">
+                    <a class="btn btn-primary" href="${href('residentSubmit')}" data-spa-link>Nowy projekt</a>
+                    <a class="btn btn-secondary" href="${href('residentProjects')}" data-spa-link>Moje projekty</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="resident-grid" aria-label="Podsumowanie konta">
+            <article class="resident-stat">
+                <span>Wersje robocze</span>
+                <strong>${escapeHtml(state.resident?.stats?.drafts ?? 0)}</strong>
+                <p>Projekty zapisane jako kopia robocza mieszkańca.</p>
+            </article>
+            <article class="resident-stat">
+                <span>W weryfikacji</span>
+                <strong>${escapeHtml(state.resident?.stats?.verification ?? 0)}</strong>
+                <p>Sprawy, które urząd analizuje formalnie lub merytorycznie.</p>
+            </article>
+            <article class="resident-stat">
+                <span>Do poprawy</span>
+                <strong>${escapeHtml(state.resident?.stats?.corrections ?? 0)}</strong>
+                <p>Projekty z aktywnym terminem korekty.</p>
+            </article>
+        </section>
+
+        <section class="resident-layout" aria-labelledby="next-title">
+            <div class="resident-main">
+                <div class="section-head compact">
+                    <div>
+                        <p class="eyebrow">Co dalej?</p>
+                        <h2 id="next-title">Twoje najważniejsze sprawy</h2>
+                    </div>
+                    <p class="lead">Najbliższa akcja wynika z realnego statusu Twoich zgłoszeń.</p>
+                </div>
+                ${priority ? residentTaskCard(priority) : `
+                    <article class="task-card is-priority">
+                        <div>
+                            <span class="status status-live">Start</span>
+                            <h3>Nie masz jeszcze projektu w tej edycji</h3>
+                            <p>Utwórz zgłoszenie, dodaj kosztorys i załączniki, a system przekaże je do weryfikacji.</p>
+                        </div>
+                        <a class="btn btn-primary" href="${href('residentSubmit')}" data-spa-link>Zgłoś projekt</a>
+                    </article>
+                `}
+                <article class="task-card">
+                    <div>
+                        <span class="status status-live">Etap</span>
+                        <h3>${escapeHtml(state.edition?.stateLabel || 'Budżet obywatelski')}</h3>
+                        <p>Najbliższy termin: ${escapeHtml(nextDeadline)}.</p>
+                    </div>
+                    <a class="btn btn-secondary" href="/informacje/harmonogram" data-spa-link>Harmonogram</a>
+                </article>
+            </div>
+        </section>
+
+        <section class="resident-support-grid" aria-label="Terminy i stan konta">
+            <aside class="deadline-card deadline-card-inline" aria-label="Najbliższy termin">
+                <span class="status status-live">${escapeHtml(state.edition?.stateLabel || 'Aktywny etap')}</span>
+                <strong>${escapeHtml(nextDeadline)}</strong>
+                <p>najbliższa data w aktualnej edycji</p>
+            </aside>
+
+            <aside class="resident-aside resident-aside-static" aria-labelledby="account-state-title">
+                <h2 id="account-state-title">Stan konta</h2>
+                <ul class="check-list">
+                    <li class="${residentProfile().firstName && residentProfile().lastName ? 'is-done' : ''}">Profil podstawowy uzupełniony</li>
+                    <li class="${residentProfile().emailVerified ? 'is-done' : ''}">Adres e-mail potwierdzony</li>
+                    <li class="${residentProfile().hasAddress ? 'is-done' : ''}">Adres zamieszkania uzupełniony</li>
+                    <li class="${residentProfile().phone ? 'is-done' : ''}">Telefon kontaktowy uzupełniony</li>
+                </ul>
+                <a class="btn btn-secondary" href="${href('residentAccount')}" data-spa-link>Zarządzaj kontem</a>
+            </aside>
+        </section>
+    `;
+}
+
+function residentTaskCard(project) {
+    const isPriority = project.status === 'returned' || project.status === 'draft';
+    const actionUrl = project.status === 'returned' && project.correctionUrl ? project.correctionUrl : href('residentProjects');
+    const actionLabel = project.status === 'returned' ? 'Uzupełnij' : project.status === 'draft' ? 'Sprawdź' : 'Zobacz';
+    return `
+        <article class="task-card ${isPriority ? 'is-priority' : ''}">
+            <div>
+                <span class="status ${residentStatusClass(project.status)}">${escapeHtml(project.statusLabel)}</span>
+                <h3>${escapeHtml(project.title)}</h3>
+                <p>${escapeHtml(project.correction?.notes || project.description || 'Sprawdź aktualny status zgłoszenia.')}</p>
+            </div>
+            <a class="btn ${isPriority ? 'btn-primary' : 'btn-secondary'}" href="${escapeHtml(actionUrl)}" data-spa-link>${actionLabel}</a>
+        </article>
+    `;
+}
+
+function residentStatusClass(status) {
+    return {
+        draft: 'status-draft',
+        returned: 'status-returned',
+        waiting: 'status-waiting',
+        live: 'status-live',
+        ended: 'status-ended',
+    }[status] || 'status-waiting';
+}
+
+function residentProjectsView() {
+    const projects = state.resident?.projects || [];
+    const categories = [...new Set(projects.map((project) => project.category).filter(Boolean))];
+    return `
+        <section class="resident-page-head" aria-labelledby="my-projects-title">
+            <p class="eyebrow">Moje projekty</p>
+            <h1 id="my-projects-title">Moje projekty</h1>
+            <p class="lead">Statusy zgłoszeń, terminy odpowiedzi i szybkie akcje w jednym widoku.</p>
+        </section>
+
+        <section class="resident-project-layout" aria-label="Lista moich projektów">
+            <aside class="filter-panel resident-filter" aria-labelledby="my-filter-title">
+                <h2 id="my-filter-title">Filtry</h2>
+                <form data-project-filters>
+                    <div class="field">
+                        <label for="my-query">Szukaj</label>
+                        <input id="my-query" name="query" type="search" placeholder="Nazwa, kategoria, obszar">
+                    </div>
+                    <div class="field">
+                        <label for="my-category">Kategoria</label>
+                        <select id="my-category" name="category">
+                            <option value="">Wszystkie</option>
+                            ${categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="my-status">Status</label>
+                        <select id="my-status" name="status">
+                            <option value="">Wszystkie</option>
+                            <option value="draft">Roboczy</option>
+                            <option value="waiting">W weryfikacji</option>
+                            <option value="returned">Do poprawy</option>
+                            <option value="live">Opublikowany</option>
+                            <option value="ended">Zakończony</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" type="reset">Wyczyść</button>
+                </form>
+                <p class="form-hint"><span data-result-count>0</span> projektów</p>
+            </aside>
+
+            <div class="resident-project-results">
+                <p class="panel" data-empty hidden>Nie znaleziono projektów dla tych filtrów.</p>
+                <div class="my-project-list">
+                    ${projects.map(residentProjectCard).join('') || `
+                        <article class="my-project-card">
+                            <span class="status status-live">Start</span>
+                            <h2>Brak zgłoszonych projektów</h2>
+                            <p>Po wysłaniu formularza projekt pojawi się na tej liście razem ze statusem weryfikacji.</p>
+                            <div class="project-actions">
+                                <a class="btn btn-primary" href="${href('residentSubmit')}" data-spa-link>Zgłoś projekt</a>
+                            </div>
+                        </article>
+                    `}
+                </div>
+            </div>
+        </section>
+    `;
+}
+
+function residentProjectCard(project) {
+    const search = [project.title, project.area, project.category, project.description, project.publicStatusLabel].join(' ');
+    const actionUrl = project.status === 'returned' && project.correctionUrl
+        ? project.correctionUrl
+        : (project.publicUrl || href('residentProjects'));
+    const actionLabel = project.status === 'returned' ? 'Uzupełnij' : (project.publicUrl ? 'Podgląd' : 'Na liście');
+    return `
+        <article class="my-project-card" data-project-card data-category="${escapeHtml(project.category)}" data-status="${escapeHtml(project.status)}" data-search="${escapeHtml(search)}">
+            <div class="my-project-top">
+                <span class="status ${residentStatusClass(project.status)}">${escapeHtml(project.statusLabel)}</span>
+                <span class="notice-date">${project.correction?.deadline ? `Odpowiedz do ${escapeHtml(project.correction.deadline)}` : escapeHtml(project.submittedAt || 'Zgłoszenie')}</span>
+            </div>
+            <h2>${escapeHtml(project.title)}</h2>
+            <p>${escapeHtml(project.correction?.notes || project.description || 'Projekt jest zapisany w systemie.')}</p>
+            <p class="project-meta">${escapeHtml(project.category)} · ${escapeHtml(project.area)} · ${escapeHtml(project.costLabel)}</p>
+            <div class="progress-line" aria-label="Kompletność projektu">
+                <span style="width: ${escapeHtml(project.progress)}%"></span>
+            </div>
+            <div class="project-actions">
+                <a class="btn ${project.status === 'returned' ? 'btn-primary' : 'btn-secondary'}" href="${escapeHtml(actionUrl)}" ${project.publicUrl ? '' : 'data-spa-link'}>${actionLabel}</a>
+                <button class="btn btn-secondary" type="button" data-save-action>Obserwuj</button>
+            </div>
+        </article>
+    `;
+}
+
+function residentCorrectionView() {
+    const projectId = currentPath().match(/^\/moje-projekty\/(\d+)\/korekta$/)?.[1];
+    const project = (state.resident?.projects || []).find((item) => String(item.id) === String(projectId));
+    const errors = Object.values(state.app?.errors || {}).flat();
+
+    if (!project || !project.correction) {
+        return `
+            <section class="resident-page-head" aria-labelledby="correction-missing-title">
+                <p class="eyebrow">Korekta projektu</p>
+                <h1 id="correction-missing-title">Brak aktywnej korekty.</h1>
+                <p class="lead">Projekt nie ma obecnie otwartego wezwania do poprawy albo nie należy do Twojego konta.</p>
+                <a class="btn btn-secondary" href="${href('residentProjects')}" data-spa-link>Wróć do moich projektów</a>
+            </section>
+        `;
+    }
+
+    const allowed = project.correction.allowedFields || [];
+    const costItems = project.costItems?.length ? project.costItems : [{ description: '', amount: '' }];
+
+    return `
+        <section class="resident-page-head" aria-labelledby="correction-title">
+            <p class="eyebrow">Korekta projektu</p>
+            <h1 id="correction-title">Uzupełnij projekt: ${escapeHtml(project.title)}</h1>
+            <p class="lead">Możesz poprawić tylko pola odblokowane w wezwaniu do korekty. Termin: ${escapeHtml(project.correction.deadline || 'do ustalenia')}.</p>
+        </section>
+
+        ${errors.length ? `<div class="panel form-errors">${errors.map((error) => `<p>${escapeHtml(error)}</p>`).join('')}</div>` : ''}
+
+        <section class="form-workspace" aria-label="Formularz korekty projektu">
+            <aside class="step-sidebar">
+                <span class="status status-returned">Do poprawy</span>
+                <h2>Zakres korekty</h2>
+                <p>${escapeHtml(project.correction.notes || 'Popraw pola wskazane przez urząd i zapisz korektę.')}</p>
+                <a class="btn btn-secondary" href="${href('residentProjects')}" data-spa-link>Moje projekty</a>
+            </aside>
+
+            <form class="resident-form" method="post" action="${escapeHtml(project.correctionUpdateUrl)}" enctype="multipart/form-data">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                <input type="hidden" name="_method" value="PUT">
+
+                <fieldset>
+                    <legend>Dane projektu</legend>
+                    ${correctionSelectField(allowed, 'project_area_id', 'Obszar', state.areas || [], project.projectAreaId)}
+                    ${correctionSelectField(allowed, 'category_id', 'Kategoria', state.categories || [], project.categoryId)}
+                    ${correctionInputField(allowed, 'title', 'Tytuł', project.title, 600)}
+                    ${correctionTextareaField(allowed, 'localization', 'Lokalizacja', project.localization)}
+                    ${correctionMapField(allowed, project.mapData)}
+                    ${correctionTextareaField(allowed, 'description', 'Opis', project.description)}
+                    ${correctionTextareaField(allowed, 'goal', 'Cel', project.goal)}
+                    ${correctionTextareaField(allowed, 'argumentation', 'Uzasadnienie', project.argumentation)}
+                    ${correctionTextareaField(allowed, 'availability', 'Dostępność', project.availability)}
+                    ${correctionTextareaField(allowed, 'recipients', 'Odbiorcy', project.recipients)}
+                    ${correctionTextareaField(allowed, 'free_of_charge', 'Bezpłatność', project.freeOfCharge)}
+                    ${allowed.length ? '' : '<p class="form-hint">Urząd nie odblokował pól tekstowych do poprawy.</p>'}
+                </fieldset>
+
+                ${allowed.includes('cost') ? `
+                    <fieldset>
+                        <legend>Kosztorys</legend>
+                        ${costItems.map((item, index) => `
+                            <div class="two-col">
+                                <div class="field">
+                                    <label for="cost_items_${index}_description">Opis pozycji</label>
+                                    <input id="cost_items_${index}_description" name="cost_items[${index}][description]" required maxlength="1000" value="${escapeHtml(item.description)}">
+                                </div>
+                                <div class="field">
+                                    <label for="cost_items_${index}_amount">Kwota</label>
+                                    <input id="cost_items_${index}_amount" name="cost_items[${index}][amount]" required type="number" step="0.01" min="0" data-budget-input value="${escapeHtml(item.amount)}">
+                                </div>
+                            </div>
+                        `).join('')}
+                        <div class="budget-summary">
+                            <span>Szacowany koszt łącznie</span>
+                            <strong data-budget-total>0 zł</strong>
+                        </div>
+                    </fieldset>
+                ` : ''}
+
+                ${correctionAttachmentsFieldset(allowed)}
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Zapisz korektę</button>
+                </div>
+            </form>
+        </section>
+    `;
+}
+
+function correctionSelectField(allowed, name, label, options, value) {
+    if (!allowed.includes(name)) return '';
+    return `
+        <div class="field">
+            <label for="${name}">${label}</label>
+            <select id="${name}" name="${name}" required>
+                ${options.map((option) => `<option value="${option.id}" ${String(value || '') === String(option.id) ? 'selected' : ''}>${escapeHtml(option.name)}</option>`).join('')}
+            </select>
+        </div>
+    `;
+}
+
+function correctionInputField(allowed, name, label, value, maxLength) {
+    if (!allowed.includes(name)) return '';
+    return `
+        <div class="field">
+            <label for="${name}">${label}</label>
+            <input id="${name}" name="${name}" required maxlength="${maxLength}" value="${escapeHtml(oldValue(name, value))}">
+        </div>
+    `;
+}
+
+function correctionTextareaField(allowed, name, label, value) {
+    if (!allowed.includes(name)) return '';
+    return `
+        <div class="field">
+            <label for="${name}">${label}</label>
+            <textarea id="${name}" name="${name}" required>${escapeHtml(oldValue(name, value))}</textarea>
+        </div>
+    `;
+}
+
+function correctionMapField(allowed, value) {
+    if (!allowed.includes('map_data')) return '';
+    const mapData = oldValue('map_data', JSON.stringify(value || { type: 'FeatureCollection', features: [] }, null, 2));
+    return `
+        <div class="field">
+            <label for="map_data">Dane mapy JSON</label>
+            <textarea id="map_data" name="map_data">${escapeHtml(mapData)}</textarea>
+        </div>
+    `;
+}
+
+function correctionAttachmentsFieldset(allowed) {
+    const fields = [
+        ['support_attachment', 'support_list_files', 'Listy poparcia'],
+        ['agreement_attachment', 'owner_agreement_files', 'Zgody właściciela'],
+        ['map_attachment', 'map_files', 'Załączniki mapy'],
+        ['parent_agreement_attachment', 'parent_agreement_files', 'Zgody rodzica lub opiekuna'],
+        ['attachments', 'attachment_files', 'Pozostałe załączniki'],
+    ].filter(([field]) => allowed.includes(field));
+
+    if (!fields.length) return '';
+
+    return `
+        <fieldset>
+            <legend>Załączniki</legend>
+            ${fields.map(([, name, label]) => `
+                <div class="field">
+                    <label for="${name}">${label}</label>
+                    <input id="${name}" name="${name}[]" type="file" multiple>
+                </div>
+            `).join('')}
+        </fieldset>
+    `;
+}
+
+function residentSubmitView() {
+    const errors = Object.values(state.app?.errors || {}).flat();
+    const profile = residentProfile();
+    const editionId = oldValue('budget_edition_id', state.edition?.id || '');
+    return `
+        <section class="resident-page-head" aria-labelledby="submit-resident-title">
+            <p class="eyebrow">Formularz mieszkańca</p>
+            <h1 id="submit-resident-title">Zgłoś projekt do budżetu obywatelskiego.</h1>
+            <p class="lead">Formularz zapisuje zgłoszenie przez realny endpoint systemu i uruchamia istniejącą walidację projektu.</p>
+        </section>
+
+        ${errors.length ? `<div class="panel form-errors">${errors.map((error) => `<p>${escapeHtml(error)}</p>`).join('')}</div>` : ''}
+
+        <section class="form-workspace" aria-label="Formularz zgłaszania projektu">
+            <aside class="step-sidebar">
+                <span class="status status-live">Nowy projekt</span>
+                <h2>Postęp zgłoszenia</h2>
+                <ol class="step-list">
+                    <li class="is-active">Dane autora</li>
+                    <li>Opis projektu</li>
+                    <li>Koszt i załączniki</li>
+                    <li>Oświadczenia</li>
+                </ol>
+                <p>Po wysłaniu projekt trafi do Twojej listy projektów i do weryfikacji formalnej.</p>
+            </aside>
+
+            <form class="resident-form" method="post" action="${href('projectStore')}" enctype="multipart/form-data">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                <input type="hidden" name="budget_edition_id" value="${escapeHtml(editionId)}">
+                <input type="hidden" name="map_data" value='{"type":"FeatureCollection","features":[]}'>
+                <input type="hidden" name="contact_with" value="1">
+
+                <fieldset>
+                    <legend>Dane autora</legend>
+                    <div class="two-col">
+                        <div class="field"><label for="author_first_name">Imię</label><input id="author_first_name" name="author_first_name" required maxlength="127" value="${escapeHtml(oldValue('author_first_name', profile.firstName))}"></div>
+                        <div class="field"><label for="author_last_name">Nazwisko</label><input id="author_last_name" name="author_last_name" required maxlength="127" value="${escapeHtml(oldValue('author_last_name', profile.lastName))}"></div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field"><label for="author_email">E-mail</label><input id="author_email" name="author_email" type="email" required maxlength="255" value="${escapeHtml(oldValue('author_email', profile.email))}"></div>
+                        <div class="field"><label for="author_phone">Telefon</label><input id="author_phone" name="author_phone" maxlength="30" value="${escapeHtml(oldValue('author_phone', profile.phone))}"></div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field"><label for="author_street">Ulica</label><input id="author_street" name="author_street" maxlength="127" value="${escapeHtml(oldValue('author_street', profile.street))}"></div>
+                        <div class="field"><label for="author_house_no">Nr domu</label><input id="author_house_no" name="author_house_no" maxlength="20" value="${escapeHtml(oldValue('author_house_no', profile.houseNo))}"></div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field"><label for="author_flat_no">Nr lokalu</label><input id="author_flat_no" name="author_flat_no" maxlength="20" value="${escapeHtml(oldValue('author_flat_no', profile.flatNo))}"></div>
+                        <div class="field"><label for="author_post_code">Kod pocztowy</label><input id="author_post_code" name="author_post_code" maxlength="6" value="${escapeHtml(oldValue('author_post_code', profile.postCode))}"></div>
+                    </div>
+                    <div class="field"><label for="author_city">Miejscowość</label><input id="author_city" name="author_city" maxlength="127" value="${escapeHtml(oldValue('author_city', profile.city))}"></div>
+                    <label class="check-row"><input name="author_email_agree" type="checkbox" value="1" checked><span>Publikowana forma kontaktu: e-mail.</span></label>
+                    <label class="check-row"><input name="author_phone_agree" type="checkbox" value="1"><span>Publikowana forma kontaktu: telefon.</span></label>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Opis projektu</legend>
+                    <div class="field"><label for="title">Tytuł projektu</label><input id="title" name="title" required maxlength="600" value="${escapeHtml(oldValue('title'))}" placeholder="np. Zielony skwer przy bibliotece"></div>
+                    <div class="two-col">
+                        <div class="field">
+                            <label for="project_area_id">Obszar</label>
+                            <select id="project_area_id" name="project_area_id" required>
+                                ${(state.areas || []).map((area) => `<option value="${area.id}" ${String(oldValue('project_area_id')) === String(area.id) ? 'selected' : ''}>${escapeHtml(area.name)}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="category_id">Kategoria</label>
+                            <select id="category_id" name="category_id" required>
+                                ${(state.categories || []).map((category) => `<option value="${category.id}" ${String(oldValue('category_id')) === String(category.id) ? 'selected' : ''}>${escapeHtml(category.name)}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="local">Typ projektu</label>
+                        <select id="local" name="local" required>
+                            <option value="1" ${String(oldValue('local', '1')) === '1' ? 'selected' : ''}>Projekt lokalny</option>
+                            <option value="2" ${String(oldValue('local')) === '2' ? 'selected' : ''}>Projekt Zielonego BO</option>
+                        </select>
+                    </div>
+                    <div class="field"><label for="short_description">Krótki opis</label><textarea id="short_description" name="short_description" maxlength="700">${escapeHtml(oldValue('short_description'))}</textarea></div>
+                    ${textareaField('localization', 'Lokalizacja', true, oldValue('localization'))}
+                    <div class="field"><label for="address">Adres</label><input id="address" name="address" maxlength="300" value="${escapeHtml(oldValue('address'))}"></div>
+                    ${textareaField('plot', 'Działka', false, oldValue('plot'))}
+                    <div class="map-mini" role="img" aria-label="Miejsce na mapę lokalizacji projektu"><span class="pin"></span></div>
+                    ${textareaField('description', 'Opis', true, oldValue('description'))}
+                    ${textareaField('goal', 'Cel', true, oldValue('goal'))}
+                    ${textareaField('argumentation', 'Uzasadnienie', true, oldValue('argumentation'))}
+                    ${textareaField('availability', 'Dostępność', true, oldValue('availability'))}
+                    ${textareaField('recipients', 'Odbiorcy', true, oldValue('recipients'))}
+                    ${textareaField('free_of_charge', 'Bezpłatność', true, oldValue('free_of_charge'))}
+                    ${textareaField('additional_cost', 'Koszty utrzymania w kolejnych latach', false, oldValue('additional_cost'))}
+                </fieldset>
+
+                <fieldset>
+                    <legend>Koszt i załączniki</legend>
+                    <div class="two-col">
+                        <div class="field"><label for="cost_description">Składowa kosztów</label><input id="cost_description" name="cost_items[0][description]" required maxlength="1000" value="${escapeHtml(oldValue('cost_description'))}"></div>
+                        <div class="field"><label for="cost_amount">Koszt brutto</label><input id="cost_amount" name="cost_items[0][amount]" required type="number" min="0" step="0.01" data-budget-input value="${escapeHtml(oldValue('cost_amount'))}"></div>
+                    </div>
+                    <div class="budget-summary">
+                        <span>Szacowany koszt łącznie</span>
+                        <strong data-budget-total>${escapeHtml(oldValue('cost_amount', '0'))} zł</strong>
+                    </div>
+                    <div class="field"><label for="support_list_file">Plik listy poparcia</label><input id="support_list_file" name="support_list_file" type="file" required></div>
+                    <div class="two-col">
+                        <div class="field"><label for="owner_agreement_files">Zgody właściciela</label><input id="owner_agreement_files" name="owner_agreement_files[]" type="file" multiple></div>
+                        <div class="field"><label for="map_files">Załączniki mapy</label><input id="map_files" name="map_files[]" type="file" multiple></div>
+                        <div class="field"><label for="parent_agreement_files">Zgody rodzica lub opiekuna</label><input id="parent_agreement_files" name="parent_agreement_files[]" type="file" multiple></div>
+                        <div class="field"><label for="attachment_files">Pozostałe załączniki</label><input id="attachment_files" name="attachment_files[]" type="file" multiple></div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Oświadczenia</legend>
+                    <label class="check-row"><input name="author_read_confirm" type="checkbox" value="1" required><span>${escapeHtml(state.legacyText?.regulation_confirmation || 'Potwierdzam zapoznanie się z regulaminem.')}</span></label>
+                    <label class="check-row"><input name="author_personal_data_agree" type="checkbox" value="1"><span>${escapeHtml(state.legacyText?.evaluation_consent_checkbox || 'Wyrażam zgodę na przetwarzanie danych do weryfikacji projektu.')}</span></label>
+                    <label class="check-row"><input name="show_task_coauthors" type="checkbox" value="1" checked><span>Informacje o współautorze mają być wyświetlane.</span></label>
+                    <label class="check-row"><input name="consent_to_change" type="checkbox" value="1"><span>${escapeHtml(state.legacyText?.consent_to_change || 'Wyrażam zgodę na ewentualne zmiany projektu po konsultacji.')}</span></label>
+                    <label class="check-row"><input name="attachments_anonymized" type="checkbox" value="1" required><span>${escapeHtml(state.legacyText?.attachments_anonymized || 'Załączniki nie zawierają danych wymagających ukrycia.')}</span></label>
+                    <label class="check-row"><input name="support_list" type="checkbox" value="1" required><span>${escapeHtml(state.legacyText?.support_list || 'Dołączam listę poparcia.')}</span></label>
+                </fieldset>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Wyślij do weryfikacji</button>
+                </div>
+            </form>
+        </section>
+    `;
+}
+
+function residentAccountView() {
+    const profile = residentProfile();
+    const errors = Object.values(state.app?.errors || {}).flat();
+    return `
+        <section class="resident-page-head" aria-labelledby="account-title">
+            <p class="eyebrow">Konto mieszkańca</p>
+            <h1 id="account-title">Konto mieszkańca</h1>
+            <p class="lead">Dane kontaktowe, adresowe i podstawowe bezpieczeństwo.</p>
+        </section>
+
+        ${errors.length ? `<div class="panel form-errors">${errors.map((error) => `<p>${escapeHtml(error)}</p>`).join('')}</div>` : ''}
+
+        <section class="account-grid" aria-label="Zarządzanie kontem">
+            <form class="resident-form account-form" method="post" action="${href('residentAccountUpdate')}">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                <input type="hidden" name="_method" value="PATCH">
+                <fieldset>
+                    <legend>Dane podstawowe</legend>
+                    <div class="two-col">
+                        <div class="field"><label for="first_name">Imię</label><input id="first_name" name="first_name" required maxlength="127" value="${escapeHtml(oldValue('first_name', profile.firstName))}"></div>
+                        <div class="field"><label for="last_name">Nazwisko</label><input id="last_name" name="last_name" required maxlength="127" value="${escapeHtml(oldValue('last_name', profile.lastName))}"></div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field"><label for="email">Adres e-mail</label><input id="email" name="email" type="email" required maxlength="255" value="${escapeHtml(oldValue('email', profile.email))}"></div>
+                        <div class="field"><label for="phone">Telefon</label><input id="phone" name="phone" maxlength="30" value="${escapeHtml(oldValue('phone', profile.phone))}"></div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field"><label for="street">Ulica</label><input id="street" name="street" maxlength="127" value="${escapeHtml(oldValue('street', profile.street))}"></div>
+                        <div class="field"><label for="house_no">Nr domu</label><input id="house_no" name="house_no" maxlength="20" value="${escapeHtml(oldValue('house_no', profile.houseNo))}"></div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field"><label for="flat_no">Nr lokalu</label><input id="flat_no" name="flat_no" maxlength="20" value="${escapeHtml(oldValue('flat_no', profile.flatNo))}"></div>
+                        <div class="field"><label for="post_code">Kod pocztowy</label><input id="post_code" name="post_code" maxlength="6" value="${escapeHtml(oldValue('post_code', profile.postCode))}"></div>
+                    </div>
+                    <div class="field"><label for="city">Miejscowość</label><input id="city" name="city" maxlength="127" value="${escapeHtml(oldValue('city', profile.city))}"></div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Bezpieczeństwo</legend>
+                    <div class="field"><label for="current_password">Obecne hasło</label><input id="current_password" name="current_password" type="password" autocomplete="current-password"></div>
+                    <div class="two-col">
+                        <div class="field"><label for="password">Nowe hasło</label><input id="password" name="password" type="password" autocomplete="new-password"></div>
+                        <div class="field"><label for="password_confirmation">Powtórz nowe hasło</label><input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password"></div>
+                    </div>
+                </fieldset>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Zapisz ustawienia</button>
+                </div>
+            </form>
+
+            <aside class="account-side">
+                <article class="identity-card">
+                    <span class="status status-live">Konto aktywne</span>
+                    <h2>${escapeHtml(residentName())}</h2>
+                    <p>${profile.emailVerified ? 'Adres e-mail jest potwierdzony.' : 'Adres e-mail oczekuje na potwierdzenie.'} Profil służy do obsługi zgłoszeń mieszkańca.</p>
+                </article>
+                <article class="security-card">
+                    <h2>Stan konta</h2>
+                    <ul class="check-list">
+                        <li class="${profile.hasPassword ? 'is-done' : ''}">Hasło ustawione</li>
+                        <li class="${profile.emailVerified ? 'is-done' : ''}">E-mail potwierdzony</li>
+                        <li class="${profile.hasAddress ? 'is-done' : ''}">Adres do kontaktu uzupełniony</li>
+                    </ul>
+                    <a class="btn btn-secondary" href="${href('residentProjects')}" data-spa-link>Moje projekty</a>
+                </article>
+            </aside>
+        </section>
+    `;
+}
+
 function announcementsView() {
     return `
         <section class="section" aria-labelledby="announcements-title">
@@ -965,6 +1736,15 @@ function resultsView() {
 function renderRoute() {
     const path = currentPath();
     if (path === '/') return homeView();
+    if (path === '/login') return loginView();
+    if (path === '/rejestracja') return registerView();
+    if (path === '/haslo/reset') return passwordRequestView();
+    if (/^\/haslo\/reset\/[^/]+$/.test(path)) return passwordResetView();
+    if (path === '/panel') return residentDashboardView();
+    if (path === '/moje-projekty') return residentProjectsView();
+    if (path === '/moje-projekty/zglos') return residentSubmitView();
+    if (/^\/moje-projekty\/\d+\/korekta$/.test(path)) return residentCorrectionView();
+    if (path === '/konto') return residentAccountView();
     if (path === '/projekty') return projectsView();
     if (path.startsWith('/projekt/')) return projectDetailView();
     if (path === '/projekty/zglos') return submitView();
@@ -1109,6 +1889,22 @@ function bindActions() {
             showToast(copy().saved);
         });
     });
+
+    const budgetInputs = Array.from(document.querySelectorAll('[data-budget-input]'));
+    const budgetTotal = document.querySelector('[data-budget-total]');
+    if (budgetInputs.length && budgetTotal) {
+        const formatCurrency = (value) => new Intl.NumberFormat('pl-PL', {
+            style: 'currency',
+            currency: 'PLN',
+            maximumFractionDigits: 0,
+        }).format(value);
+        const updateBudgetTotal = () => {
+            const total = budgetInputs.reduce((sum, input) => sum + (Number(String(input.value).replace(',', '.')) || 0), 0);
+            budgetTotal.textContent = formatCurrency(total);
+        };
+        budgetInputs.forEach((input) => input.addEventListener('input', updateBudgetTotal));
+        updateBudgetTotal();
+    }
 
     const form = document.querySelector('[data-project-filters]');
     if (form) {

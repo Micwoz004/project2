@@ -20,6 +20,7 @@ use App\Domain\Settings\Models\CostGuideItem;
 use App\Domain\Settings\Models\PublicAnnouncement;
 use App\Domain\Settings\Models\PublicPage;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -40,6 +41,8 @@ class PublicSpaController extends Controller
         Log::info('public_spa.show.start', [
             'path' => $request->path(),
         ]);
+
+        $this->authorizeResidentCorrectionPath($request);
 
         $edition = BudgetEdition::query()->latest('propose_start')->first();
         $state = $edition instanceof BudgetEdition
@@ -97,7 +100,8 @@ class PublicSpaController extends Controller
             'announcements' => $this->announcementsPayload($announcements),
             'pages' => $this->pagesPayload($pages),
             'costGuideItems' => $this->costGuideItemsPayload(),
-            'legacyText' => $request->path() === 'projekty/zglos'
+            'resident' => $this->residentPayload($request),
+            'legacyText' => in_array($request->path(), ['projekty/zglos', 'moje-projekty/zglos'], true)
                 ? LegacyProjectFormText::publicSubmissionStatements()
                 : [],
         ];
@@ -128,10 +132,23 @@ class PublicSpaController extends Controller
             'results' => route('public.results.index'),
             'announcements' => route('public.announcements.index'),
             'reports' => route('public.reports.index'),
+            'residentDashboard' => route('public.resident.dashboard'),
+            'residentProjects' => route('public.resident.projects'),
+            'residentSubmit' => route('public.resident.projects.create'),
+            'residentAccount' => route('public.resident.account'),
+            'residentAccountUpdate' => route('public.resident.account.update'),
             'projectStore' => route('public.projects.store'),
             'voteToken' => route('public.voting.token'),
             'voteCast' => route('public.voting.cast'),
             'admin' => url('/admin'),
+            'login' => route('login'),
+            'loginPost' => route('public.resident.login'),
+            'register' => route('register'),
+            'registerPost' => route('public.resident.register'),
+            'passwordRequest' => route('password.request'),
+            'passwordEmail' => route('password.email'),
+            'passwordUpdate' => route('password.update'),
+            'logout' => route('public.resident.logout'),
         ];
     }
 
@@ -219,6 +236,10 @@ class PublicSpaController extends Controller
         $relations = ['area', 'category', 'categories', 'budgetEdition', 'costItems', 'publicFiles'];
         $path = $request->path();
 
+        if ($this->isResidentSpaPath($path)) {
+            return new EloquentCollection;
+        }
+
         if (str_starts_with($path, 'projekt/')) {
             $projectId = (int) Str::after($path, 'projekt/');
             $project = Project::query()
@@ -268,6 +289,19 @@ class PublicSpaController extends Controller
             ->orderBy('title')
             ->limit(80)
             ->get();
+    }
+
+    private function isResidentSpaPath(string $path): bool
+    {
+        return $path === 'login'
+            || $path === 'rejestracja'
+            || $path === 'haslo/reset'
+            || preg_match('#^haslo/reset/[^/]+$#', $path) === 1
+            || $path === 'panel'
+            || $path === 'konto'
+            || $path === 'moje-projekty'
+            || $path === 'moje-projekty/zglos'
+            || preg_match('#^moje-projekty/\d+/korekta$#', $path) === 1;
     }
 
     /**
@@ -509,6 +543,213 @@ class PublicSpaController extends Controller
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function residentPayload(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            return [
+                'authenticated' => false,
+                'profile' => null,
+                'projects' => [],
+                'stats' => [
+                    'drafts' => 0,
+                    'verification' => 0,
+                    'corrections' => 0,
+                ],
+            ];
+        }
+
+        $projects = Project::query()
+            ->with(['area', 'category', 'categories', 'budgetEdition', 'costItems', 'corrections'])
+            ->where('creator_id', $user->id)
+            ->latest()
+            ->get();
+
+        return [
+            'authenticated' => true,
+            'profile' => $this->residentProfilePayload($user),
+            'projects' => $this->residentProjectsPayload($projects),
+            'stats' => [
+                'drafts' => $projects->filter(fn (Project $project): bool => $project->status === ProjectStatus::WorkingCopy)->count(),
+                'verification' => $projects->filter(fn (Project $project): bool => in_array($this->residentStatusGroup($project), ['waiting', 'live'], true))->count(),
+                'corrections' => $projects->filter(fn (Project $project): bool => $this->activeCorrectionPayload($project) !== null)->count(),
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function residentProfilePayload(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'firstName' => $user->first_name,
+            'lastName' => $user->last_name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'street' => $user->street,
+            'houseNo' => $user->house_no,
+            'flatNo' => $user->flat_no,
+            'postCode' => $user->post_code,
+            'city' => $user->city,
+            'emailVerified' => $user->email_verified_at !== null,
+            'hasAddress' => filled($user->street) && filled($user->house_no) && filled($user->city),
+            'hasPassword' => filled($user->password),
+        ];
+    }
+
+    /**
+     * @param  EloquentCollection<int, Project>  $projects
+     * @return list<array<string, mixed>>
+     */
+    private function residentProjectsPayload(EloquentCollection $projects): array
+    {
+        return $projects
+            ->map(fn (Project $project): array => [
+                'id' => $project->id,
+                'number' => $project->number_drawn ?? $project->number ?? $project->id,
+                'title' => $project->title,
+                'description' => Str::limit($project->short_description ?: $project->description, 220),
+                'area' => $project->area?->name ?? 'Całe miasto',
+                'category' => $project->category?->name ?? $project->categories->first()?->name ?? 'Projekt miejski',
+                'status' => $this->residentStatusGroup($project),
+                'statusLabel' => $this->residentStatusLabel($project),
+                'publicStatusLabel' => $project->publicStatusLabel(),
+                'costLabel' => number_format((float) ($project->cost_formatted ?? $project->costItems->sum('amount')), 0, ',', ' ').' zł',
+                'projectAreaId' => $project->project_area_id,
+                'categoryId' => $project->category_id,
+                'localization' => $project->localization,
+                'mapData' => $project->map_data,
+                'goal' => $project->goal,
+                'argumentation' => $project->argumentation,
+                'availability' => $project->availability,
+                'recipients' => $project->recipients,
+                'freeOfCharge' => $project->free_of_charge,
+                'costItems' => $project->costItems
+                    ->map(fn ($costItem): array => [
+                        'description' => $costItem->description,
+                        'amount' => (float) $costItem->amount,
+                    ])
+                    ->values()
+                    ->all(),
+                'submittedAt' => $project->submitted_at?->format('d.m.Y') ?? $project->created_at?->format('d.m.Y'),
+                'correction' => $this->activeCorrectionPayload($project),
+                'progress' => $this->residentProjectProgress($project),
+                'publicVisible' => $this->isProjectPubliclyVisibleForResident($project),
+                'publicUrl' => $this->isProjectPubliclyVisibleForResident($project) ? route('public.projects.show', $project) : null,
+                'correctionUrl' => route('public.projects.corrections.edit', $project),
+                'correctionUpdateUrl' => route('public.projects.corrections.update', $project),
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function residentStatusGroup(Project $project): string
+    {
+        if ($this->activeCorrectionPayload($project) !== null) {
+            return 'returned';
+        }
+
+        if ($project->status === ProjectStatus::WorkingCopy) {
+            return 'draft';
+        }
+
+        if ($project->status->isRejected() || $project->status === ProjectStatus::PickedForRealization) {
+            return 'ended';
+        }
+
+        if (in_array($project->status, [
+            ProjectStatus::Picked,
+            ProjectStatus::MeritVerificationAccepted,
+            ProjectStatus::TeamAccepted,
+        ], true)) {
+            return 'live';
+        }
+
+        return 'waiting';
+    }
+
+    private function residentStatusLabel(Project $project): string
+    {
+        return match ($this->residentStatusGroup($project)) {
+            'draft' => 'Roboczy',
+            'returned' => 'Do poprawy',
+            'live' => $project->publicStatusLabel(),
+            'ended' => $project->publicStatusLabel(),
+            default => 'W weryfikacji',
+        };
+    }
+
+    private function residentProjectProgress(Project $project): int
+    {
+        return match ($this->residentStatusGroup($project)) {
+            'draft' => 42,
+            'returned' => 68,
+            'waiting' => 82,
+            default => 100,
+        };
+    }
+
+    private function isProjectPubliclyVisibleForResident(Project $project): bool
+    {
+        if ($project->is_hidden) {
+            return false;
+        }
+
+        return in_array($project->status, [
+            ProjectStatus::Picked,
+            ProjectStatus::PickedForRealization,
+            ProjectStatus::TeamAccepted,
+            ProjectStatus::MeritVerificationAccepted,
+        ], true);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function activeCorrectionPayload(Project $project): ?array
+    {
+        $correction = $project->corrections
+            ->filter(fn ($correction): bool => ! $correction->correction_done && $correction->correction_deadline?->isFuture())
+            ->sortByDesc('correction_deadline')
+            ->first();
+
+        if (! $correction) {
+            return null;
+        }
+
+        return [
+            'deadline' => $correction->correction_deadline?->format('d.m.Y'),
+            'notes' => $correction->notes,
+            'allowedFields' => $correction->allowed_fields,
+        ];
+    }
+
+    private function authorizeResidentCorrectionPath(Request $request): void
+    {
+        if (! preg_match('#^moje-projekty/(\d+)/korekta$#', $request->path(), $matches)) {
+            return;
+        }
+
+        $project = Project::query()
+            ->with('corrections')
+            ->whereKey((int) $matches[1])
+            ->firstOrFail();
+
+        abort_unless($request->user()?->can('update', $project), 403);
+
+        $hasActiveCorrection = $project->corrections
+            ->contains(fn ($correction): bool => ! $correction->correction_done && $correction->correction_deadline?->isFuture());
+
+        abort_unless($hasActiveCorrection, 404);
     }
 
     private function stateLabel(BudgetEditionState $state): string

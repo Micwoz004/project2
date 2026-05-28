@@ -27,9 +27,17 @@ class SendProjectNotificationJob implements ShouldQueue
             'notification_id' => $this->notificationId,
         ]);
 
-        $notification = ProjectNotification::query()->findOrFail($this->notificationId);
+        $notification = ProjectNotification::query()
+            ->with(['project.area', 'project.category'])
+            ->findOrFail($this->notificationId);
 
-        Mail::raw($notification->body, function (Message $message) use ($notification): void {
+        Mail::send([
+            'html' => 'mail.project-notification',
+            'text' => 'mail.project-notification-text',
+        ], [
+            'notification' => $notification,
+            'project' => $notification->project,
+        ], function (Message $message) use ($notification): void {
             $message
                 ->to($notification->author_email)
                 ->subject($notification->subject);

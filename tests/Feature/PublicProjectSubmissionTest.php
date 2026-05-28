@@ -265,8 +265,8 @@ it('lets the project author apply an active correction through the public endpoi
     $this->actingAs($author)
         ->get(route('public.projects.corrections.edit', $project))
         ->assertOk()
-        ->assertSee('Korekta projektu')
-        ->assertSee('Popraw tytuł i kategorię.');
+        ->assertSee('bo-spa-root')
+        ->assertSee('Popraw tytu\\u0142 i kategori\\u0119.', false);
 
     $this->actingAs($author)
         ->put(route('public.projects.corrections.update', $project), [

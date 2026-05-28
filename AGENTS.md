@@ -34,6 +34,12 @@ Dodatkowe zasady precyzujące:
 - Nie loguj danych wrażliwych (PII, tokenów, pełnych payloadów, treści załączników).
 - Używaj placeholderów SLF4J (`log.info("x={}, y={}", x, y)`), bez konkatenacji.
 - Logi muszą być krótkie, jednoznaczne i filtrowalne po ID.
+
+### Front mieszkańca jako SPA (obowiązkowe)
+- Cała część mieszkańca/zwykłego zalogowanego użytkownika musi być utrzymana jako pełne SPA.
+- Widoki mieszkańca (np. panel, moje projekty, zgłoszenie projektu, korekta projektu, konto, logowanie mieszkańca) renderuj przez publiczny SPA shell i stan przekazywany do frontendu, a nie przez osobne Blade views.
+- Backendowe endpointy POST/PUT/PATCH mogą pozostać klasycznymi endpointami Laravel, ale ekran wejściowy i nawigacja mieszkańca mają pozostać w SPA.
+- Panel administracyjny i zasoby Filament nie są częścią tej reguły.
 <!-- MANUAL ADDITIONS END -->
 
 # Liquibase scripts

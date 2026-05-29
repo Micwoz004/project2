@@ -175,6 +175,7 @@ enum LegacyCommunicationTrigger: string
     public function projectTemplate(): ?ProjectNotificationTemplate
     {
         return match ($this) {
+            self::TaskSubmitted => ProjectNotificationTemplate::ProjectSubmitted,
             self::TaskCorrespondence => ProjectNotificationTemplate::CorrespondenceMessage,
             self::TaskBackToWorkingCopyEmail,
             self::TaskCallToCorrectionSms => ProjectNotificationTemplate::FormalCorrection,
@@ -192,8 +193,8 @@ enum LegacyCommunicationTrigger: string
             self::ZkRecommendedPositive,
             self::ZkRecommendedNegative,
             self::ZkManualAccepted,
-            self::ZkManualRejected,
-            self::VerificationPublishedAuthor => ProjectNotificationTemplate::ProjectStatusChanged,
+            self::ZkManualRejected => ProjectNotificationTemplate::ProjectStatusChanged,
+            self::VerificationPublishedAuthor => ProjectNotificationTemplate::ProjectPublished,
             default => null,
         };
     }

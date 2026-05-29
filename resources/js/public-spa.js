@@ -1112,14 +1112,6 @@ function residentDashboardView() {
                         <a class="btn btn-primary" href="${href('residentSubmit')}" data-spa-link>Zgłoś projekt</a>
                     </article>
                 `}
-                <article class="task-card">
-                    <div>
-                        <span class="status status-live">Etap</span>
-                        <h3>${escapeHtml(state.edition?.stateLabel || 'Budżet obywatelski')}</h3>
-                        <p>Najbliższy termin: ${escapeHtml(nextDeadline)}.</p>
-                    </div>
-                    <a class="btn btn-secondary" href="/informacje/harmonogram" data-spa-link>Harmonogram</a>
-                </article>
             </div>
         </section>
 

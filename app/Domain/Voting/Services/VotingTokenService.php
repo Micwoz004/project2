@@ -2,6 +2,7 @@
 
 namespace App\Domain\Voting\Services;
 
+use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\Communications\Models\MailLog;
 use App\Domain\Voting\Data\VoterIdentityData;
 use App\Domain\Voting\Enums\VotingTokenType;
@@ -265,12 +266,26 @@ class VotingTokenService
     private function sendEmailToken(VotingToken $token, string $email): void
     {
         $subject = (string) config('services.voting.token_email_subject');
-        $body = 'Link aktywujący proces głosowania: '.route('public.voting.email-token.activate', [
+        $activationUrl = route('public.voting.email-token.activate', [
             'id' => $token->id,
             'tokenStr' => $token->token,
         ]);
+        $body = 'Link aktywujący proces głosowania: '.$activationUrl;
+        $edition = BudgetEdition::query()
+            ->where('voting_start', '<=', now())
+            ->where('voting_end', '>=', now())
+            ->latest('voting_start')
+            ->first();
 
-        Mail::raw($body, function (Message $message) use ($email, $subject): void {
+        Mail::send([
+            'html' => 'mail.resident-voting-started',
+            'text' => 'mail.resident-voting-started-text',
+        ], [
+            'votingUrl' => $activationUrl,
+            'votingStartDate' => $edition?->voting_start?->format('d.m.Y H:i') ?? 'Trwa',
+            'votingEndDate' => $edition?->voting_end?->format('d.m.Y H:i') ?? 'Zgodnie z harmonogramem',
+            'residentName' => trim($token->first_name.' '.$token->last_name) ?: $email,
+        ], function (Message $message) use ($email, $subject): void {
             $message
                 ->to($email)
                 ->subject($subject);

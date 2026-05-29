@@ -15,27 +15,21 @@ class ResidentResetPassword extends ResetPassword
     private function buildResidentMailMessage(string $url, mixed $notifiable): MailMessage
     {
         $expiresInMinutes = (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
+        $data = [
+            'resetPasswordUrl' => $url,
+            'residentEmail' => $notifiable->getEmailForPasswordReset(),
+            'cityName' => $this->cityName(),
+            'expiresInMinutes' => $expiresInMinutes,
+            'supportEmail' => $this->supportEmail(),
+            'supportPhone' => $this->supportPhone(),
+            'accessibilityUrl' => url('/informacje/deklaracja-dostepnosci'),
+            'privacyUrl' => url('/informacje/prywatnosc'),
+        ];
 
         return (new MailMessage)
             ->subject('Ustaw nowe hasło do konta mieszkańca')
-            ->view('mail.resident-password-reset', [
-                'resetPasswordUrl' => $url,
-                'residentEmail' => $notifiable->getEmailForPasswordReset(),
-                'cityName' => $this->cityName(),
-                'expiresInMinutes' => $expiresInMinutes,
-                'supportEmail' => $this->supportEmail(),
-                'supportPhone' => $this->supportPhone(),
-                'accessibilityUrl' => url('/informacje/deklaracja-dostepnosci'),
-                'privacyUrl' => url('/informacje/prywatnosc'),
-            ])
-            ->text('mail.resident-password-reset-text', [
-                'resetPasswordUrl' => $url,
-                'residentEmail' => $notifiable->getEmailForPasswordReset(),
-                'cityName' => $this->cityName(),
-                'expiresInMinutes' => $expiresInMinutes,
-                'supportEmail' => $this->supportEmail(),
-                'supportPhone' => $this->supportPhone(),
-            ]);
+            ->view('mail.resident-password-reset', $data)
+            ->text('mail.resident-password-reset-text', $data);
     }
 
     private function cityName(): string

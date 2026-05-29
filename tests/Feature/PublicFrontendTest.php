@@ -292,8 +292,11 @@ it('registers resident from public registration form', function (): void {
     Notification::assertSentTo($user, ResidentEmailVerification::class, function (ResidentEmailVerification $notification) use ($user): bool {
         $mail = $notification->toMail($user);
 
+        view($mail->view['html'], $mail->viewData)->render();
+
         return ($mail->view['html'] ?? null) === 'mail.resident-email-verification'
-            && ($mail->view['text'] ?? null) === 'mail.resident-email-verification-text';
+            && ($mail->view['text'] ?? null) === 'mail.resident-email-verification-text'
+            && isset($mail->viewData['privacyUrl'], $mail->viewData['accessibilityUrl']);
     });
 });
 
@@ -371,8 +374,11 @@ it('sends resident password reset link and updates password with token', functio
     Notification::assertSentTo($user, ResidentResetPassword::class, function (ResidentResetPassword $notification) use ($user): bool {
         $mail = $notification->toMail($user);
 
+        view($mail->view['html'], $mail->viewData)->render();
+
         return ($mail->view['html'] ?? null) === 'mail.resident-password-reset'
-            && ($mail->view['text'] ?? null) === 'mail.resident-password-reset-text';
+            && ($mail->view['text'] ?? null) === 'mail.resident-password-reset-text'
+            && isset($mail->viewData['privacyUrl'], $mail->viewData['accessibilityUrl']);
     });
 
     $token = Password::createToken($user);

@@ -39,6 +39,7 @@ use App\Policies\PublicPagePolicy;
 use App\Policies\ResultPublicationPolicy;
 use App\Policies\VoteCardPolicy;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -62,6 +63,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Password::defaults(fn (): Password => Password::min(12)->mixedCase()->numbers()->symbols());
+        $debugMailTo = trim((string) config('mail.debug_to'));
+
+        if ($debugMailTo !== '') {
+            Mail::alwaysTo($debugMailTo);
+        }
 
         Gate::policy(ApplicationSetting::class, ApplicationSettingPolicy::class);
         Gate::policy(BudgetEdition::class, BudgetEditionPolicy::class);

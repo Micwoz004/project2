@@ -262,8 +262,54 @@ it('sends queued project notifications and writes mail logs', function (): void 
     (new SendProjectNotificationJob($notification->id))->handle();
 
     expect($notification->subject)->toContain('Wezwanie do korekty projektu')
+        ->and($notification->template)->toBe(ProjectNotificationTemplate::FormalCorrection)
         ->and($notification->body)->toContain('Uzupełnij kosztorys.')
         ->and(MailLog::query()->where('email', $recipient->email)->where('subject', $notification->subject)->count())->toBe(1);
+
+    expect(view($notification->template->htmlView(), [
+        'notification' => $notification,
+        'project' => $project->refresh(),
+    ])->render())->toContain('Projekt wymaga uzupełnienia');
+});
+
+it('renders every Open Design email prototype as an application mail template', function (): void {
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = project($edition->id, $area->id, [
+        'title' => 'Park kieszonkowy',
+        'number' => 7,
+        'cost_formatted' => 120000,
+    ]);
+    $notification = ProjectNotification::query()->make([
+        'project_id' => $project->id,
+        'author_email' => 'resident@example.test',
+        'subject' => 'Powiadomienie',
+        'body' => 'Treść powiadomienia',
+        'template' => ProjectNotificationTemplate::FormalCorrection,
+        'sent_at' => now(),
+    ]);
+
+    $projectTemplateViews = [
+        'mail.resident-project-submitted' => 'Projekt jest już w systemie',
+        'mail.resident-project-published' => 'Projekt został opublikowany',
+        'mail.resident-project-needs-correction' => 'Projekt wymaga uzupełnienia',
+        'mail.official-new-project' => 'Nowy projekt do weryfikacji',
+        'mail.official-verification-deadline' => 'Termin weryfikacji jest blisko',
+    ];
+
+    foreach ($projectTemplateViews as $view => $expectedText) {
+        expect(view($view, [
+            'notification' => $notification,
+            'project' => $project,
+        ])->render())->toContain($expectedText);
+    }
+
+    expect(view('mail.resident-voting-started', [
+        'votingUrl' => route('public.voting.welcome'),
+        'votingStartDate' => now()->format('d.m.Y H:i'),
+        'votingEndDate' => now()->addDay()->format('d.m.Y H:i'),
+        'residentName' => 'Jan Kowalski',
+    ])->render())->toContain('Głosowanie jest otwarte');
 });
 
 it('sends coauthor confirmation and confirms through legacy activation route', function (): void {
@@ -465,7 +511,9 @@ it('keeps a legacy communication trigger map for mail and sms parity', function 
         ->and(LegacyCommunicationTrigger::PublicCommentAdded->projectTemplate())->toBe(ProjectNotificationTemplate::PublicCommentAdded)
         ->and(LegacyCommunicationTrigger::PublicCommentAdminHidden->projectTemplate())->toBe(ProjectNotificationTemplate::PublicCommentAdminHidden)
         ->and(LegacyCommunicationTrigger::CocreatorConfirmation->projectTemplate())->toBe(ProjectNotificationTemplate::CoauthorConfirmation)
-        ->and(LegacyCommunicationTrigger::VerificationPressureAutomatic->projectTemplate())->toBe(ProjectNotificationTemplate::VerificationPressure);
+        ->and(LegacyCommunicationTrigger::VerificationPressureAutomatic->projectTemplate())->toBe(ProjectNotificationTemplate::VerificationPressure)
+        ->and(LegacyCommunicationTrigger::TaskSubmitted->projectTemplate())->toBe(ProjectNotificationTemplate::ProjectSubmitted)
+        ->and(LegacyCommunicationTrigger::VerificationPublishedAuthor->projectTemplate())->toBe(ProjectNotificationTemplate::ProjectPublished);
 });
 
 it('documents the legacy source for every communication trigger', function (): void {

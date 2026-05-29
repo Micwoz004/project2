@@ -2,6 +2,7 @@
 
 namespace App\Domain\Communications\Jobs;
 
+use App\Domain\Communications\Enums\ProjectNotificationTemplate;
 use App\Domain\Communications\Models\MailLog;
 use App\Domain\Communications\Models\ProjectNotification;
 use Illuminate\Bus\Queueable;
@@ -28,12 +29,15 @@ class SendProjectNotificationJob implements ShouldQueue
         ]);
 
         $notification = ProjectNotification::query()
-            ->with(['project.area', 'project.category'])
+            ->with(['project.area', 'project.category', 'project.categories', 'project.budgetEdition'])
             ->findOrFail($this->notificationId);
+        $template = $notification->template instanceof ProjectNotificationTemplate
+            ? $notification->template
+            : ProjectNotificationTemplate::tryFrom((string) $notification->template);
 
         Mail::send([
-            'html' => 'mail.project-notification',
-            'text' => 'mail.project-notification-text',
+            'html' => $template?->htmlView() ?? 'mail.project-notification',
+            'text' => $template?->textView() ?? 'mail.project-notification-text',
         ], [
             'notification' => $notification,
             'project' => $notification->project,

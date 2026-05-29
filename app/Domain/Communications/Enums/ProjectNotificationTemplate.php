@@ -7,6 +7,9 @@ use Illuminate\Support\Arr;
 
 enum ProjectNotificationTemplate: string
 {
+    case ProjectSubmitted = 'project_submitted';
+    case ProjectPublished = 'project_published';
+    case OfficialNewProject = 'official_new_project';
     case CorrespondenceMessage = 'correspondence_message';
     case FormalCorrection = 'formal_correction';
     case VerificationPressure = 'verification_pressure';
@@ -21,6 +24,9 @@ enum ProjectNotificationTemplate: string
     public function subject(Project $project, array $context = []): string
     {
         return match ($this) {
+            self::ProjectSubmitted => 'Twój projekt został przyjęty do weryfikacji '.$this->projectNumber($project),
+            self::ProjectPublished => 'Twój projekt został opublikowany '.$this->projectNumber($project),
+            self::OfficialNewProject => 'Nowy projekt czeka na weryfikację '.$this->projectNumber($project),
             self::CorrespondenceMessage => 'Nowa wiadomość dotycząca projektu '.$this->projectNumber($project),
             self::FormalCorrection => 'Wezwanie do korekty projektu '.$this->projectNumber($project),
             self::VerificationPressure => 'Monit weryfikacyjny projektu '.$this->projectNumber($project),
@@ -37,6 +43,24 @@ enum ProjectNotificationTemplate: string
     public function body(Project $project, array $context = []): string
     {
         return match ($this) {
+            self::ProjectSubmitted => implode(PHP_EOL, [
+                'Projekt jest już w systemie:',
+                $project->title,
+                '',
+                'Wniosek został zapisany i przekazany do weryfikacji formalnej.',
+            ]),
+            self::ProjectPublished => implode(PHP_EOL, [
+                'Projekt został opublikowany:',
+                $project->title,
+                '',
+                'Projekt jest dostępny na publicznej liście projektów.',
+            ]),
+            self::OfficialNewProject => implode(PHP_EOL, [
+                'Nowy projekt do weryfikacji:',
+                $project->title,
+                '',
+                'Sprawdź kompletność danych i rozpocznij obsługę weryfikacji.',
+            ]),
             self::CorrespondenceMessage => implode(PHP_EOL, [
                 'W systemie SBO dodano nową wiadomość dotyczącą projektu:',
                 $project->title,
@@ -80,12 +104,38 @@ enum ProjectNotificationTemplate: string
         };
     }
 
+    public function htmlView(): string
+    {
+        return match ($this) {
+            self::ProjectSubmitted => 'mail.resident-project-submitted',
+            self::ProjectPublished => 'mail.resident-project-published',
+            self::OfficialNewProject => 'mail.official-new-project',
+            self::FormalCorrection => 'mail.resident-project-needs-correction',
+            self::VerificationPressure => 'mail.official-verification-deadline',
+            default => 'mail.project-notification',
+        };
+    }
+
+    public function textView(): string
+    {
+        return match ($this) {
+            self::ProjectSubmitted => 'mail.resident-project-submitted-text',
+            self::ProjectPublished => 'mail.resident-project-published-text',
+            self::OfficialNewProject => 'mail.official-new-project-text',
+            self::FormalCorrection => 'mail.resident-project-needs-correction-text',
+            self::VerificationPressure => 'mail.official-verification-deadline-text',
+            default => 'mail.project-notification-text',
+        };
+    }
+
     private function projectNumber(Project $project): string
     {
-        if ($project->number === null) {
+        $number = $project->number_drawn ?? $project->number;
+
+        if ($number === null) {
             return '#'.$project->id;
         }
 
-        return (string) $project->number;
+        return (string) $number;
     }
 }

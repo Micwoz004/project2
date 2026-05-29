@@ -46,6 +46,7 @@ class QueueProjectNotificationAction
             'created_by_id' => $creator?->id,
             'sent_to_user_id' => $recipient?->id,
             'author_email' => $recipientEmail,
+            'template' => $template,
             'subject' => $template->subject($project, $context),
             'body' => $template->body($project, $context),
             'sent_at' => now(),

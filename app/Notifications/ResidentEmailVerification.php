@@ -14,26 +14,21 @@ class ResidentEmailVerification extends VerifyEmail
 
     private function buildResidentMailMessage(string $url, mixed $notifiable): MailMessage
     {
+        $data = [
+            'verificationUrl' => $url,
+            'residentName' => $notifiable->name,
+            'residentEmail' => $notifiable->getEmailForVerification(),
+            'cityName' => $this->cityName(),
+            'supportEmail' => $this->supportEmail(),
+            'supportPhone' => $this->supportPhone(),
+            'accessibilityUrl' => url('/informacje/deklaracja-dostepnosci'),
+            'privacyUrl' => url('/informacje/prywatnosc'),
+        ];
+
         return (new MailMessage)
             ->subject('Potwierdź adres e-mail w serwisie Budżet Obywatelski')
-            ->view('mail.resident-email-verification', [
-                'verificationUrl' => $url,
-                'residentName' => $notifiable->name,
-                'residentEmail' => $notifiable->getEmailForVerification(),
-                'cityName' => $this->cityName(),
-                'supportEmail' => $this->supportEmail(),
-                'supportPhone' => $this->supportPhone(),
-                'accessibilityUrl' => url('/informacje/deklaracja-dostepnosci'),
-                'privacyUrl' => url('/informacje/prywatnosc'),
-            ])
-            ->text('mail.resident-email-verification-text', [
-                'verificationUrl' => $url,
-                'residentName' => $notifiable->name,
-                'residentEmail' => $notifiable->getEmailForVerification(),
-                'cityName' => $this->cityName(),
-                'supportEmail' => $this->supportEmail(),
-                'supportPhone' => $this->supportPhone(),
-            ]);
+            ->view('mail.resident-email-verification', $data)
+            ->text('mail.resident-email-verification-text', $data);
     }
 
     private function cityName(): string

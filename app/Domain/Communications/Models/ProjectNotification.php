@@ -2,6 +2,7 @@
 
 namespace App\Domain\Communications\Models;
 
+use App\Domain\Communications\Enums\ProjectNotificationTemplate;
 use App\Domain\Projects\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ class ProjectNotification extends Model
     {
         return [
             'sent_at' => 'datetime',
+            'template' => ProjectNotificationTemplate::class,
         ];
     }
 

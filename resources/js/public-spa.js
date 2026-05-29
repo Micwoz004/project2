@@ -99,6 +99,22 @@ function href(key) {
     return state.links?.[key] || '#';
 }
 
+function canSubmitProjects() {
+    return Boolean(state.app?.authenticated);
+}
+
+function submitProjectLink(label, className = 'btn btn-primary') {
+    if (!canSubmitProjects()) return '';
+
+    return `<a class="${className}" href="${href('residentSubmit')}" data-spa-link>${label}</a>`;
+}
+
+function submitProjectEntryLink(label, className = 'btn btn-primary') {
+    const url = canSubmitProjects() ? href('residentSubmit') : href('login');
+
+    return `<a class="${className}" href="${url}" data-spa-link>${label}</a>`;
+}
+
 function oldValue(name, fallback = '') {
     const old = state.app?.old || {};
     return old[name] ?? fallback ?? '';
@@ -281,7 +297,7 @@ function layout(content) {
                     <li><a class="nav-link" href="${href('projects')}" data-spa-link ${active('/projekty') || active('/projekt') ? 'aria-current="page"' : ''} data-i18n="navProjects">${c.navProjects}</a></li>
                     ${renderInfoDropdown(c.navInfo)}
                     ${residentNav}
-                    <li><a class="btn btn-primary" href="${state.app?.authenticated ? href('residentSubmit') : href('submit')}" data-spa-link data-i18n="navSubmit">${c.navSubmit}</a></li>
+                    ${canSubmitProjects() ? `<li><a class="btn btn-primary" href="${href('residentSubmit')}" data-spa-link data-i18n="navSubmit">${c.navSubmit}</a></li>` : ''}
                 </ul>
             </nav>
         </header>
@@ -295,7 +311,6 @@ function layout(content) {
                 <a href="/informacje/o-budzecie" data-spa-link>Deklaracja dostępności</a>
             </div>
         </footer>
-        <div class="toast" data-toast role="status" aria-live="polite"></div>
     `;
 }
 
@@ -308,7 +323,7 @@ function homeView() {
                 <h1 id="hero-title">Budżet Obywatelski w Twoim Mieście</h1>
                 <p class="lead">Zgłoś projekt, sprawdź listę zadań i zagłosuj na pomysły, które zmienią najbliższą okolicę. Serwis jest gotowy do podmiany logo, zdjęć i lokalnych danych miasta.</p>
                 <div class="hero-actions" aria-label="Najważniejsze akcje">
-                    <a class="btn btn-primary" href="${href('submit')}" data-spa-link>Dodaj projekt</a>
+                    ${submitProjectLink('Dodaj projekt')}
                     <a class="btn btn-secondary" href="${href('projects')}" data-spa-link>Lista projektów</a>
                     <a class="btn btn-secondary" href="/informacje/o-budzecie" data-spa-link>Jak to działa?</a>
                 </div>
@@ -326,7 +341,7 @@ function homeView() {
                 <span class="notice-date">${announcement ? escapeHtml(announcement.date) : 'Aktualności'}</span>
                 <h3 id="news-title">${escapeHtml(announcement?.title || 'Rusza nabór projektów mieszkańców')}</h3>
                 <p>${escapeHtml(announcement?.lead || 'Przygotuj opis, lokalizację i szacunkowy koszt. W razie wątpliwości skorzystaj z dyżurów konsultacyjnych lub punktu pomocy w urzędzie.')}</p>
-                <a class="btn btn-primary" href="${announcement?.url || href('submit')}" data-spa-link>${announcement ? 'Czytaj ogłoszenie' : 'Złóż projekt'}</a>
+                ${announcement ? `<a class="btn btn-primary" href="${announcement.url}" data-spa-link>Czytaj ogłoszenie</a>` : submitProjectLink('Złóż projekt')}
             </div>
         </article>
 
@@ -362,7 +377,7 @@ function homeView() {
                     <h2 id="submit-title">Wymyśl zadanie dla swojej okolicy</h2>
                     <p class="lead">Opisz problem, wskaż miejsce, dodaj koszt i wyślij projekt do weryfikacji.</p>
                     <div class="action-row">
-                        <a class="btn btn-primary" href="${href('submit')}" data-spa-link>Zabierz głos</a>
+                        ${submitProjectLink('Zabierz głos')}
                         <a class="btn btn-secondary" href="/informacje/harmonogram" data-spa-link>Sprawdź zasady</a>
                     </div>
                 </div>
@@ -483,7 +498,7 @@ function finalCta() {
                 <p class="eyebrow">Zgłoś zadanie</p>
                 <h2 id="final-title">Masz pomysł? Zacznij od formularza.</h2>
                 <p class="lead">Najkrótsza ścieżka mieszkańca powinna kończyć się konkretną akcją, nie kolejną ścianą tekstu.</p>
-                <a class="btn btn-primary" href="${href('submit')}" data-spa-link>Zaproponuj projekt</a>
+                ${submitProjectEntryLink('Zgłoś projekt')}
             </div>
         </section>
     `;
@@ -1947,12 +1962,25 @@ function renderRoute() {
 }
 
 function showToast(message) {
-    const toast = document.querySelector('[data-toast]');
-    if (!toast) return;
+    if (!message) return;
+
+    let toast = document.querySelector('[data-toast]');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.dataset.toast = '';
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
+        document.body.appendChild(toast);
+    }
+
     toast.textContent = message;
     toast.classList.add('is-visible');
     window.clearTimeout(showToast.timer);
-    showToast.timer = window.setTimeout(() => toast.classList.remove('is-visible'), 2200);
+    showToast.timer = window.setTimeout(() => {
+        toast.classList.remove('is-visible');
+        window.setTimeout(() => toast.remove(), 260);
+    }, 2200);
 }
 
 function bindActions() {

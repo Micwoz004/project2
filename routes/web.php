@@ -33,8 +33,8 @@ Route::get('/projekty', PublicSpaController::class)->name('public.projects.index
 Route::get('/projekt/{project}', PublicSpaController::class)->name('public.projects.show');
 Route::get('/projekty-mapa', PublicSpaController::class)->name('public.projects.map');
 Route::get('/activation/confirmCocreator', PublicCoauthorConfirmationController::class)->name('public.coauthors.confirm');
-Route::get('/projekty/zglos', PublicSpaController::class)->name('public.projects.create');
-Route::post('/projekty/zglos', [PublicProjectController::class, 'store'])->name('public.projects.store');
+Route::get('/projekty/zglos', PublicSpaController::class)->middleware(['auth', 'verified'])->name('public.projects.create');
+Route::post('/projekty/zglos', [PublicProjectController::class, 'store'])->middleware(['auth', 'verified'])->name('public.projects.store');
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/panel', PublicSpaController::class)->name('public.resident.dashboard');
     Route::get('/moje-projekty', PublicSpaController::class)->name('public.resident.projects');

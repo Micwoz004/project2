@@ -13,6 +13,24 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
+function verifiedResident(array $overrides = []): User
+{
+    return User::factory()->create([
+        'status' => true,
+        ...$overrides,
+    ]);
+}
+
+it('redirects guests away from project submission', function (): void {
+    $this->get(route('public.projects.create'))
+        ->assertRedirect(route('login'));
+
+    $this->post(route('public.projects.store'), [])
+        ->assertRedirect(route('login'));
+
+    expect(Project::query()->count())->toBe(0);
+});
+
 it('renders legacy project submission statement texts', function (): void {
     budgetEdition();
     ProjectArea::query()->create(areaAttributes());
@@ -20,7 +38,8 @@ it('renders legacy project submission statement texts', function (): void {
 
     $statements = LegacyProjectFormText::publicSubmissionStatements();
 
-    $this->get(route('public.projects.create'))
+    $this->actingAs(verifiedResident())
+        ->get(route('public.projects.create'))
         ->assertOk()
         ->assertSee($statements['contact_publication_hint'], false)
         ->assertSee($statements['regulation_confirmation'], false)
@@ -29,7 +48,8 @@ it('renders legacy project submission statement texts', function (): void {
 });
 
 it('validates public project submission at the request boundary', function (): void {
-    $this->from(route('public.projects.create'))
+    $this->actingAs(verifiedResident())
+        ->from(route('public.projects.create'))
         ->post(route('public.projects.store'), [])
         ->assertRedirect(route('public.projects.create'))
         ->assertSessionHasErrors([
@@ -59,8 +79,9 @@ it('creates a submitted project through the public endpoint', function (): void 
     $edition = budgetEdition();
     $area = ProjectArea::query()->create(areaAttributes());
     $category = Category::query()->create(['name' => 'Zieleń']);
+    $resident = verifiedResident();
 
-    $this->post(route('public.projects.store'), [
+    $this->actingAs($resident)->post(route('public.projects.store'), [
         'budget_edition_id' => $edition->id,
         'project_area_id' => $area->id,
         'category_id' => $category->id,
@@ -138,6 +159,7 @@ it('creates a submitted project through the public endpoint', function (): void 
     Storage::disk('public')->assertExists($attachmentFile->stored_name);
 
     expect($project->status)->toBe(ProjectStatus::Submitted)
+        ->and($project->creator_id)->toBe($resident->id)
         ->and($project->address)->toBe('Plac Andersa 1')
         ->and($project->plot)->toBe('Działka 10/2')
         ->and($project->lat)->toBe('53.4285432')
@@ -179,7 +201,8 @@ it('rejects public project submission when coauthor has no public contact consen
     $area = ProjectArea::query()->create(areaAttributes());
     $category = Category::query()->create(['name' => 'Zieleń']);
 
-    $this->from(route('public.projects.create'))
+    $this->actingAs(verifiedResident())
+        ->from(route('public.projects.create'))
         ->post(route('public.projects.store'), [
             'budget_edition_id' => $edition->id,
             'project_area_id' => $area->id,

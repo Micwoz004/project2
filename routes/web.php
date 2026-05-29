@@ -14,14 +14,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', PublicSpaController::class)->name('public.home');
 Route::get('/login', PublicSpaController::class)->name('login');
-Route::post('/login', [PublicResidentAuthController::class, 'login'])->name('public.resident.login');
+Route::post('/login', [PublicResidentAuthController::class, 'login'])->middleware('throttle:5,1')->name('public.resident.login');
 Route::get('/rejestracja', PublicSpaController::class)->middleware('guest')->name('register');
-Route::post('/rejestracja', [PublicResidentAuthController::class, 'register'])->middleware('guest')->name('public.resident.register');
+Route::post('/rejestracja', [PublicResidentAuthController::class, 'register'])->middleware(['guest', 'throttle:5,1'])->name('public.resident.register');
 Route::get('/haslo/reset', PublicSpaController::class)->middleware('guest')->name('password.request');
-Route::post('/haslo/reset', [PublicResidentAuthController::class, 'sendPasswordResetLink'])->middleware('guest')->name('password.email');
+Route::post('/haslo/reset', [PublicResidentAuthController::class, 'sendPasswordResetLink'])->middleware(['guest', 'throttle:5,1'])->name('password.email');
 Route::get('/haslo/reset/{token}', PublicSpaController::class)->middleware('guest')->name('password.reset');
-Route::post('/haslo/zmien', [PublicResidentAuthController::class, 'resetPassword'])->middleware('guest')->name('password.update');
+Route::post('/haslo/zmien', [PublicResidentAuthController::class, 'resetPassword'])->middleware(['guest', 'throttle:5,1'])->name('password.update');
 Route::post('/logout', [PublicResidentAuthController::class, 'logout'])->middleware('auth')->name('public.resident.logout');
+Route::get('/email/weryfikacja', PublicSpaController::class)->middleware('auth')->name('verification.notice');
+Route::get('/email/weryfikacja/{id}/{hash}', [PublicResidentAuthController::class, 'verifyEmail'])->middleware(['auth', 'signed', 'throttle:6,1'])->name('verification.verify');
+Route::post('/email/weryfikacja/wyslij', [PublicResidentAuthController::class, 'resendEmailVerification'])->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 Route::get('/ogloszenia', PublicSpaController::class)->name('public.announcements.index');
 Route::get('/ogloszenia/{slug}', PublicSpaController::class)->name('public.announcements.show');
 Route::get('/informacje/{slug}', PublicSpaController::class)->name('public.info.show');
@@ -32,7 +35,7 @@ Route::get('/projekty-mapa', PublicSpaController::class)->name('public.projects.
 Route::get('/activation/confirmCocreator', PublicCoauthorConfirmationController::class)->name('public.coauthors.confirm');
 Route::get('/projekty/zglos', PublicSpaController::class)->name('public.projects.create');
 Route::post('/projekty/zglos', [PublicProjectController::class, 'store'])->name('public.projects.store');
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/panel', PublicSpaController::class)->name('public.resident.dashboard');
     Route::get('/moje-projekty', PublicSpaController::class)->name('public.resident.projects');
     Route::get('/moje-projekty/zglos', PublicSpaController::class)->name('public.resident.projects.create');

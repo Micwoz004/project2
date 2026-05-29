@@ -855,6 +855,7 @@ function loginView() {
 
 function registerView() {
     const errors = Object.values(state.app?.errors || {}).flat();
+    const passwordHint = 'Minimum 12 znaków, mała i wielka litera, cyfra oraz znak specjalny.';
     return `
         <section class="resident-page-head login-page-head" aria-labelledby="register-title">
             <p class="eyebrow">Rejestracja mieszkańca</p>
@@ -887,6 +888,7 @@ function registerView() {
                         <div class="field">
                             <label for="password">Hasło</label>
                             <input id="password" name="password" type="password" required autocomplete="new-password">
+                            <p class="form-hint">${passwordHint}</p>
                         </div>
                         <div class="field">
                             <label for="password_confirmation">Powtórz hasło</label>
@@ -904,7 +906,43 @@ function registerView() {
                 <article class="identity-card">
                     <span class="status status-live">Nowe konto</span>
                     <h2>Panel mieszkańca</h2>
-                    <p>Po rejestracji od razu przejdziesz do swojego panelu i formularza zgłoszenia projektu.</p>
+                    <p>Po rejestracji wyślemy link weryfikacyjny. Panel będzie dostępny po potwierdzeniu adresu e-mail.</p>
+                </article>
+            </aside>
+        </section>
+    `;
+}
+
+function verificationNoticeView() {
+    const profile = residentProfile();
+    return `
+        <section class="resident-page-head login-page-head" aria-labelledby="verification-title">
+            <p class="eyebrow">Weryfikacja e-mail</p>
+            <h1 id="verification-title">Sprawdź skrzynkę pocztową.</h1>
+            <p class="lead">Wysłaliśmy link weryfikacyjny na adres ${escapeHtml(profile.email || 'podany w formularzu')}. Po potwierdzeniu adresu odblokujemy panel mieszkańca.</p>
+        </section>
+
+        <section class="account-grid login-grid" aria-label="Potwierdzenie adresu e-mail">
+            <form class="resident-form account-form login-form" method="post" action="${href('verificationSend')}">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                <fieldset>
+                    <legend>Link weryfikacyjny</legend>
+                    <p>Jeśli wiadomość nie dotarła, wyślij link ponownie. Sprawdź też folder spam lub oferty.</p>
+                </fieldset>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Wyślij ponownie</button>
+                    <a class="btn btn-secondary" href="${href('logout')}" onclick="event.preventDefault(); this.closest('section').querySelector('[data-logout-form]').submit();">Wyloguj</a>
+                </div>
+            </form>
+            <form data-logout-form class="is-hidden" method="post" action="${href('logout')}">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+            </form>
+
+            <aside class="account-side login-side">
+                <article class="identity-card">
+                    <span class="status status-waiting">Oczekuje</span>
+                    <h2>Potwierdź e-mail</h2>
+                    <p>Weryfikacja chroni konto mieszkańca i zgłoszenia projektów przed użyciem cudzego adresu.</p>
                 </article>
             </aside>
         </section>
@@ -952,6 +990,7 @@ function passwordRequestView() {
 function passwordResetView() {
     const errors = Object.values(state.app?.errors || {}).flat();
     const token = currentPath().split('/').pop();
+    const passwordHint = 'Minimum 12 znaków, mała i wielka litera, cyfra oraz znak specjalny.';
     return `
         <section class="resident-page-head login-page-head" aria-labelledby="password-reset-title">
             <p class="eyebrow">Nowe hasło</p>
@@ -975,6 +1014,7 @@ function passwordResetView() {
                         <div class="field">
                             <label for="password">Nowe hasło</label>
                             <input id="password" name="password" type="password" required autocomplete="new-password">
+                            <p class="form-hint">${passwordHint}</p>
                         </div>
                         <div class="field">
                             <label for="password_confirmation">Powtórz nowe hasło</label>
@@ -1527,7 +1567,7 @@ function residentAccountView() {
                     <legend>Bezpieczeństwo</legend>
                     <div class="field"><label for="current_password">Obecne hasło</label><input id="current_password" name="current_password" type="password" autocomplete="current-password"></div>
                     <div class="two-col">
-                        <div class="field"><label for="password">Nowe hasło</label><input id="password" name="password" type="password" autocomplete="new-password"></div>
+                        <div class="field"><label for="password">Nowe hasło</label><input id="password" name="password" type="password" autocomplete="new-password"><p class="form-hint">Minimum 12 znaków, mała i wielka litera, cyfra oraz znak specjalny.</p></div>
                         <div class="field"><label for="password_confirmation">Powtórz nowe hasło</label><input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password"></div>
                     </div>
                 </fieldset>
@@ -1887,6 +1927,7 @@ function renderRoute() {
     if (path === '/rejestracja') return registerView();
     if (path === '/haslo/reset') return passwordRequestView();
     if (/^\/haslo\/reset\/[^/]+$/.test(path)) return passwordResetView();
+    if (path === '/email/weryfikacja') return verificationNoticeView();
     if (path === '/panel') return residentDashboardView();
     if (path === '/moje-projekty') return residentProjectsView();
     if (path === '/moje-projekty/zglos') return residentSubmitView();
@@ -2182,6 +2223,9 @@ function init() {
     document.body.dataset.contrast = document.body.dataset.contrast || 'base';
     document.body.dataset.font = document.body.dataset.font || 'base';
     render();
+    if (state.app?.flash) {
+        window.setTimeout(() => showToast(state.app.flash), 120);
+    }
 
     const observer = new MutationObserver(mountAllInOneAccessibilityWidget);
     observer.observe(document.body, { childList: true, subtree: true });

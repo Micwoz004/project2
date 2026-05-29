@@ -50,4 +50,8 @@ return [
         'summary_email_subject' => env('VOTING_SUMMARY_EMAIL_SUBJECT', 'Budżet Obywatelski w Szczecinie - Podsumowanie'),
     ],
 
+    'public_support' => [
+        'phone' => env('PUBLIC_SUPPORT_PHONE', '+48 000 000 000'),
+    ],
+
 ];

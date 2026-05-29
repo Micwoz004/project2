@@ -12,10 +12,12 @@ use App\Filament\Resources\CostGuideItems\CostGuideItemResource;
 use App\Filament\Resources\PublicAnnouncements\PublicAnnouncementResource;
 use App\Filament\Resources\PublicPages\PublicPageResource;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\ResidentEmailVerification;
+use App\Notifications\ResidentResetPassword;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
 
 it('renders public homepage with current edition schedule and published announcements', function (): void {
     $edition = budgetEdition();
@@ -218,8 +220,8 @@ it('updates resident account data and password from public account form', functi
             'post_code' => '12-345',
             'city' => 'Miasto',
             'current_password' => 'password',
-            'password' => 'nowe-bezpieczne-haslo',
-            'password_confirmation' => 'nowe-bezpieczne-haslo',
+            'password' => 'Nowe-Bezpieczne-Haslo-123!',
+            'password_confirmation' => 'Nowe-Bezpieczne-Haslo-123!',
         ])
         ->assertRedirect(route('public.resident.account'))
         ->assertSessionHas('status', 'Dane konta zostały zapisane.');
@@ -229,7 +231,7 @@ it('updates resident account data and password from public account form', functi
     expect($user->name)->toBe('Anna Nowak')
         ->and($user->email)->toBe('anna.nowak@example.test')
         ->and($user->city)->toBe('Miasto')
-        ->and(Hash::check('nowe-bezpieczne-haslo', $user->password))->toBeTrue();
+        ->and(Hash::check('Nowe-Bezpieczne-Haslo-123!', $user->password))->toBeTrue();
 });
 
 it('logs regular resident into public resident panel without admin permission', function (): void {
@@ -267,23 +269,77 @@ it('renders guest resident account entry screens as SPA routes', function (): vo
 });
 
 it('registers resident from public registration form', function (): void {
+    Notification::fake();
+
     $this->post(route('public.resident.register'), [
         'first_name' => 'Jan',
         'last_name' => 'Kowalski',
         'email' => 'jan.kowalski@example.test',
-        'password' => 'bezpieczne-haslo-testowe',
-        'password_confirmation' => 'bezpieczne-haslo-testowe',
+        'password' => 'Bezpieczne-Haslo-Testowe-123!',
+        'password_confirmation' => 'Bezpieczne-Haslo-Testowe-123!',
     ])
-        ->assertRedirect(route('public.resident.dashboard'))
-        ->assertSessionHas('status', 'Konto mieszkańca zostało utworzone.');
+        ->assertRedirect(route('verification.notice'))
+        ->assertSessionHas('status', 'Konto mieszkańca zostało utworzone. Wysłaliśmy link weryfikacyjny na podany adres e-mail.');
 
     $user = User::query()->where('email', 'jan.kowalski@example.test')->firstOrFail();
 
     expect($user->first_name)->toBe('Jan')
         ->and($user->last_name)->toBe('Kowalski')
-        ->and(Hash::check('bezpieczne-haslo-testowe', $user->password))->toBeTrue();
+        ->and($user->email_verified_at)->toBeNull()
+        ->and(Hash::check('Bezpieczne-Haslo-Testowe-123!', $user->password))->toBeTrue();
 
     $this->assertAuthenticatedAs($user);
+    Notification::assertSentTo($user, ResidentEmailVerification::class, function (ResidentEmailVerification $notification) use ($user): bool {
+        $mail = $notification->toMail($user);
+
+        return ($mail->view['html'] ?? null) === 'mail.resident-email-verification'
+            && ($mail->view['text'] ?? null) === 'mail.resident-email-verification-text';
+    });
+});
+
+it('rejects weak resident registration password', function (): void {
+    $this->post(route('public.resident.register'), [
+        'first_name' => 'Jan',
+        'last_name' => 'Kowalski',
+        'email' => 'jan.weak@example.test',
+        'password' => 'slabehaslo',
+        'password_confirmation' => 'slabehaslo',
+    ])
+        ->assertSessionHasErrors('password');
+
+    expect(User::query()->where('email', 'jan.weak@example.test')->exists())->toBeFalse();
+});
+
+it('does not log inactive residents into public resident panel', function (): void {
+    User::factory()->create([
+        'status' => false,
+        'email' => 'inactive@example.test',
+        'password' => Hash::make('password'),
+    ]);
+
+    $this->post(route('public.resident.login'), [
+        'email' => 'inactive@example.test',
+        'password' => 'password',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasErrors('email');
+
+    $this->assertGuest();
+});
+
+it('confirms resident email from signed verification link', function (): void {
+    $user = User::factory()->unverified()->create(['status' => true]);
+    $verificationUrl = URL::temporarySignedRoute('verification.verify', now()->addMinutes(60), [
+        'id' => $user->id,
+        'hash' => sha1($user->getEmailForVerification()),
+    ]);
+
+    $this->actingAs($user)
+        ->get($verificationUrl)
+        ->assertRedirect(route('public.resident.dashboard'))
+        ->assertSessionHas('status', 'Adres e-mail został potwierdzony.');
+
+    expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
 
 it('renders flash status below resident header after registration redirect', function (): void {
@@ -312,18 +368,23 @@ it('sends resident password reset link and updates password with token', functio
         ->assertRedirect()
         ->assertSessionHas('status', 'Jeśli konto istnieje, wyślemy wiadomość z linkiem do ustawienia nowego hasła.');
 
-    Notification::assertSentTo($user, ResetPassword::class);
+    Notification::assertSentTo($user, ResidentResetPassword::class, function (ResidentResetPassword $notification) use ($user): bool {
+        $mail = $notification->toMail($user);
+
+        return ($mail->view['html'] ?? null) === 'mail.resident-password-reset'
+            && ($mail->view['text'] ?? null) === 'mail.resident-password-reset-text';
+    });
 
     $token = Password::createToken($user);
 
     $this->post(route('password.update'), [
         'token' => $token,
         'email' => 'resident-reset@example.test',
-        'password' => 'nowe-haslo-reset',
-        'password_confirmation' => 'nowe-haslo-reset',
+        'password' => 'Nowe-Haslo-Reset-123!',
+        'password_confirmation' => 'Nowe-Haslo-Reset-123!',
     ])
         ->assertRedirect(route('login'))
         ->assertSessionHas('status', 'Hasło zostało zmienione. Możesz się zalogować.');
 
-    expect(Hash::check('nowe-haslo-reset', $user->refresh()->password))->toBeTrue();
+    expect(Hash::check('Nowe-Haslo-Reset-123!', $user->refresh()->password))->toBeTrue();
 });

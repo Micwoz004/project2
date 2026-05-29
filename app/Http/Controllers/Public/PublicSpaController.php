@@ -148,6 +148,8 @@ class PublicSpaController extends Controller
             'passwordRequest' => route('password.request'),
             'passwordEmail' => route('password.email'),
             'passwordUpdate' => route('password.update'),
+            'verificationNotice' => route('verification.notice'),
+            'verificationSend' => route('verification.send'),
             'logout' => route('public.resident.logout'),
         ];
     }

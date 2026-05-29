@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +27,7 @@ class PublicResidentAuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attempt($credentials + ['status' => true], $request->boolean('remember'))) {
             Log::warning('resident_auth.login.rejected', [
                 'email_hash' => hash('sha256', mb_strtolower($credentials['email'])),
             ]);
@@ -69,13 +70,55 @@ class PublicResidentAuthController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+        $user->sendEmailVerificationNotification();
 
         Log::info('resident_auth.register.success', [
             'user_id' => $user->id,
+            'email_verification_sent' => true,
+        ]);
+
+        return redirect()->route('verification.notice')
+            ->with('status', 'Konto mieszkańca zostało utworzone. Wysłaliśmy link weryfikacyjny na podany adres e-mail.');
+    }
+
+    public function verifyEmail(EmailVerificationRequest $request): RedirectResponse
+    {
+        Log::info('resident_auth.email_verify.start', [
+            'user_id' => $request->user()->id,
+        ]);
+
+        $request->fulfill();
+
+        Log::info('resident_auth.email_verify.success', [
+            'user_id' => $request->user()->id,
         ]);
 
         return redirect()->route('public.resident.dashboard')
-            ->with('status', 'Konto mieszkańca zostało utworzone.');
+            ->with('status', 'Adres e-mail został potwierdzony.');
+    }
+
+    public function resendEmailVerification(Request $request): RedirectResponse
+    {
+        Log::info('resident_auth.email_verify_resend.start', [
+            'user_id' => $request->user()->id,
+        ]);
+
+        if ($request->user()->hasVerifiedEmail()) {
+            Log::info('resident_auth.email_verify_resend.skipped_already_verified', [
+                'user_id' => $request->user()->id,
+            ]);
+
+            return redirect()->route('public.resident.dashboard')
+                ->with('status', 'Adres e-mail jest już potwierdzony.');
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        Log::info('resident_auth.email_verify_resend.success', [
+            'user_id' => $request->user()->id,
+        ]);
+
+        return back()->with('status', 'Wysłaliśmy nowy link do potwierdzenia adresu e-mail.');
     }
 
     public function sendPasswordResetLink(Request $request): RedirectResponse

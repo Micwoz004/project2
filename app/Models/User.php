@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Domain\Users\Models\Department;
+use App\Notifications\ResidentEmailVerification;
+use App\Notifications\ResidentResetPassword;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Notification;
+use SensitiveParameter;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable([
@@ -34,7 +38,7 @@ use Spatie\Permission\Traits\HasRoles;
     'department_text',
 ])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
@@ -57,6 +61,16 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->status === true
             && ($this->can('admin.access') || $this->hasAnyRole(['admin', 'bdo']));
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        Notification::send($this, new ResidentEmailVerification);
+    }
+
+    public function sendPasswordResetNotification(#[SensitiveParameter] $token): void
+    {
+        Notification::send($this, new ResidentResetPassword($token));
     }
 
     public function department(): BelongsTo

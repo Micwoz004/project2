@@ -40,6 +40,7 @@ use App\Policies\ResultPublicationPolicy;
 use App\Policies\VoteCardPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -60,6 +61,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Password::defaults(fn (): Password => Password::min(12)->mixedCase()->numbers()->symbols());
+
         Gate::policy(ApplicationSetting::class, ApplicationSettingPolicy::class);
         Gate::policy(BudgetEdition::class, BudgetEditionPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);

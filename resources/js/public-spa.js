@@ -120,6 +120,13 @@ function oldValue(name, fallback = '') {
     return old[name] ?? fallback ?? '';
 }
 
+function currentDraftProject() {
+    const match = currentPath().match(/^\/moje-projekty\/(\d+)\/edycja$/);
+    if (!match) return null;
+
+    return (state.resident?.projects || []).find((project) => String(project.id) === match[1]) || null;
+}
+
 function currentPath() {
     return window.location.pathname.replace(/\/$/, '') || '/';
 }
@@ -1138,7 +1145,11 @@ function residentDashboardView() {
 
 function residentTaskCard(project) {
     const isPriority = project.status === 'returned' || project.status === 'draft';
-    const actionUrl = project.status === 'returned' && project.correctionUrl ? project.correctionUrl : href('residentProjects');
+    const actionUrl = project.status === 'returned' && project.correctionUrl
+        ? project.correctionUrl
+        : project.status === 'draft' && project.draftEditUrl
+            ? project.draftEditUrl
+            : href('residentProjects');
     const actionLabel = project.status === 'returned' ? 'Uzupełnij' : project.status === 'draft' ? 'Sprawdź' : 'Zobacz';
     return `
         <article class="task-card ${isPriority ? 'is-priority' : ''}">
@@ -1147,7 +1158,10 @@ function residentTaskCard(project) {
                 <h3>${escapeHtml(project.title)}</h3>
                 <p>${escapeHtml(project.correction?.notes || project.description || 'Sprawdź aktualny status zgłoszenia.')}</p>
             </div>
-            <a class="btn ${isPriority ? 'btn-primary' : 'btn-secondary'}" href="${escapeHtml(actionUrl)}" data-spa-link>${actionLabel}</a>
+            <div class="project-actions">
+                <a class="btn ${isPriority ? 'btn-primary' : 'btn-secondary'}" href="${escapeHtml(actionUrl)}" data-spa-link>${actionLabel}</a>
+                ${project.submissionCardUrl ? `<a class="btn btn-secondary" href="${escapeHtml(project.submissionCardUrl)}">Pobierz PDF</a>` : ''}
+            </div>
         </article>
     `;
 }
@@ -1226,8 +1240,10 @@ function residentProjectCard(project) {
     const search = [project.title, project.area, project.category, project.description, project.publicStatusLabel].join(' ');
     const actionUrl = project.status === 'returned' && project.correctionUrl
         ? project.correctionUrl
+        : project.status === 'draft' && project.draftEditUrl
+            ? project.draftEditUrl
         : (project.publicUrl || href('residentProjects'));
-    const actionLabel = project.status === 'returned' ? 'Uzupełnij' : (project.publicUrl ? 'Podgląd' : 'Na liście');
+    const actionLabel = project.status === 'returned' ? 'Uzupełnij' : project.status === 'draft' ? 'Edytuj' : (project.publicUrl ? 'Podgląd' : 'Na liście');
     return `
         <article class="my-project-card" data-project-card data-category="${escapeHtml(project.category)}" data-status="${escapeHtml(project.status)}" data-search="${escapeHtml(search)}">
             <div class="my-project-top">
@@ -1242,6 +1258,7 @@ function residentProjectCard(project) {
             </div>
             <div class="project-actions">
                 <a class="btn ${project.status === 'returned' ? 'btn-primary' : 'btn-secondary'}" href="${escapeHtml(actionUrl)}" ${project.publicUrl ? '' : 'data-spa-link'}>${actionLabel}</a>
+                ${project.submissionCardUrl ? `<a class="btn btn-secondary" href="${escapeHtml(project.submissionCardUrl)}">Pobierz PDF</a>` : ''}
                 <button class="btn btn-secondary" type="button" data-save-action>Obserwuj</button>
             </div>
         </article>
@@ -1406,12 +1423,19 @@ function correctionAttachmentsFieldset(allowed) {
 function residentSubmitView() {
     const errors = Object.values(state.app?.errors || {}).flat();
     const profile = residentProfile();
-    const editionId = oldValue('budget_edition_id', state.edition?.id || '');
+    const draftProject = currentDraftProject();
+    const source = draftProject || {};
+    const editionId = oldValue('budget_edition_id', source.budgetEditionId || state.edition?.id || '');
+    const costItem = source.costItems?.[0] || {};
+    const formAction = draftProject?.draftUpdateUrl || href('projectStore');
+    const supportRequired = !draftProject?.hasSupportListFile;
+    const value = (name, fallback = '') => oldValue(name, source[name] ?? fallback);
+
     return `
         <section class="resident-page-head" aria-labelledby="submit-resident-title">
             <p class="eyebrow">Formularz mieszkańca</p>
-            <h1 id="submit-resident-title">Zgłoś projekt do budżetu obywatelskiego.</h1>
-            <p class="lead">Formularz zapisuje zgłoszenie przez realny endpoint systemu i uruchamia istniejącą walidację projektu.</p>
+            <h1 id="submit-resident-title">${draftProject ? 'Edytuj kopię roboczą projektu.' : 'Zgłoś projekt do budżetu obywatelskiego.'}</h1>
+            <p class="lead">Możesz zapisać kopię roboczą i wrócić do niej później albo wysłać kompletny projekt do weryfikacji.</p>
         </section>
 
         ${errors.length ? `<div class="panel form-errors">${errors.map((error) => `<p>${escapeHtml(error)}</p>`).join('')}</div>` : ''}
@@ -1429,11 +1453,12 @@ function residentSubmitView() {
                 <p>Po wysłaniu projekt trafi do Twojej listy projektów i do weryfikacji formalnej.</p>
             </aside>
 
-            <form class="resident-form" method="post" action="${href('projectStore')}" enctype="multipart/form-data">
+            <form class="resident-form" method="post" action="${escapeHtml(formAction)}" enctype="multipart/form-data">
                 <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                ${draftProject ? '<input type="hidden" name="_method" value="PUT">' : ''}
                 <input type="hidden" name="budget_edition_id" value="${escapeHtml(editionId)}">
-                <input type="hidden" name="map_data" value='{"type":"FeatureCollection","features":[]}'>
-                <input type="hidden" name="contact_with" value="1">
+                <input type="hidden" name="map_data" value='${escapeHtml(JSON.stringify(source.mapData || { type: 'FeatureCollection', features: [] }))}'>
+                <input type="hidden" name="contact_with" value="${escapeHtml(oldValue('contact_with', source.contactWith || '1'))}">
 
                 <fieldset>
                     <legend>Dane autora</legend>
@@ -1460,53 +1485,53 @@ function residentSubmitView() {
 
                 <fieldset>
                     <legend>Opis projektu</legend>
-                    <div class="field"><label for="title">Tytuł projektu</label><input id="title" name="title" required maxlength="600" value="${escapeHtml(oldValue('title'))}" placeholder="np. Zielony skwer przy bibliotece"></div>
+                    <div class="field"><label for="title">Tytuł projektu</label><input id="title" name="title" required maxlength="600" value="${escapeHtml(value('title'))}" placeholder="np. Zielony skwer przy bibliotece"></div>
                     <div class="two-col">
                         <div class="field">
                             <label for="project_area_id">Obszar</label>
                             <select id="project_area_id" name="project_area_id" required>
-                                ${(state.areas || []).map((area) => `<option value="${area.id}" ${String(oldValue('project_area_id')) === String(area.id) ? 'selected' : ''}>${escapeHtml(area.name)}</option>`).join('')}
+                                ${(state.areas || []).map((area) => `<option value="${area.id}" ${String(value('project_area_id', source.projectAreaId || '')) === String(area.id) ? 'selected' : ''}>${escapeHtml(area.name)}</option>`).join('')}
                             </select>
                         </div>
                         <div class="field">
                             <label for="category_id">Kategoria</label>
                             <select id="category_id" name="category_id" required>
-                                ${(state.categories || []).map((category) => `<option value="${category.id}" ${String(oldValue('category_id')) === String(category.id) ? 'selected' : ''}>${escapeHtml(category.name)}</option>`).join('')}
+                                ${(state.categories || []).map((category) => `<option value="${category.id}" ${String(value('category_id', source.categoryId || '')) === String(category.id) ? 'selected' : ''}>${escapeHtml(category.name)}</option>`).join('')}
                             </select>
                         </div>
                     </div>
                     <div class="field">
                         <label for="local">Typ projektu</label>
                         <select id="local" name="local" required>
-                            <option value="1" ${String(oldValue('local', '1')) === '1' ? 'selected' : ''}>Projekt lokalny</option>
-                            <option value="2" ${String(oldValue('local')) === '2' ? 'selected' : ''}>Projekt Zielonego BO</option>
+                            <option value="1" ${String(oldValue('local', source.local || '1')) === '1' ? 'selected' : ''}>Projekt lokalny</option>
+                            <option value="2" ${String(oldValue('local', source.local || '')) === '2' ? 'selected' : ''}>Projekt Zielonego BO</option>
                         </select>
                     </div>
-                    <div class="field"><label for="short_description">Krótki opis</label><textarea id="short_description" name="short_description" maxlength="700">${escapeHtml(oldValue('short_description'))}</textarea></div>
-                    ${textareaField('localization', 'Lokalizacja', true, oldValue('localization'))}
-                    <div class="field"><label for="address">Adres</label><input id="address" name="address" maxlength="300" value="${escapeHtml(oldValue('address'))}"></div>
-                    ${textareaField('plot', 'Działka', false, oldValue('plot'))}
+                    <div class="field"><label for="short_description">Krótki opis</label><textarea id="short_description" name="short_description" maxlength="700">${escapeHtml(oldValue('short_description', source.shortDescription || ''))}</textarea></div>
+                    ${textareaField('localization', 'Lokalizacja', true, value('localization'))}
+                    <div class="field"><label for="address">Adres</label><input id="address" name="address" maxlength="300" value="${escapeHtml(value('address'))}"></div>
+                    ${textareaField('plot', 'Działka', false, value('plot'))}
                     <div class="map-mini" role="img" aria-label="Miejsce na mapę lokalizacji projektu"><span class="pin"></span></div>
-                    ${textareaField('description', 'Opis', true, oldValue('description'))}
-                    ${textareaField('goal', 'Cel', true, oldValue('goal'))}
-                    ${textareaField('argumentation', 'Uzasadnienie', true, oldValue('argumentation'))}
-                    ${textareaField('availability', 'Dostępność', true, oldValue('availability'))}
-                    ${textareaField('recipients', 'Odbiorcy', true, oldValue('recipients'))}
-                    ${textareaField('free_of_charge', 'Bezpłatność', true, oldValue('free_of_charge'))}
-                    ${textareaField('additional_cost', 'Koszty utrzymania w kolejnych latach', false, oldValue('additional_cost'))}
+                    ${textareaField('description', 'Opis', true, oldValue('description', source.fullDescription || ''))}
+                    ${textareaField('goal', 'Cel', true, value('goal'))}
+                    ${textareaField('argumentation', 'Uzasadnienie', true, value('argumentation'))}
+                    ${textareaField('availability', 'Dostępność', true, value('availability'))}
+                    ${textareaField('recipients', 'Odbiorcy', true, value('recipients'))}
+                    ${textareaField('free_of_charge', 'Bezpłatność', true, oldValue('free_of_charge', source.freeOfCharge || ''))}
+                    ${textareaField('additional_cost', 'Koszty utrzymania w kolejnych latach', false, oldValue('additional_cost', source.additionalCost || ''))}
                 </fieldset>
 
                 <fieldset>
                     <legend>Koszt i załączniki</legend>
                     <div class="two-col">
-                        <div class="field"><label for="cost_description">Składowa kosztów</label><input id="cost_description" name="cost_items[0][description]" required maxlength="1000" value="${escapeHtml(oldValue('cost_description'))}"></div>
-                        <div class="field"><label for="cost_amount">Koszt brutto</label><input id="cost_amount" name="cost_items[0][amount]" required type="number" min="0" step="0.01" data-budget-input value="${escapeHtml(oldValue('cost_amount'))}"></div>
+                        <div class="field"><label for="cost_description">Składowa kosztów</label><input id="cost_description" name="cost_items[0][description]" required maxlength="1000" value="${escapeHtml(oldValue('cost_description', costItem.description || ''))}"></div>
+                        <div class="field"><label for="cost_amount">Koszt brutto</label><input id="cost_amount" name="cost_items[0][amount]" required type="number" min="0" step="0.01" data-budget-input value="${escapeHtml(oldValue('cost_amount', costItem.amount || ''))}"></div>
                     </div>
                     <div class="budget-summary">
                         <span>Szacowany koszt łącznie</span>
                         <strong data-budget-total>${escapeHtml(oldValue('cost_amount', '0'))} zł</strong>
                     </div>
-                    <div class="field"><label for="support_list_file">Plik listy poparcia</label><input id="support_list_file" name="support_list_file" type="file" required></div>
+                    <div class="field"><label for="support_list_file">Plik listy poparcia</label><input id="support_list_file" name="support_list_file" type="file" ${supportRequired ? 'required' : ''}>${draftProject?.hasSupportListFile ? '<small>Lista poparcia jest już zapisana. Dodaj plik tylko, jeśli chcesz dołączyć kolejną wersję.</small>' : ''}</div>
                     <div class="two-col">
                         <div class="field"><label for="owner_agreement_files">Zgody właściciela</label><input id="owner_agreement_files" name="owner_agreement_files[]" type="file" multiple></div>
                         <div class="field"><label for="map_files">Załączniki mapy</label><input id="map_files" name="map_files[]" type="file" multiple></div>
@@ -1526,7 +1551,8 @@ function residentSubmitView() {
                 </fieldset>
 
                 <div class="form-actions">
-                    <button class="btn btn-primary" type="submit">Wyślij do weryfikacji</button>
+                    <button class="btn btn-secondary" type="submit" name="_intent" value="draft" formnovalidate>Zapisz kopię roboczą</button>
+                    <button class="btn btn-primary" type="submit" name="_intent" value="submit">Wyślij do weryfikacji</button>
                 </div>
             </form>
         </section>
@@ -1937,7 +1963,7 @@ function renderRoute() {
     if (path === '/email/weryfikacja') return verificationNoticeView();
     if (path === '/panel') return residentDashboardView();
     if (path === '/moje-projekty') return residentProjectsView();
-    if (path === '/moje-projekty/zglos') return residentSubmitView();
+    if (path === '/moje-projekty/zglos' || /^\/moje-projekty\/\d+\/edycja$/.test(path)) return residentSubmitView();
     if (/^\/moje-projekty\/\d+\/korekta$/.test(path)) return residentCorrectionView();
     if (path === '/konto') return residentAccountView();
     if (path === '/projekty') return projectsView();

@@ -27,6 +27,7 @@ use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -139,49 +140,47 @@ class PublicProjectController extends Controller
     ): RedirectResponse {
         Log::info('project.public_store.start', [
             'ip' => $request->ip(),
+            'intent' => $request->isDraftSave() ? 'draft' : 'submit',
         ]);
 
         $data = $request->validated();
-        $projectArea = $costLimitService->resolveSubmissionArea(
-            ProjectArea::query()->findOrFail($data['project_area_id']),
-            (int) $data['local'],
-        );
+        $projectArea = $this->resolveProjectArea($data, $costLimitService);
 
         $project = Project::query()->create([
             'budget_edition_id' => $data['budget_edition_id'],
-            'project_area_id' => $projectArea->id,
-            'category_id' => $data['category_id'],
+            'project_area_id' => $projectArea?->id,
+            'category_id' => $data['category_id'] ?? null,
             'creator_id' => $request->user()?->id,
             'title' => $data['title'],
-            'local' => $data['local'],
-            'localization' => $data['localization'],
+            'local' => $data['local'] ?? null,
+            'localization' => $data['localization'] ?? null,
             'address' => $data['address'] ?? null,
             'plot' => $data['plot'] ?? null,
             'lat' => $data['lat'] ?? null,
             'lng' => $data['lng'] ?? null,
             'map_lng_lat' => $data['map_lng_lat'] ?? null,
             'map_data' => $data['map_data'] ?? null,
-            'description' => $data['description'],
-            'goal' => $data['goal'],
-            'argumentation' => $data['argumentation'],
-            'availability' => $data['availability'],
-            'recipients' => $data['recipients'],
-            'free_of_charge' => $data['free_of_charge'],
+            'description' => $data['description'] ?? null,
+            'goal' => $data['goal'] ?? null,
+            'argumentation' => $data['argumentation'] ?? null,
+            'availability' => $data['availability'] ?? null,
+            'recipients' => $data['recipients'] ?? null,
+            'free_of_charge' => $data['free_of_charge'] ?? null,
             'short_description' => $data['short_description'] ?? null,
             'additional_cost' => $data['additional_cost'] ?? null,
-            'contact_with' => $data['contact_with'],
-            'attachments_anonymized' => true,
+            'contact_with' => $data['contact_with'] ?? null,
+            'attachments_anonymized' => (bool) ($data['attachments_anonymized'] ?? false),
             'consent_to_change' => (bool) ($data['consent_to_change'] ?? false),
             'show_task_coauthors' => (bool) ($data['show_task_coauthors'] ?? true),
             'authors' => $request->authorSnapshot(),
             'status' => ProjectStatus::WorkingCopy,
-            'is_support_list' => true,
+            'is_support_list' => (bool) ($data['support_list'] ?? false),
             'cost' => collect($request->costItems())
                 ->map(fn (array $costItem): string => $costItem['description'].': '.$costItem['amount'])
                 ->implode(PHP_EOL),
             'cost_formatted' => collect($request->costItems())->sum('amount'),
         ]);
-        $project->categories()->sync([$data['category_id']]);
+        $this->syncProjectCategory($project, $data['category_id'] ?? null);
 
         foreach ($request->costItems() as $costItem) {
             $project->costItems()->create($costItem);
@@ -191,24 +190,30 @@ class PublicProjectController extends Controller
             $supportListFile = $request->file('support_list_file');
 
             if (! $supportListFile instanceof UploadedFile) {
-                Log::warning('project.public_store.rejected_missing_support_file', [
-                    'project_id' => $project->id,
-                ]);
+                if (! $request->isDraftSave()) {
+                    Log::warning('project.public_store.rejected_missing_support_file', [
+                        'project_id' => $project->id,
+                    ]);
 
-                return back()->withInput()->withErrors(['support_list_file' => 'Brak pliku listy poparcia.']);
+                    return back()->withInput()->withErrors(['support_list_file' => 'Brak pliku listy poparcia.']);
+                }
+            } else {
+                $file = $storeProjectFile->execute(
+                    $project,
+                    ProjectFileType::SupportList,
+                    $supportListFile,
+                    null,
+                    'Lista poparcia z formularza publicznego',
+                    true,
+                );
+                $file->forceFill([
+                    'is_task_form_attachment' => true,
+                ])->save();
+
+                $project->forceFill([
+                    'is_support_list' => true,
+                ])->save();
             }
-
-            $file = $storeProjectFile->execute(
-                $project,
-                ProjectFileType::SupportList,
-                $supportListFile,
-                null,
-                'Lista poparcia z formularza publicznego',
-                true,
-            );
-            $file->forceFill([
-                'is_task_form_attachment' => true,
-            ])->save();
 
             $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, 'owner_agreement_files', ProjectFileType::OwnerAgreement, true);
             $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, 'map_files', ProjectFileType::Map);
@@ -217,7 +222,9 @@ class PublicProjectController extends Controller
 
             $syncProjectCoauthors->execute($project, $request->coauthors());
 
-            $submitProject->execute($project);
+            if (! $request->isDraftSave()) {
+                $submitProject->execute($project);
+            }
         } catch (DomainException $exception) {
             Log::warning('project.public_store.rejected', [
                 'project_id' => $project->id,
@@ -229,11 +236,130 @@ class PublicProjectController extends Controller
 
         Log::info('project.public_store.success', [
             'project_id' => $project->id,
+            'intent' => $request->isDraftSave() ? 'draft' : 'submit',
+            'status' => $project->refresh()->status->value,
         ]);
 
         return redirect()
-            ->route('public.projects.index')
-            ->with('status', 'Projekt został zgłoszony.');
+            ->route($request->isDraftSave() ? 'public.resident.projects' : 'public.projects.index')
+            ->with('status', $request->isDraftSave() ? 'Kopia robocza projektu została zapisana.' : 'Projekt został zgłoszony.');
+    }
+
+    public function updateDraft(
+        StorePublicProjectRequest $request,
+        Project $project,
+        StoreProjectFileAction $storeProjectFile,
+        SyncProjectCoauthorsAction $syncProjectCoauthors,
+        SubmitProjectAction $submitProject,
+        ProjectCostLimitService $costLimitService,
+    ): RedirectResponse {
+        Log::info('project.public_draft_update.start', [
+            'project_id' => $project->id,
+            'actor_id' => $request->user()?->id,
+            'intent' => $request->isDraftSave() ? 'draft' : 'submit',
+        ]);
+
+        abort_unless($project->creator_id === $request->user()?->id, 403);
+
+        if ($project->status !== ProjectStatus::WorkingCopy) {
+            Log::warning('project.public_draft_update.rejected_status', [
+                'project_id' => $project->id,
+                'actor_id' => $request->user()?->id,
+                'status' => $project->status->value,
+            ]);
+
+            return back()->withErrors(['project' => 'Edytować można tylko kopię roboczą projektu.']);
+        }
+
+        $data = $request->validated();
+        $projectArea = $this->resolveProjectArea($data, $costLimitService);
+
+        $project->forceFill([
+            'budget_edition_id' => $data['budget_edition_id'],
+            'project_area_id' => $projectArea?->id,
+            'category_id' => $data['category_id'] ?? null,
+            'title' => $data['title'],
+            'local' => $data['local'] ?? null,
+            'localization' => $data['localization'] ?? null,
+            'address' => $data['address'] ?? null,
+            'plot' => $data['plot'] ?? null,
+            'lat' => $data['lat'] ?? null,
+            'lng' => $data['lng'] ?? null,
+            'map_lng_lat' => $data['map_lng_lat'] ?? null,
+            'map_data' => $data['map_data'] ?? null,
+            'description' => $data['description'] ?? null,
+            'goal' => $data['goal'] ?? null,
+            'argumentation' => $data['argumentation'] ?? null,
+            'availability' => $data['availability'] ?? null,
+            'recipients' => $data['recipients'] ?? null,
+            'free_of_charge' => $data['free_of_charge'] ?? null,
+            'short_description' => $data['short_description'] ?? null,
+            'additional_cost' => $data['additional_cost'] ?? null,
+            'contact_with' => $data['contact_with'] ?? null,
+            'attachments_anonymized' => (bool) ($data['attachments_anonymized'] ?? false),
+            'consent_to_change' => (bool) ($data['consent_to_change'] ?? false),
+            'show_task_coauthors' => (bool) ($data['show_task_coauthors'] ?? true),
+            'authors' => $request->authorSnapshot(),
+            'is_support_list' => (bool) ($data['support_list'] ?? false) || $project->files()->where('type', ProjectFileType::SupportList->value)->exists(),
+            'cost' => collect($request->costItems())
+                ->map(fn (array $costItem): string => $costItem['description'].': '.$costItem['amount'])
+                ->implode(PHP_EOL),
+            'cost_formatted' => collect($request->costItems())->sum('amount'),
+        ])->save();
+
+        $this->syncProjectCategory($project, $data['category_id'] ?? null);
+        $this->replaceDraftCostItems($project, $request->costItems());
+
+        try {
+            $supportListFile = $request->file('support_list_file');
+            if ($supportListFile instanceof UploadedFile) {
+                $file = $storeProjectFile->execute(
+                    $project,
+                    ProjectFileType::SupportList,
+                    $supportListFile,
+                    null,
+                    'Lista poparcia z formularza publicznego',
+                    true,
+                );
+                $file->forceFill([
+                    'is_task_form_attachment' => true,
+                ])->save();
+
+                $project->forceFill([
+                    'is_support_list' => true,
+                ])->save();
+            }
+
+            $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, 'owner_agreement_files', ProjectFileType::OwnerAgreement, true);
+            $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, 'map_files', ProjectFileType::Map);
+            $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, 'parent_agreement_files', ProjectFileType::ParentAgreement, true);
+            $this->storeProjectFilesFromInput($request, $storeProjectFile, $project, 'attachment_files', ProjectFileType::Other);
+
+            $syncProjectCoauthors->execute($project, $request->coauthors());
+
+            if (! $request->isDraftSave()) {
+                $submitProject->execute($project);
+            }
+        } catch (DomainException $exception) {
+            Log::warning('project.public_draft_update.rejected', [
+                'project_id' => $project->id,
+                'actor_id' => $request->user()?->id,
+                'reason' => $exception->getMessage(),
+            ]);
+
+            return back()->withInput()->withErrors(['project' => $exception->getMessage()]);
+        }
+
+        Log::info('project.public_draft_update.success', [
+            'project_id' => $project->id,
+            'actor_id' => $request->user()?->id,
+            'intent' => $request->isDraftSave() ? 'draft' : 'submit',
+            'status' => $project->refresh()->status->value,
+        ]);
+
+        return redirect()
+            ->route($request->isDraftSave() ? 'public.resident.projects' : 'public.projects.index')
+            ->with('status', $request->isDraftSave() ? 'Kopia robocza projektu została zapisana.' : 'Projekt został zgłoszony.');
     }
 
     private function storeProjectFilesFromInput(
@@ -295,6 +421,47 @@ class PublicProjectController extends Controller
             ->first();
 
         return $correction instanceof ProjectCorrection ? $correction : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function resolveProjectArea(array $data, ProjectCostLimitService $costLimitService): ?ProjectArea
+    {
+        if (! isset($data['project_area_id'])) {
+            return null;
+        }
+
+        $projectArea = ProjectArea::query()->findOrFail($data['project_area_id']);
+
+        if (! isset($data['local'])) {
+            return $projectArea;
+        }
+
+        return $costLimitService->resolveSubmissionArea($projectArea, (int) $data['local']);
+    }
+
+    private function syncProjectCategory(Project $project, mixed $categoryId): void
+    {
+        if ($categoryId === null) {
+            $project->categories()->sync([]);
+
+            return;
+        }
+
+        $project->categories()->sync([(int) $categoryId]);
+    }
+
+    /**
+     * @param  list<array{description: string, amount: float}>  $costItems
+     */
+    private function replaceDraftCostItems(Project $project, array $costItems): void
+    {
+        $project->costItems()->delete();
+
+        foreach ($costItems as $costItem) {
+            $project->costItems()->create(Arr::only($costItem, ['description', 'amount']));
+        }
     }
 
     private function storeCorrectionFilesFromAllowedInputs(

@@ -9,6 +9,7 @@ use App\Domain\Users\Enums\SystemPermission;
 use App\Domain\Users\Enums\SystemRole;
 use App\Domain\Users\Models\Department;
 use App\Domain\Verification\Enums\VerificationAssignmentType;
+use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\VerificationVersion;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\User;
@@ -53,6 +54,63 @@ it('shows formal verification actions only to project verifiers for matching sta
         ->and(ProjectResource::canCompleteFormalVerification($duringFormal))->toBeFalse()
         ->and(ProjectResource::canRequestFormalCorrection($duringFormal))->toBeFalse()
         ->and(ProjectResource::canForwardFormalVerification($formallyVerified))->toBeFalse();
+});
+
+it('registers extended project list and detail pages for administrators', function (): void {
+    expect(array_keys(ProjectResource::getPages()))->toBe(['index', 'create', 'view', 'edit']);
+});
+
+it('renders extended project list with operational filters', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $admin = User::factory()->create(['status' => true]);
+    $admin->assignRole(SystemRole::Admin->value);
+    formalResourceProject(ProjectStatus::Submitted, [
+        'title' => 'Projekt do filtrowania',
+        'number_drawn' => 12,
+    ]);
+
+    $this->actingAs($admin)
+        ->get(ProjectResource::getUrl(panel: 'admin'))
+        ->assertOk()
+        ->assertSee('Projekt do filtrowania')
+        ->assertSee('zgłoszony do Urzędu')
+        ->assertSee('Podgląd');
+});
+
+it('renders project detail card with project and verification information', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $admin = User::factory()->create(['status' => true]);
+    $admin->assignRole(SystemRole::Admin->value);
+    $project = formalResourceProject(ProjectStatus::FormallyVerified, [
+        'title' => 'Projekt z kartą zbiorczą',
+        'number_drawn' => 2,
+        'authors' => [
+            'first_name' => 'Anna',
+            'last_name' => 'Nowak',
+            'email' => 'anna@example.test',
+        ],
+    ]);
+
+    FormalVerification::query()->create([
+        'project_id' => $project->id,
+        'created_by_id' => $admin->id,
+        'status' => ProjectStatus::FormallyVerified->value,
+        'result' => true,
+        'answers' => [
+            'wasSentOnCorrectForm' => 1,
+            'hasSupportAttachment' => 1,
+        ],
+    ]);
+
+    $this->actingAs($admin)
+        ->get(ProjectResource::getUrl('view', ['record' => $project], panel: 'admin'))
+        ->assertOk()
+        ->assertSee('Projekt z kartą zbiorczą')
+        ->assertSee('Weryfikacja formalna')
+        ->assertSee('Anna Nowak')
+        ->assertSee('wynik: pozytywny');
 });
 
 it('allows formal verification actions through granular permission', function (): void {

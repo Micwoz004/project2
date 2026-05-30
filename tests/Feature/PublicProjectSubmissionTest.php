@@ -195,6 +195,188 @@ it('creates a submitted project through the public endpoint', function (): void 
         ->and($supportListFile->original_name)->toBe('lista-poparcia.pdf');
 });
 
+it('saves a public project as working copy without submitting it to the office', function (): void {
+    $edition = budgetEdition();
+    $resident = verifiedResident();
+
+    $this->actingAs($resident)->post(route('public.projects.store'), [
+        '_intent' => 'draft',
+        'budget_edition_id' => $edition->id,
+        'title' => 'Szkic projektu mieszkańca',
+    ])->assertRedirect(route('public.resident.projects'));
+
+    $project = Project::query()->firstOrFail();
+
+    expect($project->status)->toBe(ProjectStatus::WorkingCopy)
+        ->and($project->creator_id)->toBe($resident->id)
+        ->and($project->submitted_at)->toBeNull()
+        ->and($project->number)->toBeNull()
+        ->and($project->versions()->count())->toBe(0);
+
+    $this->actingAs($resident)
+        ->get(route('public.resident.projects.edit', $project))
+        ->assertOk()
+        ->assertSee('bo-spa-root')
+        ->assertSee('Szkic projektu mieszka\\u0144ca', false);
+});
+
+it('updates a draft from the resident form and can submit it later', function (): void {
+    Storage::fake('local');
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $category = Category::query()->create(['name' => 'Zieleń']);
+    $resident = verifiedResident();
+
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'creator_id' => $resident->id,
+        'budget_edition_id' => $edition->id,
+        'category_id' => $category->id,
+        'status' => ProjectStatus::WorkingCopy,
+        'title' => 'Roboczy tytuł',
+    ]));
+
+    $this->actingAs($resident)->put(route('public.resident.projects.update', $project), [
+        '_intent' => 'draft',
+        'budget_edition_id' => $edition->id,
+        'project_area_id' => $area->id,
+        'category_id' => $category->id,
+        'local' => 1,
+        'title' => 'Zmieniony roboczy tytuł',
+        'description' => 'Roboczy opis',
+        'cost_items' => [
+            ['description' => 'Roboczy koszt', 'amount' => 1000],
+        ],
+    ])->assertRedirect(route('public.resident.projects'));
+
+    $project->refresh();
+
+    expect($project->status)->toBe(ProjectStatus::WorkingCopy)
+        ->and($project->title)->toBe('Zmieniony roboczy tytuł')
+        ->and($project->description)->toBe('Roboczy opis')
+        ->and($project->costItems()->firstOrFail()->description)->toBe('Roboczy koszt')
+        ->and($project->versions()->count())->toBe(0);
+
+    $this->actingAs($resident)->put(route('public.resident.projects.update', $project), [
+        '_intent' => 'submit',
+        'budget_edition_id' => $edition->id,
+        'project_area_id' => $area->id,
+        'category_id' => $category->id,
+        'local' => 1,
+        'author_first_name' => 'Piotr',
+        'author_last_name' => 'Kowalski',
+        'author_email' => 'piotr@example.test',
+        'author_email_agree' => '1',
+        'author_read_confirm' => '1',
+        'contact_with' => 1,
+        'title' => 'Gotowy projekt',
+        'localization' => 'Szczecin',
+        'map_data' => json_encode(['type' => 'Point', 'coordinates' => [14.5528116, 53.4285432]]),
+        'description' => 'Opis projektu',
+        'goal' => 'Cel projektu',
+        'argumentation' => 'Uzasadnienie',
+        'availability' => 'Dostępność',
+        'recipients' => 'Mieszkańcy',
+        'free_of_charge' => 'Tak',
+        'cost_items' => [
+            ['description' => 'Zakup i montaż wyposażenia', 'amount' => 10000],
+        ],
+        'attachments_anonymized' => '1',
+        'support_list' => '1',
+        'support_list_file' => UploadedFile::fake()->create('lista-poparcia.pdf', 128, 'application/pdf'),
+    ])->assertRedirect(route('public.projects.index'));
+
+    $project->refresh();
+
+    expect($project->status)->toBe(ProjectStatus::Submitted)
+        ->and($project->submitted_at)->not->toBeNull()
+        ->and($project->versions()->count())->toBe(1)
+        ->and($project->files()->where('type', ProjectFileType::SupportList)->exists())->toBeTrue();
+});
+
+it('lets the project author download submission card pdf after submitting to the office', function (): void {
+    $author = verifiedResident();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $category = Category::query()->create(['name' => 'Zieleń']);
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'category_id' => $category->id,
+        'status' => ProjectStatus::Submitted,
+        'submitted_at' => now()->subHour(),
+        'number_drawn' => 'P1/0001',
+        'authors' => [
+            'first_name' => 'Piotr',
+            'last_name' => 'Kowalski',
+            'email' => 'piotr@example.test',
+            'phone' => '500600700',
+            'street' => 'Jasne Błonia',
+            'house_no' => '1',
+            'flat_no' => '2',
+            'post_code' => '70-001',
+            'city' => 'Szczecin',
+        ],
+        'short_description' => 'Krótki opis projektu.',
+        'contact_with' => true,
+        'attachments_anonymized' => true,
+        'consent_to_change' => true,
+    ]));
+    $project->categories()->sync([$category->id]);
+    $project->costItems()->create([
+        'description' => 'Zakup i montaż wyposażenia',
+        'amount' => 10000,
+    ]);
+    ProjectFile::query()->create([
+        'project_id' => $project->id,
+        'stored_name' => 'support.pdf',
+        'original_name' => 'lista-poparcia.pdf',
+        'type' => ProjectFileType::SupportList,
+    ]);
+
+    $this->actingAs($author)
+        ->get(route('public.resident.projects'))
+        ->assertOk()
+        ->assertSee('karta-zgloszeniowa.pdf', false);
+
+    $response = $this->actingAs($author)
+        ->get(route('public.resident.projects.submission-card', $project))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+
+    expect($response->headers->get('content-disposition'))->toContain('karta-zgloszeniowa-projekt-P1-0001.pdf')
+        ->and($response->getContent())->toStartWith('%PDF');
+});
+
+it('does not generate submission card pdf for working copies', function (): void {
+    $author = verifiedResident();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'status' => ProjectStatus::WorkingCopy,
+        'submitted_at' => null,
+    ]));
+
+    $this->actingAs($author)
+        ->get(route('public.resident.projects.submission-card', $project))
+        ->assertNotFound();
+});
+
+it('forbids submission card pdf download for other residents', function (): void {
+    $author = verifiedResident();
+    $otherResident = verifiedResident();
+    $edition = budgetEdition();
+    $area = ProjectArea::query()->create(areaAttributes());
+    $project = Project::query()->create(projectAttributes($edition->id, $area->id, [
+        'creator_id' => $author->id,
+        'status' => ProjectStatus::Submitted,
+        'submitted_at' => now()->subHour(),
+    ]));
+
+    $this->actingAs($otherResident)
+        ->get(route('public.resident.projects.submission-card', $project))
+        ->assertForbidden();
+});
+
 it('rejects public project submission when coauthor has no public contact consent', function (): void {
     Storage::fake('local');
     $edition = budgetEdition();

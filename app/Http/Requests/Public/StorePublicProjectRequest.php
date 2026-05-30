@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Public;
 
+use App\Domain\Files\Enums\ProjectFileType;
+use App\Domain\Projects\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -41,14 +43,17 @@ class StorePublicProjectRequest extends FormRequest
 
     public function rules(): array
     {
+        $draft = $this->isDraftSave();
+
         return [
+            '_intent' => ['nullable', 'string', 'in:draft,submit'],
             'budget_edition_id' => ['required', 'exists:budget_editions,id'],
-            'project_area_id' => ['required', 'exists:project_areas,id'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'local' => ['required', 'integer', 'in:1,2'],
-            'author_first_name' => ['required', 'string', 'max:127'],
-            'author_last_name' => ['required', 'string', 'max:127'],
-            'author_email' => ['required', 'email', 'max:255'],
+            'project_area_id' => [$draft ? 'nullable' : 'required', 'exists:project_areas,id'],
+            'category_id' => [$draft ? 'nullable' : 'required', 'exists:categories,id'],
+            'local' => [$draft ? 'nullable' : 'required', 'integer', 'in:1,2'],
+            'author_first_name' => [$draft ? 'nullable' : 'required', 'string', 'max:127'],
+            'author_last_name' => [$draft ? 'nullable' : 'required', 'string', 'max:127'],
+            'author_email' => [$draft ? 'nullable' : 'required', 'email', 'max:255'],
             'author_phone' => ['nullable', 'string', 'max:30'],
             'author_street' => ['nullable', 'string', 'max:127'],
             'author_house_no' => ['nullable', 'string', 'max:20'],
@@ -58,35 +63,35 @@ class StorePublicProjectRequest extends FormRequest
             'author_email_agree' => ['nullable', 'boolean'],
             'author_phone_agree' => ['nullable', 'boolean'],
             'author_personal_data_agree' => ['nullable', 'boolean'],
-            'author_read_confirm' => ['accepted'],
+            'author_read_confirm' => [$draft ? 'nullable' : 'accepted'],
             'author_contact_details_public' => ['nullable', 'string', 'max:250'],
-            'contact_with' => ['required', 'integer', 'in:1,2'],
+            'contact_with' => [$draft ? 'nullable' : 'required', 'integer', 'in:1,2'],
             'title' => ['required', 'string', 'max:600'],
-            'localization' => ['required', 'string', 'max:63000'],
+            'localization' => [$draft ? 'nullable' : 'required', 'string', 'max:63000'],
             'address' => ['nullable', 'string', 'max:300'],
             'plot' => ['nullable', 'string', 'max:63000'],
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'map_lng_lat' => ['nullable', 'string', 'max:63000'],
-            'map_data' => ['required', 'array'],
-            'description' => ['required', 'string', 'max:63000'],
-            'goal' => ['required', 'string', 'max:63000'],
-            'argumentation' => ['required', 'string', 'max:63000'],
-            'availability' => ['required', 'string', 'max:63000'],
-            'recipients' => ['required', 'string', 'max:63000'],
-            'free_of_charge' => ['required', 'string', 'max:63000'],
+            'map_data' => [$draft ? 'nullable' : 'required', 'array'],
+            'description' => [$draft ? 'nullable' : 'required', 'string', 'max:63000'],
+            'goal' => [$draft ? 'nullable' : 'required', 'string', 'max:63000'],
+            'argumentation' => [$draft ? 'nullable' : 'required', 'string', 'max:63000'],
+            'availability' => [$draft ? 'nullable' : 'required', 'string', 'max:63000'],
+            'recipients' => [$draft ? 'nullable' : 'required', 'string', 'max:63000'],
+            'free_of_charge' => [$draft ? 'nullable' : 'required', 'string', 'max:63000'],
             'short_description' => ['nullable', 'string', 'max:700'],
             'additional_cost' => ['nullable', 'string', 'max:500'],
-            'cost_items' => ['required_without:cost_description', 'array', 'min:1'],
+            'cost_items' => [$draft ? 'sometimes' : 'required_without:cost_description', 'array', 'min:1'],
             'cost_items.*.description' => ['required_with:cost_items', 'string', 'max:1000'],
             'cost_items.*.amount' => ['required_with:cost_items', 'numeric', 'min:0'],
-            'cost_description' => ['required_without:cost_items', 'string', 'max:1000'],
-            'cost_amount' => ['required_without:cost_items', 'numeric', 'min:0'],
+            'cost_description' => [$draft ? 'nullable' : 'required_without:cost_items', 'string', 'max:1000'],
+            'cost_amount' => [$draft ? 'nullable' : 'required_without:cost_items', 'numeric', 'min:0'],
             'consent_to_change' => ['nullable', 'boolean'],
             'show_task_coauthors' => ['nullable', 'boolean'],
-            'attachments_anonymized' => ['accepted'],
-            'support_list' => ['accepted'],
-            'support_list_file' => ['required', 'file'],
+            'attachments_anonymized' => [$draft ? 'nullable' : 'accepted'],
+            'support_list' => [$draft ? 'nullable' : 'accepted'],
+            'support_list_file' => [$draft || $this->hasExistingSupportListFile() ? 'nullable' : 'required', 'file'],
             'owner_agreement_files' => ['sometimes', 'array', 'max:5'],
             'owner_agreement_files.*' => ['file'],
             'map_files' => ['sometimes', 'array', 'max:5'],
@@ -118,6 +123,10 @@ class StorePublicProjectRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
+            if ($this->isDraftSave()) {
+                return;
+            }
+
             $phoneAgree = $this->boolean('author_phone_agree');
             $emailAgree = $this->boolean('author_email_agree');
 
@@ -152,6 +161,10 @@ class StorePublicProjectRequest extends FormRequest
                 ->all();
         }
 
+        if (! array_key_exists('cost_description', $validated) || ! array_key_exists('cost_amount', $validated)) {
+            return [];
+        }
+
         return [[
             'description' => trim($validated['cost_description']),
             'amount' => (float) $validated['cost_amount'],
@@ -166,9 +179,9 @@ class StorePublicProjectRequest extends FormRequest
         $validated = $this->validated();
 
         return [
-            'first_name' => $validated['author_first_name'],
-            'last_name' => $validated['author_last_name'],
-            'email' => $validated['author_email'],
+            'first_name' => $validated['author_first_name'] ?? null,
+            'last_name' => $validated['author_last_name'] ?? null,
+            'email' => $validated['author_email'] ?? null,
             'phone' => $validated['author_phone'] ?? null,
             'street' => $validated['author_street'] ?? null,
             'house_no' => $validated['author_house_no'] ?? null,
@@ -226,6 +239,19 @@ class StorePublicProjectRequest extends FormRequest
                 $coauthor['email'] ?? null,
                 $coauthor['phone'] ?? null,
             ])->filter()->isNotEmpty());
+    }
+
+    public function isDraftSave(): bool
+    {
+        return $this->input('_intent') === 'draft';
+    }
+
+    private function hasExistingSupportListFile(): bool
+    {
+        $project = $this->route('project');
+
+        return $project instanceof Project
+            && $project->files()->where('type', ProjectFileType::SupportList->value)->exists();
     }
 
     public function attributes(): array

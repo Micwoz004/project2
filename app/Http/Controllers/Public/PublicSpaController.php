@@ -7,6 +7,7 @@ use App\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Domain\BudgetEditions\Services\BudgetEditionStateResolver;
 use App\Domain\Communications\Models\ProjectPublicComment;
 use App\Domain\Communications\Services\ProjectPublicCommentVisibilityService;
+use App\Domain\Files\Enums\ProjectFileType;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Category;
 use App\Domain\Projects\Models\Project;
@@ -303,6 +304,7 @@ class PublicSpaController extends Controller
             || $path === 'konto'
             || $path === 'moje-projekty'
             || $path === 'moje-projekty/zglos'
+            || preg_match('#^moje-projekty/\d+/edycja$#', $path) === 1
             || preg_match('#^moje-projekty/\d+/korekta$#', $path) === 1;
     }
 
@@ -568,7 +570,7 @@ class PublicSpaController extends Controller
         }
 
         $projects = Project::query()
-            ->with(['area', 'category', 'categories', 'budgetEdition', 'costItems', 'corrections'])
+            ->with(['area', 'category', 'categories', 'budgetEdition', 'costItems', 'corrections', 'files'])
             ->where('creator_id', $user->id)
             ->latest()
             ->get();
@@ -620,6 +622,7 @@ class PublicSpaController extends Controller
                 'number' => $project->number_drawn ?? $project->number ?? $project->id,
                 'title' => $project->title,
                 'description' => Str::limit($project->short_description ?: $project->description, 220),
+                'fullDescription' => $project->description,
                 'area' => $project->area?->name ?? 'Całe miasto',
                 'category' => $project->category?->name ?? $project->categories->first()?->name ?? 'Projekt miejski',
                 'status' => $this->residentStatusGroup($project),
@@ -628,13 +631,19 @@ class PublicSpaController extends Controller
                 'costLabel' => number_format((float) ($project->cost_formatted ?? $project->costItems->sum('amount')), 0, ',', ' ').' zł',
                 'projectAreaId' => $project->project_area_id,
                 'categoryId' => $project->category_id,
+                'local' => $project->local,
                 'localization' => $project->localization,
+                'address' => $project->address,
+                'plot' => $project->plot,
                 'mapData' => $project->map_data,
+                'shortDescription' => $project->short_description,
                 'goal' => $project->goal,
                 'argumentation' => $project->argumentation,
                 'availability' => $project->availability,
                 'recipients' => $project->recipients,
                 'freeOfCharge' => $project->free_of_charge,
+                'additionalCost' => $project->additional_cost,
+                'contactWith' => $project->contact_with,
                 'costItems' => $project->costItems
                     ->map(fn ($costItem): array => [
                         'description' => $costItem->description,
@@ -642,16 +651,27 @@ class PublicSpaController extends Controller
                     ])
                     ->values()
                     ->all(),
+                'hasSupportListFile' => $project->files->contains(fn ($file): bool => $file->type === ProjectFileType::SupportList),
                 'submittedAt' => $project->submitted_at?->format('d.m.Y') ?? $project->created_at?->format('d.m.Y'),
                 'correction' => $this->activeCorrectionPayload($project),
                 'progress' => $this->residentProjectProgress($project),
                 'publicVisible' => $this->isProjectPubliclyVisibleForResident($project),
                 'publicUrl' => $this->isProjectPubliclyVisibleForResident($project) ? route('public.projects.show', $project) : null,
+                'submissionCardUrl' => $this->canDownloadSubmissionCard($project)
+                    ? route('public.resident.projects.submission-card', $project)
+                    : null,
+                'draftEditUrl' => route('public.resident.projects.edit', $project),
+                'draftUpdateUrl' => route('public.resident.projects.update', $project),
                 'correctionUrl' => route('public.projects.corrections.edit', $project),
                 'correctionUpdateUrl' => route('public.projects.corrections.update', $project),
             ])
             ->values()
             ->all();
+    }
+
+    private function canDownloadSubmissionCard(Project $project): bool
+    {
+        return $project->status !== ProjectStatus::WorkingCopy && $project->submitted_at !== null;
     }
 
     private function residentStatusGroup(Project $project): string
@@ -737,6 +757,17 @@ class PublicSpaController extends Controller
 
     private function authorizeResidentCorrectionPath(Request $request): void
     {
+        if (preg_match('#^moje-projekty/(\d+)/edycja$#', $request->path(), $matches) === 1) {
+            $project = Project::query()
+                ->whereKey((int) $matches[1])
+                ->firstOrFail();
+
+            abort_unless($request->user()?->can('update', $project), 403);
+            abort_unless($project->status === ProjectStatus::WorkingCopy, 404);
+
+            return;
+        }
+
         if (! preg_match('#^moje-projekty/(\d+)/korekta$#', $request->path(), $matches)) {
             return;
         }

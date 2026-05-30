@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminReportExportDownloadController;
 use App\Http\Controllers\Public\PublicCoauthorConfirmationController;
 use App\Http\Controllers\Public\PublicProjectCommentController;
 use App\Http\Controllers\Public\PublicProjectController;
+use App\Http\Controllers\Public\PublicProjectSubmissionCardController;
 use App\Http\Controllers\Public\PublicResidentAccountController;
 use App\Http\Controllers\Public\PublicResidentAuthController;
 use App\Http\Controllers\Public\PublicResultsController;
@@ -39,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/panel', PublicSpaController::class)->name('public.resident.dashboard');
     Route::get('/moje-projekty', PublicSpaController::class)->name('public.resident.projects');
     Route::get('/moje-projekty/zglos', PublicSpaController::class)->name('public.resident.projects.create');
+    Route::get('/moje-projekty/{project}/edycja', PublicSpaController::class)->name('public.resident.projects.edit');
+    Route::put('/moje-projekty/{project}/edycja', [PublicProjectController::class, 'updateDraft'])->name('public.resident.projects.update');
+    Route::get('/moje-projekty/{project}/karta-zgloszeniowa.pdf', PublicProjectSubmissionCardController::class)->name('public.resident.projects.submission-card');
     Route::get('/konto', PublicSpaController::class)->name('public.resident.account');
     Route::patch('/konto', PublicResidentAccountController::class)->name('public.resident.account.update');
     Route::post('/projekt/{project}/komentarze', [PublicProjectCommentController::class, 'store'])->name('public.projects.comments.store');

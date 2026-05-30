@@ -42,28 +42,39 @@ use App\Domain\Verification\Models\FormalVerification;
 use App\Domain\Verification\Models\InitialMeritVerification;
 use App\Domain\Verification\Models\ProjectAppeal;
 use App\Domain\Verification\Models\VerificationAssignment;
+use App\Domain\Verification\Models\VerificationVersion;
 use App\Domain\Verification\Services\VerificationOverviewService;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProjects;
+use App\Filament\Resources\Projects\Pages\ViewProject;
 use App\Models\User;
 use BackedEnum;
 use DomainException;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -408,6 +419,216 @@ class ProjectResource extends Resource
         ]);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Section::make('Stan operacyjny')
+                    ->schema([
+                        TextEntry::make('process_stage')
+                            ->label('Etap procesu')
+                            ->state(fn (Project $record): string => self::processStageLabel($record)),
+                        TextEntry::make('next_step')
+                            ->label('Najbliższa decyzja')
+                            ->state(fn (Project $record): string => self::nextStepLabel($record)),
+                        TextEntry::make('verification_progress')
+                            ->label('Weryfikacje')
+                            ->state(fn (Project $record): array => self::verificationProgress($record))
+                            ->bulleted(),
+                        TextEntry::make('voting_progress')
+                            ->label('Głosowanie i decyzje')
+                            ->state(fn (Project $record): array => self::votingProgress($record))
+                            ->bulleted(),
+                    ])
+                    ->columns(4),
+                Section::make('Podsumowanie')
+                    ->schema([
+                        TextEntry::make('number_drawn')
+                            ->label('Numer do głosowania')
+                            ->placeholder('Nie nadano'),
+                        TextEntry::make('number')
+                            ->label('Numer systemowy')
+                            ->placeholder('Nie nadano'),
+                        TextEntry::make('status')
+                            ->label('Status')
+                            ->formatStateUsing(fn (ProjectStatus $state): string => $state->adminLabel())
+                            ->badge(),
+                        TextEntry::make('submitted_at')
+                            ->label('Data zgłoszenia')
+                            ->dateTime('Y-m-d H:i')
+                            ->placeholder('Nie wysłano do urzędu'),
+                        TextEntry::make('title')
+                            ->label('Tytuł')
+                            ->columnSpanFull(),
+                        TextEntry::make('summary_flags')
+                            ->label('Oznaczenia')
+                            ->state(fn (Project $record): array => self::projectFlags($record))
+                            ->bulleted()
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(4),
+                Section::make('Dane projektu')
+                    ->schema([
+                        TextEntry::make('budgetEdition.id')
+                            ->label('Edycja')
+                            ->placeholder('Nie podano'),
+                        TextEntry::make('area.name')
+                            ->label('Obszar')
+                            ->placeholder('Całe miasto'),
+                        TextEntry::make('category.name')
+                            ->label('Kategoria główna')
+                            ->placeholder('Nie podano'),
+                        TextEntry::make('project_type')
+                            ->label('Typ projektu')
+                            ->state(fn (Project $record): string => self::projectTypeLabel($record)),
+                        TextEntry::make('localization')
+                            ->label('Lokalizacja')
+                            ->placeholder('Nie podano')
+                            ->columnSpanFull(),
+                        TextEntry::make('address')
+                            ->label('Adres')
+                            ->placeholder('Nie podano'),
+                        TextEntry::make('plot')
+                            ->label('Działka')
+                            ->placeholder('Nie podano'),
+                        TextEntry::make('cost_formatted')
+                            ->label('Koszt deklarowany')
+                            ->money('PLN')
+                            ->placeholder('Nie podano'),
+                    ])
+                    ->columns(4),
+                Section::make('Opis i dostępność')
+                    ->schema([
+                        TextEntry::make('short_description')
+                            ->label('Krótki opis')
+                            ->placeholder('Nie podano')
+                            ->columnSpanFull(),
+                        TextEntry::make('description')
+                            ->label('Opis')
+                            ->placeholder('Nie podano')
+                            ->columnSpanFull(),
+                        TextEntry::make('goal')
+                            ->label('Cel')
+                            ->placeholder('Nie podano')
+                            ->columnSpanFull(),
+                        TextEntry::make('argumentation')
+                            ->label('Uzasadnienie')
+                            ->placeholder('Nie podano')
+                            ->columnSpanFull(),
+                        TextEntry::make('availability')
+                            ->label('Dostępność')
+                            ->placeholder('Nie podano'),
+                        TextEntry::make('recipients')
+                            ->label('Odbiorcy')
+                            ->placeholder('Nie podano'),
+                        TextEntry::make('free_of_charge')
+                            ->label('Nieodpłatność')
+                            ->placeholder('Nie podano'),
+                        TextEntry::make('additional_cost')
+                            ->label('Koszty utrzymania')
+                            ->placeholder('Nie podano'),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
+                Section::make('Wnioskodawca i współautorzy')
+                    ->schema([
+                        TextEntry::make('author_summary')
+                            ->label('Wnioskodawca')
+                            ->state(fn (Project $record): array => self::authorSummary($record))
+                            ->bulleted(),
+                        TextEntry::make('coauthor_summary')
+                            ->label('Współautorzy')
+                            ->state(fn (Project $record): array => self::coauthorSummary($record))
+                            ->bulleted(),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
+                Section::make('Kosztorys i załączniki')
+                    ->schema([
+                        RepeatableEntry::make('cost_items_summary')
+                            ->label('Pozycje kosztorysu')
+                            ->state(fn (Project $record): array => self::costItemsSummary($record))
+                            ->schema([
+                                TextEntry::make('description')
+                                    ->label('Opis'),
+                                TextEntry::make('amount')
+                                    ->label('Kwota'),
+                            ])
+                            ->columns(2),
+                        RepeatableEntry::make('files_summary')
+                            ->label('Załączniki')
+                            ->state(fn (Project $record): array => self::filesSummary($record))
+                            ->schema([
+                                TextEntry::make('type')
+                                    ->label('Typ'),
+                                TextEntry::make('name')
+                                    ->label('Plik'),
+                                TextEntry::make('privacy')
+                                    ->label('Dostęp'),
+                            ])
+                            ->columns(3),
+                    ])
+                    ->columns(1)
+                    ->collapsible(),
+                Section::make('Weryfikacja formalna')
+                    ->schema([
+                        TextEntry::make('formal_verification_summary')
+                            ->label('Wyniki')
+                            ->state(fn (Project $record): array => self::formalVerificationSummary($record))
+                            ->bulleted()
+                            ->listWithLineBreaks()
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible(),
+                Section::make('Weryfikacje urzędowe')
+                    ->schema([
+                        TextEntry::make('verification_assignments_summary')
+                            ->label('Przydziały')
+                            ->state(fn (Project $record): array => self::verificationAssignmentsSummary($record))
+                            ->bulleted()
+                            ->listWithLineBreaks(),
+                        TextEntry::make('initial_merit_verification_summary')
+                            ->label('Weryfikacja wstępna')
+                            ->state(fn (Project $record): array => self::meritVerificationSummary($record, 'initial'))
+                            ->bulleted()
+                            ->listWithLineBreaks(),
+                        TextEntry::make('final_merit_verification_summary')
+                            ->label('Weryfikacja merytoryczna')
+                            ->state(fn (Project $record): array => self::meritVerificationSummary($record, 'final'))
+                            ->bulleted()
+                            ->listWithLineBreaks(),
+                        TextEntry::make('consultation_verification_summary')
+                            ->label('Konsultacje')
+                            ->state(fn (Project $record): array => self::meritVerificationSummary($record, 'consultation'))
+                            ->bulleted()
+                            ->listWithLineBreaks(),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
+                Section::make('Głosowania, odwołania i historia kart')
+                    ->schema([
+                        TextEntry::make('board_votes_summary')
+                            ->label('Głosowania')
+                            ->state(fn (Project $record): array => self::boardVotesSummary($record))
+                            ->bulleted()
+                            ->listWithLineBreaks(),
+                        TextEntry::make('appeal_summary')
+                            ->label('Odwołanie')
+                            ->state(fn (Project $record): array => self::appealSummary($record))
+                            ->bulleted()
+                            ->listWithLineBreaks(),
+                        TextEntry::make('verification_versions_summary')
+                            ->label('Wersje kart')
+                            ->state(fn (Project $record): array => self::verificationVersionsSummary($record))
+                            ->bulleted()
+                            ->listWithLineBreaks()
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
+            ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -415,23 +636,176 @@ class ProjectResource extends Resource
                 TextColumn::make('number_drawn')
                     ->label('Nr')
                     ->sortable(),
+                TextColumn::make('number')
+                    ->label('Nr systemowy')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('title')
                     ->label('Tytuł')
                     ->searchable()
-                    ->limit(80),
+                    ->limit(80)
+                    ->wrap(),
+                TextColumn::make('budgetEdition.id')
+                    ->label('Edycja')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('area.name')
                     ->label('Obszar')
                     ->sortable(),
+                TextColumn::make('category.name')
+                    ->label('Kategoria')
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('status')
                     ->label('Status')
                     ->formatStateUsing(fn (ProjectStatus $state): string => $state->adminLabel())
-                    ->badge(),
+                    ->badge()
+                    ->sortable(),
+                TextColumn::make('creator.email')
+                    ->label('Wnioskodawca')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('submitted_at')
+                    ->label('Zgłoszono')
+                    ->dateTime('Y-m-d H:i')
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('cost_formatted')
+                    ->label('Koszt')
+                    ->money('PLN')
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('localization')
+                    ->label('Lokalizacja')
+                    ->searchable()
+                    ->limit(50)
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('is_support_list')
+                    ->label('Lista poparcia')
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'tak' : 'nie')
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('need_correction')
+                    ->label('Korekta')
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'wymagana' : 'nie')
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
                     ->label('Aktualizacja')
                     ->dateTime('Y-m-d H:i')
                     ->sortable(),
             ])
+            ->filters([
+                SelectFilter::make('status')
+                    ->label('Status')
+                    ->options(self::statusOptions())
+                    ->multiple(),
+                SelectFilter::make('budget_edition_id')
+                    ->label('Edycja')
+                    ->relationship('budgetEdition', 'id')
+                    ->searchable(),
+                SelectFilter::make('project_area_id')
+                    ->label('Obszar')
+                    ->relationship('area', 'name')
+                    ->searchable(),
+                SelectFilter::make('category_id')
+                    ->label('Kategoria')
+                    ->relationship('category', 'name')
+                    ->searchable(),
+                SelectFilter::make('local')
+                    ->label('Typ projektu')
+                    ->options([
+                        1 => 'Projekt lokalny',
+                        2 => 'Projekt Zielonego BO',
+                    ]),
+                SelectFilter::make('is_support_list')
+                    ->label('Lista poparcia')
+                    ->options([
+                        1 => 'Tak',
+                        0 => 'Nie',
+                    ]),
+                SelectFilter::make('need_correction')
+                    ->label('Wymaga korekty')
+                    ->options([
+                        1 => 'Tak',
+                        0 => 'Nie',
+                    ]),
+                SelectFilter::make('is_hidden')
+                    ->label('Widoczność')
+                    ->options([
+                        0 => 'Widoczny publicznie',
+                        1 => 'Ukryty publicznie',
+                    ]),
+                Filter::make('submitted_between')
+                    ->label('Data zgłoszenia')
+                    ->schema([
+                        DatePicker::make('from')
+                            ->label('Zgłoszono od'),
+                        DatePicker::make('until')
+                            ->label('Zgłoszono do'),
+                    ])
+                    ->columns(2)
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['from'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('submitted_at', '>=', $date))
+                        ->when($data['until'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('submitted_at', '<=', $date))),
+                Filter::make('cost_between')
+                    ->label('Koszt')
+                    ->schema([
+                        TextInput::make('min')
+                            ->label('Koszt od')
+                            ->numeric(),
+                        TextInput::make('max')
+                            ->label('Koszt do')
+                            ->numeric(),
+                    ])
+                    ->columns(2)
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['min'] ?? null, fn (Builder $query, string $amount): Builder => $query->where('cost_formatted', '>=', $amount))
+                        ->when($data['max'] ?? null, fn (Builder $query, string $amount): Builder => $query->where('cost_formatted', '<=', $amount))),
+                Filter::make('project_text')
+                    ->label('Dane projektu')
+                    ->schema([
+                        TextInput::make('number')
+                            ->label('Numer'),
+                        TextInput::make('author')
+                            ->label('Autor / e-mail'),
+                        TextInput::make('location')
+                            ->label('Lokalizacja/adres/działka'),
+                    ])
+                    ->columns(3)
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['number'] ?? null, function (Builder $query, string $number): Builder {
+                            return $query->where(function (Builder $query) use ($number): void {
+                                if (is_numeric($number)) {
+                                    $query->where('number', (int) $number)
+                                        ->orWhere('number_drawn', (int) $number);
+                                }
+                            });
+                        })
+                        ->when($data['author'] ?? null, function (Builder $query, string $author): Builder {
+                            return $query->where(function (Builder $query) use ($author): void {
+                                $query->where('authors->first_name', 'like', "%{$author}%")
+                                    ->orWhere('authors->last_name', 'like', "%{$author}%")
+                                    ->orWhere('authors->email', 'like', "%{$author}%")
+                                    ->orWhereHas('creator', fn (Builder $query): Builder => $query->where('email', 'like', "%{$author}%"));
+                            });
+                        })
+                        ->when($data['location'] ?? null, function (Builder $query, string $location): Builder {
+                            return $query->where(function (Builder $query) use ($location): void {
+                                $query->where('localization', 'like', "%{$location}%")
+                                    ->orWhere('address', 'like', "%{$location}%")
+                                    ->orWhere('plot', 'like', "%{$location}%");
+                            });
+                        })),
+            ])
+            ->filtersLayout(FiltersLayout::AboveContent)
+            ->filtersFormColumns([
+                'default' => 1,
+                'md' => 2,
+                'xl' => 4,
+            ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
                 self::beginFormalVerificationAction(),
                 self::acceptFormalVerificationAction(),
@@ -854,6 +1228,7 @@ class ProjectResource extends Resource
         return [
             'index' => ListProjects::route('/'),
             'create' => CreateProject::route('/create'),
+            'view' => ViewProject::route('/{record}'),
             'edit' => EditProject::route('/{record}/edit'),
         ];
     }
@@ -1708,6 +2083,545 @@ class ProjectResource extends Resource
         }
 
         return Carbon::parse($value);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function projectFlags(Project $project): array
+    {
+        return [
+            'Widoczność: '.($project->is_hidden ? 'ukryty publicznie' : 'widoczny zgodnie ze statusem'),
+            'Lista poparcia: '.($project->is_support_list ? 'potwierdzona' : 'brak potwierdzenia'),
+            'Korekta: '.($project->need_correction ? 'wymagana' : 'brak aktywnej korekty'),
+            'Ponowna weryfikacja: '.($project->reverify ? 'tak' : 'nie'),
+        ];
+    }
+
+    private static function projectTypeLabel(Project $project): string
+    {
+        return match ((int) $project->local) {
+            1 => 'Projekt lokalny',
+            2 => 'Projekt Zielonego BO',
+            default => 'Projekt miejski',
+        };
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function authorSummary(Project $project): array
+    {
+        $author = $project->authors ?? [];
+        $name = trim((string) data_get($author, 'first_name').' '.(string) data_get($author, 'last_name'));
+        $address = trim(implode(' ', array_filter([
+            data_get($author, 'street'),
+            data_get($author, 'house_no'),
+            data_get($author, 'flat_no') ? '/'.data_get($author, 'flat_no') : null,
+            data_get($author, 'post_code'),
+            data_get($author, 'city'),
+        ])));
+
+        return array_values(array_filter([
+            'Imię i nazwisko: '.($name !== '' ? $name : 'nie podano'),
+            'E-mail: '.(data_get($author, 'email') ?: $project->creator?->email ?: 'nie podano'),
+            'Telefon: '.(data_get($author, 'phone') ?: 'nie podano'),
+            'Adres: '.($address !== '' ? $address : 'nie podano'),
+            'Kontakt publiczny: '.($project->contact_with ? 'tak' : 'nie'),
+        ]));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function coauthorSummary(Project $project): array
+    {
+        $coauthors = $project->coauthors()->oldest()->get();
+
+        if ($coauthors->isEmpty()) {
+            return ['Brak współautorów.'];
+        }
+
+        return $coauthors
+            ->map(function ($coauthor): string {
+                $name = trim($coauthor->first_name.' '.$coauthor->last_name) ?: 'Współautor';
+                $email = $coauthor->email ?: 'brak e-maila';
+                $confirmed = $coauthor->confirm ? 'potwierdzony' : 'niepotwierdzony';
+
+                return "{$name}, {$email}, {$confirmed}";
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<array{description: string, amount: string}>
+     */
+    private static function costItemsSummary(Project $project): array
+    {
+        $items = $project->costItems()->oldest()->get();
+
+        if ($items->isEmpty()) {
+            return [[
+                'description' => 'Brak pozycji kosztorysu.',
+                'amount' => '0,00 zł',
+            ]];
+        }
+
+        return $items
+            ->map(fn ($item): array => [
+                'description' => $item->description,
+                'amount' => self::money($item->amount),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<array{type: string, name: string, privacy: string}>
+     */
+    private static function filesSummary(Project $project): array
+    {
+        $files = $project->files()->oldest()->get();
+
+        if ($files->isEmpty()) {
+            return [[
+                'type' => 'Brak',
+                'name' => 'Nie dodano załączników.',
+                'privacy' => '-',
+            ]];
+        }
+
+        return $files
+            ->map(fn ($file): array => [
+                'type' => $file->type?->label() ?? 'Załącznik',
+                'name' => $file->original_name,
+                'privacy' => $file->is_private ? 'prywatny' : 'publiczny',
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function formalVerificationSummary(Project $project): array
+    {
+        $verifications = $project->formalVerifications()
+            ->with(['createdBy', 'modifiedBy'])
+            ->latest()
+            ->get();
+
+        if ($verifications->isEmpty()) {
+            return ['Brak zapisanej karty weryfikacji formalnej.'];
+        }
+
+        return $verifications
+            ->flatMap(function (FormalVerification $verification): array {
+                return [
+                    self::verificationHeader(
+                        'Formalna',
+                        self::projectStatusLabel($verification->status),
+                        $verification->result,
+                        $verification->createdBy?->name,
+                        $verification->updated_at,
+                        $verification->result_comments,
+                    ),
+                    ...self::answersSummary($verification->answers ?? [], self::formalAnswerLabelMap()),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function verificationAssignmentsSummary(Project $project): array
+    {
+        $assignments = $project->verificationAssignments()
+            ->with('department')
+            ->oldest()
+            ->get();
+
+        if ($assignments->isEmpty()) {
+            return ['Brak przydzielonych jednostek.'];
+        }
+
+        return $assignments
+            ->map(function (VerificationAssignment $assignment): string {
+                $parts = [
+                    self::assignmentTypeLabel($assignment->type).' - '.($assignment->department?->name ?? 'brak jednostki'),
+                    'termin: '.self::dateTime($assignment->deadline),
+                    'wysłano: '.self::dateTime($assignment->sent_at),
+                    'status: '.($assignment->is_returned ? 'cofnięta' : 'aktywna'),
+                ];
+
+                if (filled($assignment->notes)) {
+                    $parts[] = 'uwagi: '.$assignment->notes;
+                }
+
+                return implode(', ', $parts);
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function meritVerificationSummary(Project $project, string $type): array
+    {
+        [$relation, $labelMap, $label] = match ($type) {
+            'initial' => ['initialMeritVerifications', self::meritAnswerLabelMap('initial'), 'Wstępna'],
+            'final' => ['finalMeritVerifications', self::meritAnswerLabelMap('final'), 'Merytoryczna'],
+            'consultation' => ['consultationVerifications', self::meritAnswerLabelMap('consultation'), 'Konsultacja'],
+        };
+
+        $verifications = $project->{$relation}()
+            ->with(['department', 'createdBy'])
+            ->latest()
+            ->get();
+
+        if ($verifications->isEmpty()) {
+            return ["Brak zapisanej karty: {$label}."];
+        }
+
+        return $verifications
+            ->flatMap(function ($verification) use ($label, $labelMap): array {
+                return [
+                    self::verificationHeader(
+                        $label.' - '.($verification->department?->name ?? 'brak jednostki'),
+                        self::cardStatusLabel($verification->status),
+                        $verification->result,
+                        $verification->createdBy?->name,
+                        $verification->updated_at,
+                        $verification->result_comments,
+                    ),
+                    ...self::answersSummary($verification->answers ?? [], $labelMap),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function boardVotesSummary(Project $project): array
+    {
+        $votes = $project->boardVotes()
+            ->with('user')
+            ->oldest()
+            ->get();
+
+        if ($votes->isEmpty()) {
+            return ['Brak głosowań zespołów/komisji dla projektu.'];
+        }
+
+        return $votes
+            ->map(fn ($vote): string => implode(', ', array_filter([
+                'Rada/komisja: '.$vote->board_type->value,
+                'głos: '.self::boardChoiceLabel($vote->board_type, (int) $vote->choice),
+                'osoba: '.($vote->user?->name ?? 'nieznana'),
+                'data: '.self::dateTime($vote->created_at),
+                filled($vote->comment) ? 'komentarz: '.$vote->comment : null,
+            ])))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function appealSummary(Project $project): array
+    {
+        $appeal = $project->appeal()->first();
+
+        if ($appeal === null) {
+            return ['Brak odwołania.'];
+        }
+
+        return array_values(array_filter([
+            'Treść: '.$appeal->appeal_message,
+            'Decyzja wstępna: '.self::appealDecisionLabel((int) $appeal->first_decision),
+            'Data decyzji: '.self::dateTime($appeal->first_decision_created_at),
+            filled($appeal->response_to_appeal) ? 'Odpowiedź: '.$appeal->response_to_appeal : null,
+            'Data odpowiedzi: '.self::dateTime($appeal->response_created_at),
+        ]));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function verificationVersionsSummary(Project $project): array
+    {
+        $verificationIds = collect([
+            ...$project->formalVerifications()->pluck('id')->all(),
+            ...$project->initialMeritVerifications()->pluck('id')->all(),
+            ...$project->finalMeritVerifications()->pluck('id')->all(),
+            ...$project->consultationVerifications()->pluck('id')->all(),
+        ])->filter()->values();
+
+        if ($verificationIds->isEmpty()) {
+            return ['Brak wersji kart weryfikacji.'];
+        }
+
+        $versions = VerificationVersion::query()
+            ->with('user')
+            ->whereIn('verification_legacy_id', $verificationIds)
+            ->latest()
+            ->get();
+
+        if ($versions->isEmpty()) {
+            return ['Brak wersji kart weryfikacji.'];
+        }
+
+        return $versions
+            ->map(fn (VerificationVersion $version): string => implode(', ', [
+                self::assignmentTypeLabel(VerificationAssignmentType::tryFrom((int) $version->type)),
+                'wersja z '.$version->created_at?->format('Y-m-d H:i'),
+                'autor: '.($version->user?->name ?? 'system'),
+            ]))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $answers
+     * @param  array<string, string>  $labels
+     * @return list<string>
+     */
+    private static function answersSummary(array $answers, array $labels): array
+    {
+        if ($answers === []) {
+            return ['Brak odpowiedzi szczegółowych.'];
+        }
+
+        return collect($answers)
+            ->map(function (mixed $value, string $key) use ($labels): string {
+                $label = $labels[$key] ?? $key;
+                $answer = match (true) {
+                    is_bool($value) => $value ? 'tak' : 'nie',
+                    $value === 1 => 'tak',
+                    $value === 0 => 'nie',
+                    $value === null => 'nie podano',
+                    default => (string) $value,
+                };
+
+                return "{$label}: {$answer}";
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function formalAnswerLabelMap(): array
+    {
+        $labels = [];
+
+        foreach (self::formalAnswerFields() as $definition) {
+            $legacy = $definition['legacy'];
+            $labels[$legacy] = $definition['label'];
+            $labels[$legacy.'Comments'] = $definition['label'].' - uwagi';
+        }
+
+        $labels['isProjectCategory'] = 'Kategoria weryfikowanego projektu';
+
+        return $labels;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function meritAnswerLabelMap(string $type): array
+    {
+        $definitions = match ($type) {
+            'initial' => [
+                ...self::INITIAL_MERIT_ANSWER_FIELDS,
+                ...self::INITIAL_MERIT_TEXT_FIELDS,
+            ],
+            'final' => [
+                ...self::FINAL_MERIT_ANSWER_FIELDS,
+                ...self::FINAL_MERIT_TEXT_FIELDS,
+            ],
+            'consultation' => self::CONSULTATION_TEXT_FIELDS,
+        };
+
+        $labels = [];
+
+        foreach ($definitions as $definition) {
+            $legacy = $definition['legacy'];
+            $labels[$legacy] = $definition['label'];
+            $labels[$legacy.'Comments'] = $definition['label'].' - uwagi';
+        }
+
+        return $labels;
+    }
+
+    private static function verificationHeader(
+        string $name,
+        string $status,
+        ?bool $result,
+        ?string $actor,
+        ?Carbon $updatedAt,
+        ?string $comments,
+    ): string {
+        return implode(', ', array_filter([
+            $name,
+            'status: '.$status,
+            'wynik: '.self::resultLabel($result),
+            'osoba: '.($actor ?: 'nie podano'),
+            'aktualizacja: '.self::dateTime($updatedAt),
+            filled($comments) ? 'uzasadnienie: '.$comments : null,
+        ]));
+    }
+
+    private static function projectStatusLabel(int|string|null $status): string
+    {
+        return ProjectStatus::tryFrom((int) $status)?->adminLabel() ?? 'nieznany status';
+    }
+
+    private static function cardStatusLabel(mixed $status): string
+    {
+        $status = $status instanceof VerificationCardStatus ? $status : VerificationCardStatus::tryFrom((int) $status);
+
+        return match ($status) {
+            VerificationCardStatus::WorkingCopy => 'kopia robocza',
+            VerificationCardStatus::Sent => 'wysłana',
+            default => 'nieznany status',
+        };
+    }
+
+    private static function assignmentTypeLabel(?VerificationAssignmentType $type): string
+    {
+        return match ($type) {
+            VerificationAssignmentType::MeritInitial => 'Weryfikacja wstępna',
+            VerificationAssignmentType::MeritFinish => 'Weryfikacja końcowa',
+            VerificationAssignmentType::Consultation => 'Konsultacja',
+            VerificationAssignmentType::FormalVerification => 'Weryfikacja formalna',
+            default => 'Nieznany typ',
+        };
+    }
+
+    private static function boardChoiceLabel(BoardType $boardType, int $choice): string
+    {
+        return self::boardVoteChoiceOptions($boardType)[$choice] ?? 'nieznany głos';
+    }
+
+    private static function appealDecisionLabel(int $decision): string
+    {
+        return match (ProjectAppealFirstDecision::tryFrom($decision)) {
+            ProjectAppealFirstDecision::Pending => 'oczekuje',
+            ProjectAppealFirstDecision::Rejected => 'odrzucone',
+            ProjectAppealFirstDecision::Accepted => 'uwzględnione',
+            default => 'nieznana decyzja',
+        };
+    }
+
+    private static function resultLabel(?bool $result): string
+    {
+        return match ($result) {
+            true => 'pozytywny',
+            false => 'negatywny',
+            null => 'nie podano',
+        };
+    }
+
+    private static function money(mixed $amount): string
+    {
+        return number_format((float) $amount, 2, ',', ' ').' zł';
+    }
+
+    private static function dateTime(mixed $dateTime): string
+    {
+        if ($dateTime instanceof Carbon) {
+            return $dateTime->format('Y-m-d H:i');
+        }
+
+        if ($dateTime === null || $dateTime === '') {
+            return 'nie podano';
+        }
+
+        return Carbon::parse($dateTime)->format('Y-m-d H:i');
+    }
+
+    private static function processStageLabel(Project $project): string
+    {
+        return match (true) {
+            $project->status === ProjectStatus::WorkingCopy => 'Kopia robocza po stronie mieszkańca',
+            $project->status === ProjectStatus::Submitted => 'Złożony, oczekuje na obsługę BDO',
+            in_array($project->status, [ProjectStatus::DuringFormalVerification, ProjectStatus::FormallyVerified, ProjectStatus::RejectedFormally], true) => 'Weryfikacja formalna',
+            in_array($project->status, [ProjectStatus::DuringInitialVerification, ProjectStatus::InitialVerificationRejected], true) => 'Weryfikacja wstępna',
+            in_array($project->status, [ProjectStatus::SentForMeritVerification, ProjectStatus::DuringMeritVerification, ProjectStatus::MeritVerificationAccepted, ProjectStatus::MeritVerificationRejected], true) => 'Weryfikacja merytoryczna',
+            in_array($project->status, [ProjectStatus::DuringTeamVerification, ProjectStatus::TeamAccepted, ProjectStatus::TeamRejected, ProjectStatus::TeamRejectedWithRecall], true) => 'Decyzje rady/komisji',
+            $project->status === ProjectStatus::Picked => 'Lista do głosowania',
+            $project->status === ProjectStatus::PickedForRealization => 'Wybrany do realizacji',
+            $project->status->isRejected() => 'Odrzucony',
+            default => 'Etap pośredni',
+        };
+    }
+
+    private static function nextStepLabel(Project $project): string
+    {
+        return match ($project->status) {
+            ProjectStatus::WorkingCopy => 'Mieszkaniec musi wysłać projekt do urzędu.',
+            ProjectStatus::Submitted => 'Rozpocząć albo zakończyć weryfikację formalną.',
+            ProjectStatus::DuringFormalVerification => $project->need_correction
+                ? 'Oczekiwać na korektę mieszkańca albo ją zastosować.'
+                : 'Zakończyć formalnie pozytywnie, odrzucić albo wezwać do korekty.',
+            ProjectStatus::FormallyVerified => 'Przekazać do weryfikacji wstępnej.',
+            ProjectStatus::DuringInitialVerification => 'Zebrać karty wstępne i skierować do dalszej weryfikacji.',
+            ProjectStatus::SentForMeritVerification, ProjectStatus::DuringMeritVerification => 'Zebrać karty merytoryczne i konsultacje.',
+            ProjectStatus::MeritVerificationAccepted => 'Przekazać do decyzji rady/komisji.',
+            ProjectStatus::TeamAccepted => 'Projekt może trafić na listę do głosowania.',
+            ProjectStatus::Picked => 'Projekt jest dostępny do głosowania.',
+            ProjectStatus::PickedForRealization => 'Projekt jest na etapie realizacji.',
+            default => $project->status->isRejected() ? 'Brak dalszych standardowych działań poza odwołaniem/retrybem.' : 'Sprawdzić historię weryfikacji i dostępne akcje.',
+        };
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function verificationProgress(Project $project): array
+    {
+        return [
+            'Formalna: '.self::latestVerificationState($project, 'formalVerifications'),
+            'Wstępna: '.self::latestVerificationState($project, 'initialMeritVerifications'),
+            'Merytoryczna: '.self::latestVerificationState($project, 'finalMeritVerifications'),
+            'Konsultacje: '.self::latestVerificationState($project, 'consultationVerifications'),
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function votingProgress(Project $project): array
+    {
+        return [
+            'Status listy: '.$project->status->adminLabel(),
+            'Głosy rady/komisji: '.$project->boardVotes()->count(),
+            'Odwołanie: '.($project->appeal()->exists() ? 'zarejestrowane' : 'brak'),
+            'Wybrany do głosowania: '.($project->status === ProjectStatus::Picked ? 'tak' : 'nie'),
+        ];
+    }
+
+    private static function latestVerificationState(Project $project, string $relation): string
+    {
+        $verification = $project->{$relation}()->latest()->first();
+
+        if ($verification === null) {
+            return 'brak karty';
+        }
+
+        if ($relation === 'formalVerifications') {
+            return self::resultLabel($verification->result).' / '.self::projectStatusLabel($verification->status);
+        }
+
+        return self::resultLabel($verification->result).' / '.self::cardStatusLabel($verification->status);
     }
 
     private static function canVerifyProjects(): bool

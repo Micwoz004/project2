@@ -16,6 +16,14 @@ enum SystemPermission: string
     case CivicBudgetResultsView = 'civic_budget.results.view';
     case CivicBudgetReportsExport = 'civic_budget.reports.export';
     case CivicBudgetSettingsManage = 'civic_budget.settings.manage';
+    case EcoServicesAdminAccess = 'eco_services.admin.access';
+    case EcoServicesZonesManage = 'eco_services.zones.manage';
+    case EcoServicesWasteManage = 'eco_services.waste.manage';
+    case EcoServicesSchedulesManage = 'eco_services.schedules.manage';
+    case EcoServicesPszokManage = 'eco_services.pszok.manage';
+    case EcoServicesNewsManage = 'eco_services.news.manage';
+    case EcoServicesNotificationsManage = 'eco_services.notifications.manage';
+    case EcoServicesAirQualityManage = 'eco_services.air_quality.manage';
     case AdminAccess = 'admin.access';
     case ProjectsView = 'projects.view';
     case ProjectsManage = 'projects.manage';

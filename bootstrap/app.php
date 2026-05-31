@@ -1,6 +1,9 @@
 <?php
 
+use App\Console\Commands\ImportEcoScheduleCsvCommand;
 use App\Console\Commands\ImportLegacyFixtureCommand;
+use App\Console\Commands\QueueEcoCollectionRemindersCommand;
+use App\Console\Commands\SyncEcoAirQualityCommand;
 use App\Http\Middleware\AuthenticateMobileToken;
 use App\Platform\Http\Middleware\EnsureProductEnabled;
 use App\Platform\Http\Middleware\ResolveCurrentClient;
@@ -10,7 +13,10 @@ use Illuminate\Foundation\Configuration\Middleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
+        ImportEcoScheduleCsvCommand::class,
         ImportLegacyFixtureCommand::class,
+        QueueEcoCollectionRemindersCommand::class,
+        SyncEcoAirQualityCommand::class,
     ])
     ->withRouting(
         web: __DIR__.'/../routes/web.php',

@@ -103,6 +103,24 @@ function canSubmitProjects() {
     return Boolean(state.app?.authenticated);
 }
 
+function hasEcoServices() {
+    return (state.platform?.enabledProducts || []).some((product) => product.key === 'eco_services')
+        || Boolean(state.ecoServices);
+}
+
+function ecoHref(key) {
+    return state.links?.[key] || {
+        ecoHome: '/eco-uslugi',
+        ecoSchedule: '/eco-uslugi/harmonogram',
+        ecoSegregation: '/eco-uslugi/segregacja',
+        ecoWasteSearch: '/eco-uslugi/wyszukiwarka',
+        ecoPszok: '/eco-uslugi/pszok',
+        ecoAirQuality: '/eco-uslugi/jakosc-powietrza',
+        ecoNews: '/eco-uslugi/aktualnosci',
+        ecoAddresses: '/eco-uslugi/adresy',
+    }[key] || '#';
+}
+
 function submitProjectLink(label, className = 'btn btn-primary') {
     if (!canSubmitProjects()) return '';
 
@@ -306,6 +324,7 @@ function layout(content) {
             <nav id="primary-navigation" class="main-nav" data-nav-menu aria-label="Główna nawigacja">
                 <ul class="nav-list">
                     <li><a class="nav-link" href="${href('projects')}" data-spa-link ${active('/projekty') || active('/projekt') ? 'aria-current="page"' : ''} data-i18n="navProjects">${c.navProjects}</a></li>
+                    ${hasEcoServices() ? `<li><a class="nav-link" href="${ecoHref('ecoHome')}" data-spa-link ${active('/eco-uslugi') ? 'aria-current="page"' : ''}>Ekousługi</a></li>` : ''}
                     ${renderInfoDropdown(c.navInfo)}
                     ${residentNav}
                     ${canSubmitProjects() ? `<li><a class="btn btn-primary" href="${href('residentSubmit')}" data-spa-link data-i18n="navSubmit">${c.navSubmit}</a></li>` : ''}
@@ -1957,8 +1976,287 @@ function resultsView() {
     `;
 }
 
+function ecoData() {
+    return state.ecoServices || {};
+}
+
+function ecoNav(activeKey) {
+    const items = [
+        ['ecoHome', 'Pulpit'],
+        ['ecoSchedule', 'Harmonogram'],
+        ['ecoWasteSearch', 'Wyszukiwarka'],
+        ['ecoSegregation', 'Segregacja'],
+        ['ecoPszok', 'PSZOK'],
+        ['ecoAirQuality', 'Powietrze'],
+        ['ecoNews', 'Aktualności'],
+        ['ecoAddresses', 'Adresy'],
+    ];
+
+    return `
+        <nav class="eco-tabs" aria-label="Nawigacja ekousług">
+            ${items.map(([key, label]) => `
+                <a href="${ecoHref(key)}" data-spa-link ${key === activeKey ? 'aria-current="page"' : ''}>${label}</a>
+            `).join('')}
+        </nav>
+    `;
+}
+
+function ecoShell(activeKey, body) {
+    return `
+        <section class="eco-hero" aria-labelledby="eco-title">
+            <div>
+                <p class="eyebrow">Ekousługi</p>
+                <h1 id="eco-title">Odpady, harmonogramy i jakość powietrza</h1>
+                <p class="lead">Sprawdź najbliższy odbiór, znajdź właściwą frakcję, zobacz punkty PSZOK i lokalne komunikaty środowiskowe.</p>
+            </div>
+            <div class="eco-hero-actions">
+                <a class="btn btn-primary" href="${ecoHref('ecoSchedule')}" data-spa-link>Harmonogram</a>
+                <a class="btn btn-secondary" href="${ecoHref('ecoWasteSearch')}" data-spa-link>Gdzie wyrzucić?</a>
+            </div>
+        </section>
+        ${ecoNav(activeKey)}
+        ${body}
+    `;
+}
+
+function ecoCollectionCard(item) {
+    return `
+        <article class="eco-row">
+            <time>${escapeHtml(item.collectionDate || 'Termin do ustalenia')}</time>
+            <div>
+                <strong>${escapeHtml(item.fraction?.name || 'Frakcja')}</strong>
+                <span>${escapeHtml(item.zone?.name || 'Strefa nieustalona')}</span>
+            </div>
+            <i style="--fraction:${escapeHtml(item.fraction?.color || '#168e45')}"></i>
+        </article>
+    `;
+}
+
+function ecoHomeView() {
+    const eco = ecoData();
+    const activeAddress = (eco.addresses || []).find((address) => address.id === eco.activeAddressId);
+    const latestNews = (eco.news || [])[0];
+
+    return ecoShell('ecoHome', `
+        <section class="eco-dashboard">
+            <div class="eco-panel eco-panel-main">
+                <p class="eyebrow">Najbliższy odbiór</p>
+                <h2>${activeAddress ? escapeHtml(activeAddress.label || `${activeAddress.street || ''} ${activeAddress.buildingNumber}`) : 'Dodaj adres odbioru'}</h2>
+                ${(eco.upcomingCollections || []).slice(0, 3).map(ecoCollectionCard).join('') || '<p class="muted">Brak nadchodzących terminów dla aktywnego adresu.</p>'}
+                <a class="btn btn-secondary" href="${ecoHref('ecoAddresses')}" data-spa-link>Zarządzaj adresami</a>
+            </div>
+            <div class="eco-panel">
+                <p class="eyebrow">Jakość powietrza</p>
+                ${ecoAirStationSummary((eco.airQualityStations || [])[0])}
+                <a class="btn btn-secondary" href="${ecoHref('ecoAirQuality')}" data-spa-link>Wszystkie stacje</a>
+            </div>
+            <div class="eco-panel">
+                <p class="eyebrow">Aktualności</p>
+                ${latestNews ? `<h2>${escapeHtml(latestNews.title)}</h2><p>${escapeHtml(latestNews.lead || stripHtml(latestNews.body).slice(0, 150))}</p>` : '<p class="muted">Brak opublikowanych aktualności.</p>'}
+                <a class="btn btn-secondary" href="${ecoHref('ecoNews')}" data-spa-link>Czytaj</a>
+            </div>
+        </section>
+    `);
+}
+
+function ecoScheduleView() {
+    const items = ecoData().upcomingCollections || [];
+
+    return ecoShell('ecoSchedule', `
+        <section class="eco-content">
+            <div class="section-head compact">
+                <div>
+                    <p class="eyebrow">Harmonogram</p>
+                    <h1>Najbliższe odbiory</h1>
+                </div>
+                <p class="lead">Terminy są dopasowane do aktywnego adresu mieszkańca i przypisanej strefy odbioru.</p>
+            </div>
+            <div class="eco-list">${items.map(ecoCollectionCard).join('') || '<p class="panel">Dodaj aktywny adres, aby zobaczyć harmonogram odbioru.</p>'}</div>
+        </section>
+    `);
+}
+
+function ecoSegregationView() {
+    const fractions = ecoData().fractions || [];
+
+    return ecoShell('ecoSegregation', `
+        <section class="eco-content">
+            <div class="section-head compact"><div><p class="eyebrow">Segregacja</p><h1>Frakcje odpadów</h1></div></div>
+            <div class="eco-grid">
+                ${fractions.map((fraction) => `
+                    <article class="eco-panel">
+                        <i class="eco-swatch" style="--fraction:${escapeHtml(fraction.color || '#168e45')}"></i>
+                        <h2>${escapeHtml(fraction.name)}</h2>
+                        <p>${escapeHtml(fraction.description || '')}</p>
+                        ${fraction.whatToPut ? `<h3>Wrzucaj</h3><p>${escapeHtml(stripHtml(fraction.whatToPut))}</p>` : ''}
+                        ${fraction.whatNotToPut ? `<h3>Nie wrzucaj</h3><p>${escapeHtml(stripHtml(fraction.whatNotToPut))}</p>` : ''}
+                    </article>
+                `).join('') || '<p class="panel">Brak aktywnych frakcji.</p>'}
+            </div>
+        </section>
+    `);
+}
+
+function ecoWasteSearchView() {
+    return ecoShell('ecoWasteSearch', `
+        <section class="eco-content">
+            <div class="section-head compact"><div><p class="eyebrow">Wyszukiwarka</p><h1>Gdzie wyrzucić odpad?</h1></div></div>
+            <form class="eco-search" data-eco-waste-search>
+                <label class="field">
+                    <span>Nazwa odpadu</span>
+                    <input name="query" type="search" placeholder="np. karton po mleku, farba, bateria" autocomplete="off">
+                </label>
+                <button class="btn btn-primary" type="submit">Szukaj</button>
+            </form>
+            <div class="eco-list" data-eco-waste-results>
+                <p class="panel">Wpisz nazwę odpadu, aby zobaczyć frakcję i instrukcję postępowania.</p>
+            </div>
+        </section>
+    `);
+}
+
+function ecoPszokView() {
+    const points = ecoData().pszokPoints || [];
+
+    return ecoShell('ecoPszok', `
+        <section class="eco-content">
+            <div class="section-head compact"><div><p class="eyebrow">PSZOK</p><h1>Punkty selektywnej zbiórki</h1></div></div>
+            <div class="eco-grid">
+                ${points.map((point) => `
+                    <article class="eco-panel">
+                        <h2>${escapeHtml(point.name)}</h2>
+                        <p>${escapeHtml([point.address?.street, point.address?.buildingNumber, point.address?.locality].filter(Boolean).join(' '))}</p>
+                        <p>${escapeHtml(point.description || '')}</p>
+                        <p class="eco-tags">${(point.fractions || []).map((fraction) => `<span>${escapeHtml(fraction.name)}</span>`).join('')}</p>
+                    </article>
+                `).join('') || '<p class="panel">Brak aktywnych punktów PSZOK.</p>'}
+            </div>
+        </section>
+    `);
+}
+
+function ecoAirStationSummary(station) {
+    if (!station) return '<p class="muted">Brak aktualnych odczytów.</p>';
+
+    return `
+        <h2>${escapeHtml(station.indexCategoryName || 'Pomiar dostępny')}</h2>
+        <p>${escapeHtml(station.name)}${station.measuredAt ? `, ${escapeHtml(station.measuredAt)}` : ''}</p>
+    `;
+}
+
+function ecoAirQualityView() {
+    const stations = ecoData().airQualityStations || [];
+
+    return ecoShell('ecoAirQuality', `
+        <section class="eco-content">
+            <div class="section-head compact"><div><p class="eyebrow">Jakość powietrza</p><h1>Lokalne stacje pomiarowe</h1></div></div>
+            <div class="eco-grid">
+                ${stations.map((station) => `
+                    <article class="eco-panel">
+                        ${ecoAirStationSummary(station)}
+                        <dl class="eco-readings">
+                            ${(station.readings || []).map((reading) => `
+                                <div><dt>${escapeHtml(reading.parameterCode)}</dt><dd>${escapeHtml(reading.value ?? '-')} ${escapeHtml(reading.unit || '')}</dd></div>
+                            `).join('')}
+                        </dl>
+                    </article>
+                `).join('') || '<p class="panel">Brak aktywnych stacji jakości powietrza.</p>'}
+            </div>
+        </section>
+    `);
+}
+
+function ecoNewsView() {
+    const slug = currentPath().startsWith('/eco-uslugi/aktualnosci/')
+        ? decodeURIComponent(currentPath().replace('/eco-uslugi/aktualnosci/', ''))
+        : null;
+    const posts = ecoData().news || [];
+    const selected = slug ? posts.find((post) => post.slug === slug) : null;
+
+    if (selected) {
+        return ecoShell('ecoNews', `
+            <article class="eco-content eco-article">
+                <p class="eyebrow">${escapeHtml(selected.category || 'Aktualność')}</p>
+                <h1>${escapeHtml(selected.title)}</h1>
+                <p class="lead">${escapeHtml(selected.lead || '')}</p>
+                <div class="content-body">${html(selected.body)}</div>
+            </article>
+        `);
+    }
+
+    return ecoShell('ecoNews', `
+        <section class="eco-content">
+            <div class="section-head compact"><div><p class="eyebrow">Aktualności</p><h1>Komunikaty środowiskowe</h1></div></div>
+            <div class="eco-list">
+                ${posts.map((post) => `
+                    <article class="eco-row">
+                        <time>${escapeHtml(post.publishedAt || '')}</time>
+                        <div><strong>${escapeHtml(post.title)}</strong><span>${escapeHtml(post.lead || stripHtml(post.body).slice(0, 140))}</span></div>
+                        <a class="btn btn-secondary" href="${escapeHtml(post.url)}" data-spa-link>Czytaj</a>
+                    </article>
+                `).join('') || '<p class="panel">Brak opublikowanych aktualności.</p>'}
+            </div>
+        </section>
+    `);
+}
+
+function ecoAddressesView() {
+    const eco = ecoData();
+
+    if (!state.app?.authenticated) {
+        return ecoShell('ecoAddresses', `
+            <section class="eco-content"><p class="panel">Zaloguj się, aby dodać adres i zobaczyć harmonogram odbioru.</p></section>
+        `);
+    }
+
+    return ecoShell('ecoAddresses', `
+        <section class="eco-content eco-address-layout">
+            <div>
+                <div class="section-head compact"><div><p class="eyebrow">Adresy</p><h1>Adresy odbioru</h1></div></div>
+                <div class="eco-list">
+                    ${(eco.addresses || []).map((address) => `
+                        <article class="eco-row">
+                            <div>
+                                <strong>${escapeHtml(address.label || `${address.street || ''} ${address.buildingNumber}`)}</strong>
+                                <span>${escapeHtml([address.street, address.buildingNumber, address.locality].filter(Boolean).join(' '))}</span>
+                                <span>Strefa: ${escapeHtml(address.zone?.name || 'nieustalona')}</span>
+                            </div>
+                            ${address.active ? '<span class="status-pill">Aktywny</span>' : `
+                                <form method="post" action="/eco-uslugi/adresy/${address.id}/aktywny">
+                                    <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                                    <input type="hidden" name="_method" value="PATCH">
+                                    <button class="btn btn-secondary" type="submit">Ustaw aktywny</button>
+                                </form>
+                            `}
+                        </article>
+                    `).join('') || '<p class="panel">Nie masz jeszcze dodanego adresu.</p>'}
+                </div>
+            </div>
+            <form class="eco-panel resident-form" method="post" action="${ecoHref('ecoAddressStore')}">
+                <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
+                <h2>Dodaj adres</h2>
+                <label class="field"><span>Etykieta</span><input name="label" maxlength="100"></label>
+                <label class="field"><span>Miejscowość</span><input name="locality" required maxlength="150"></label>
+                <label class="field"><span>Ulica</span><input name="street" maxlength="180"></label>
+                <label class="field"><span>Numer budynku</span><input name="building_number" required maxlength="20"></label>
+                <label class="field"><span>Numer lokalu</span><input name="apartment_number" maxlength="20"></label>
+                <label class="field"><span>Kod pocztowy</span><input name="postal_code" maxlength="12"></label>
+                <button class="btn btn-primary" type="submit">Zapisz adres</button>
+            </form>
+        </section>
+    `);
+}
+
 function renderRoute() {
     const path = currentPath();
+    if (path === '/eco-uslugi') return ecoHomeView();
+    if (path === '/eco-uslugi/harmonogram') return ecoScheduleView();
+    if (path === '/eco-uslugi/segregacja') return ecoSegregationView();
+    if (path === '/eco-uslugi/wyszukiwarka') return ecoWasteSearchView();
+    if (path === '/eco-uslugi/pszok') return ecoPszokView();
+    if (path === '/eco-uslugi/jakosc-powietrza') return ecoAirQualityView();
+    if (path === '/eco-uslugi/aktualnosci' || path.startsWith('/eco-uslugi/aktualnosci/')) return ecoNewsView();
+    if (path === '/eco-uslugi/adresy') return ecoAddressesView();
     if (path === '/') return homeView();
     if (path === '/login') return loginView();
     if (path === '/rejestracja') return registerView();
@@ -2197,6 +2495,39 @@ function bindActions() {
             syncUrl();
         }, 0));
         filter();
+    }
+
+    const ecoWasteSearch = document.querySelector('[data-eco-waste-search]');
+    if (ecoWasteSearch) {
+        const results = document.querySelector('[data-eco-waste-results]');
+        ecoWasteSearch.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const query = String(new FormData(ecoWasteSearch).get('query') || '').trim();
+            if (!query || !results) return;
+
+            results.innerHTML = '<p class="panel">Szukam odpadu...</p>';
+
+            try {
+                const response = await fetch(`/api/mobile/eco-services/waste/search?query=${encodeURIComponent(query)}`, {
+                    headers: { Accept: 'application/json' },
+                });
+                if (!response.ok) throw new Error('Search failed');
+                const payload = await response.json();
+                const items = payload.items || [];
+                results.innerHTML = items.length ? items.map((item) => `
+                    <article class="eco-row">
+                        <div>
+                            <strong>${escapeHtml(item.name)}</strong>
+                            <span>${escapeHtml(item.instruction || 'Sprawdź lokalne zasady segregacji dla tej frakcji.')}</span>
+                            <span>Frakcja: ${escapeHtml(item.fraction?.name || 'nieustalona')}</span>
+                        </div>
+                        <i style="--fraction:${escapeHtml(item.fraction?.color || '#168e45')}"></i>
+                    </article>
+                `).join('') : '<p class="panel">Nie znaleziono odpadu dla podanej frazy.</p>';
+            } catch (error) {
+                results.innerHTML = '<p class="panel">Nie udało się wykonać wyszukiwania. Spróbuj ponownie.</p>';
+            }
+        });
     }
 
     bindHomeMotion();

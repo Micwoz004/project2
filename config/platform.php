@@ -8,5 +8,6 @@ return [
 
     'default_products' => [
         ProductKey::CivicBudget->value,
+        ProductKey::EcoServices->value,
     ],
 ];

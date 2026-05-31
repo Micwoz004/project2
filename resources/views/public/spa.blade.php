@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Budżet Obywatelski Miasta</title>
+    <title>{{ $spaState['app']['title'] ?? 'Platforma mieszkańca' }}</title>
     @vite(['resources/css/public-spa.css', 'resources/js/public-spa.js'])
 </head>
 <body>

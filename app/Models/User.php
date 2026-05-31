@@ -86,6 +86,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
                     || $this->can('admin.access')
                     || $this->hasAnyRole(['admin', 'bdo'])
                 ),
+            ProductKey::EcoServices->adminPanelId() => $client->isProductEnabled(ProductKey::EcoServices)
+                && (
+                    $this->can('eco_services.admin.access')
+                    || $this->can('admin.access')
+                    || $this->hasAnyRole(['admin', 'bdo'])
+                ),
             default => false,
         };
     }

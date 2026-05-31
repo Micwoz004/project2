@@ -2,28 +2,10 @@
 
 namespace App\Providers;
 
-use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Products\CivicBudget\Domain\Dictionaries\Models\DictionaryEntry;
-use App\Products\CivicBudget\Domain\Projects\Models\Category;
-use App\Products\CivicBudget\Domain\Projects\Models\Project;
-use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
-use App\Products\CivicBudget\Domain\Projects\Models\ProjectChangeSuggestion;
-use App\Products\CivicBudget\Domain\Results\Models\ResultPublication;
-use App\Products\CivicBudget\Domain\Settings\Models\ApplicationSetting;
-use App\Products\CivicBudget\Domain\Settings\Models\ContentPage;
-use App\Products\CivicBudget\Domain\Settings\Models\CostGuideItem;
-use App\Products\CivicBudget\Domain\Settings\Models\PublicAnnouncement;
-use App\Products\CivicBudget\Domain\Settings\Models\PublicPage;
+use App\Models\User;
+use App\Platform\Clients\Services\CurrentClient;
 use App\Platform\Users\Enums\SystemRole;
 use App\Platform\Users\Models\Department;
-use App\Platform\Clients\Services\CurrentClient;
-use App\Products\CivicBudget\Domain\Verification\Enums\BoardType;
-use App\Products\CivicBudget\Domain\Verification\Models\ProjectAppeal;
-use App\Products\CivicBudget\Domain\Voting\Models\VoteCard;
-use App\Products\CivicBudget\Domain\Voting\Services\Sms\HttpSmsProvider;
-use App\Products\CivicBudget\Domain\Voting\Services\Sms\NullSmsProvider;
-use App\Products\CivicBudget\Domain\Voting\Services\Sms\SmsProvider;
-use App\Models\User;
 use App\Policies\ApplicationSettingPolicy;
 use App\Policies\BudgetEditionPolicy;
 use App\Policies\CategoryPolicy;
@@ -39,6 +21,26 @@ use App\Policies\PublicAnnouncementPolicy;
 use App\Policies\PublicPagePolicy;
 use App\Policies\ResultPublicationPolicy;
 use App\Policies\VoteCardPolicy;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\Dictionaries\Models\DictionaryEntry;
+use App\Products\CivicBudget\Domain\Projects\Models\Category;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectChangeSuggestion;
+use App\Products\CivicBudget\Domain\Results\Models\ResultPublication;
+use App\Products\CivicBudget\Domain\Settings\Models\ApplicationSetting;
+use App\Products\CivicBudget\Domain\Settings\Models\ContentPage;
+use App\Products\CivicBudget\Domain\Settings\Models\CostGuideItem;
+use App\Products\CivicBudget\Domain\Settings\Models\PublicAnnouncement;
+use App\Products\CivicBudget\Domain\Settings\Models\PublicPage;
+use App\Products\CivicBudget\Domain\Verification\Enums\BoardType;
+use App\Products\CivicBudget\Domain\Verification\Models\ProjectAppeal;
+use App\Products\CivicBudget\Domain\Voting\Models\VoteCard;
+use App\Products\CivicBudget\Domain\Voting\Services\Sms\HttpSmsProvider;
+use App\Products\CivicBudget\Domain\Voting\Services\Sms\NullSmsProvider;
+use App\Products\CivicBudget\Domain\Voting\Services\Sms\SmsProvider;
+use App\Products\EcoServices\Domain\Waste\Services\GeminiWasteRecognitionClient;
+use App\Products\EcoServices\Domain\Waste\Services\WasteRecognitionClient;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
@@ -58,6 +60,8 @@ class AppServiceProvider extends ServiceProvider
                 ? new HttpSmsProvider
                 : new NullSmsProvider;
         });
+
+        $this->app->bind(WasteRecognitionClient::class, GeminiWasteRecognitionClient::class);
     }
 
     /**

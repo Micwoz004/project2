@@ -11,7 +11,7 @@ return new class extends Migration
         if (Schema::hasTable('client_products')) {
             DB::table('client_products')
                 ->where('product_key', 'eco_services')
-                ->update(['product_key' => 'eco_uslugi']);
+                ->update(['product_key' => 'eko_uslugi']);
         }
 
         if (Schema::hasTable('permissions')) {
@@ -27,7 +27,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('client_products')) {
             DB::table('client_products')
-                ->where('product_key', 'eco_uslugi')
+                ->where('product_key', 'eko_uslugi')
                 ->update(['product_key' => 'eco_services']);
         }
 
@@ -46,14 +46,14 @@ return new class extends Migration
     private function permissionNames(): array
     {
         return [
-            'eco_services.admin.access' => 'eco_uslugi.admin.access',
-            'eco_services.zones.manage' => 'eco_uslugi.zones.manage',
-            'eco_services.waste.manage' => 'eco_uslugi.waste.manage',
-            'eco_services.schedules.manage' => 'eco_uslugi.schedules.manage',
-            'eco_services.pszok.manage' => 'eco_uslugi.pszok.manage',
-            'eco_services.news.manage' => 'eco_uslugi.news.manage',
-            'eco_services.notifications.manage' => 'eco_uslugi.notifications.manage',
-            'eco_services.air_quality.manage' => 'eco_uslugi.air_quality.manage',
+            'eco_services.admin.access' => 'eko_uslugi.admin.access',
+            'eco_services.zones.manage' => 'eko_uslugi.zones.manage',
+            'eco_services.waste.manage' => 'eko_uslugi.waste.manage',
+            'eco_services.schedules.manage' => 'eko_uslugi.schedules.manage',
+            'eco_services.pszok.manage' => 'eko_uslugi.pszok.manage',
+            'eco_services.news.manage' => 'eko_uslugi.news.manage',
+            'eco_services.notifications.manage' => 'eko_uslugi.notifications.manage',
+            'eco_services.air_quality.manage' => 'eko_uslugi.air_quality.manage',
         ];
     }
 };

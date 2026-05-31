@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('eco_zones', function (Blueprint $table): void {
+        Schema::create('eko_zones', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
             $table->string('code', 50);
@@ -22,10 +22,10 @@ return new class extends Migration
             $table->index(['client_id', 'status']);
         });
 
-        Schema::create('eco_zone_address_rules', function (Blueprint $table): void {
+        Schema::create('eko_zone_address_rules', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
-            $table->foreignId('eco_zone_id')->constrained('eco_zones')->cascadeOnDelete();
+            $table->foreignId('eko_zone_id')->constrained('eko_zones')->cascadeOnDelete();
             $table->string('locality', 150)->nullable();
             $table->string('street', 180)->nullable();
             $table->string('building_from', 20)->nullable();
@@ -36,11 +36,11 @@ return new class extends Migration
             $table->index(['client_id', 'locality', 'street']);
         });
 
-        Schema::create('eco_resident_addresses', function (Blueprint $table): void {
+        Schema::create('eko_resident_addresses', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('eco_zone_id')->nullable()->constrained('eco_zones')->nullOnDelete();
+            $table->foreignId('eko_zone_id')->nullable()->constrained('eko_zones')->nullOnDelete();
             $table->string('label', 100)->nullable();
             $table->string('building_type', 30)->nullable();
             $table->string('province', 100)->nullable();
@@ -60,7 +60,7 @@ return new class extends Migration
             $table->index(['client_id', 'user_id', 'is_active']);
         });
 
-        Schema::create('eco_waste_fractions', function (Blueprint $table): void {
+        Schema::create('eko_waste_fractions', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
             $table->string('name', 150);
@@ -75,10 +75,10 @@ return new class extends Migration
             $table->index(['client_id', 'status']);
         });
 
-        Schema::create('eco_waste_items', function (Blueprint $table): void {
+        Schema::create('eko_waste_items', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
-            $table->foreignId('eco_waste_fraction_id')->nullable()->constrained('eco_waste_fractions')->nullOnDelete();
+            $table->foreignId('eko_waste_fraction_id')->nullable()->constrained('eko_waste_fractions')->nullOnDelete();
             $table->string('name', 150);
             $table->string('normalized_name', 180);
             $table->text('instruction')->nullable();
@@ -90,17 +90,17 @@ return new class extends Migration
             $table->index(['client_id', 'normalized_name']);
         });
 
-        Schema::create('eco_waste_item_synonyms', function (Blueprint $table): void {
+        Schema::create('eko_waste_item_synonyms', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
-            $table->foreignId('eco_waste_item_id')->constrained('eco_waste_items')->cascadeOnDelete();
+            $table->foreignId('eko_waste_item_id')->constrained('eko_waste_items')->cascadeOnDelete();
             $table->string('synonym', 150);
             $table->string('normalized_synonym', 180);
             $table->timestamps();
             $table->index(['client_id', 'normalized_synonym']);
         });
 
-        Schema::create('eco_pszok_points', function (Blueprint $table): void {
+        Schema::create('eko_pszok_points', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
             $table->string('name', 180);
@@ -120,13 +120,13 @@ return new class extends Migration
             $table->index(['client_id', 'status']);
         });
 
-        Schema::create('eco_pszok_fraction', function (Blueprint $table): void {
-            $table->foreignId('eco_pszok_point_id')->constrained('eco_pszok_points')->cascadeOnDelete();
-            $table->foreignId('eco_waste_fraction_id')->constrained('eco_waste_fractions')->cascadeOnDelete();
-            $table->primary(['eco_pszok_point_id', 'eco_waste_fraction_id']);
+        Schema::create('eko_pszok_fraction', function (Blueprint $table): void {
+            $table->foreignId('eko_pszok_point_id')->constrained('eko_pszok_points')->cascadeOnDelete();
+            $table->foreignId('eko_waste_fraction_id')->constrained('eko_waste_fractions')->cascadeOnDelete();
+            $table->primary(['eko_pszok_point_id', 'eko_waste_fraction_id']);
         });
 
-        Schema::create('eco_collection_schedules', function (Blueprint $table): void {
+        Schema::create('eko_collection_schedules', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
             $table->string('name', 180);
@@ -139,24 +139,24 @@ return new class extends Migration
             $table->index(['client_id', 'status']);
         });
 
-        Schema::create('eco_collection_schedule_dates', function (Blueprint $table): void {
+        Schema::create('eko_collection_schedule_dates', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
-            $table->foreignId('eco_collection_schedule_id')->constrained('eco_collection_schedules')->cascadeOnDelete();
-            $table->foreignId('eco_zone_id')->constrained('eco_zones')->cascadeOnDelete();
-            $table->foreignId('eco_waste_fraction_id')->constrained('eco_waste_fractions')->cascadeOnDelete();
+            $table->foreignId('eko_collection_schedule_id')->constrained('eko_collection_schedules')->cascadeOnDelete();
+            $table->foreignId('eko_zone_id')->constrained('eko_zones')->cascadeOnDelete();
+            $table->foreignId('eko_waste_fraction_id')->constrained('eko_waste_fractions')->cascadeOnDelete();
             $table->date('collection_date');
             $table->timestamps();
             $table->unique([
-                'eco_collection_schedule_id',
-                'eco_zone_id',
-                'eco_waste_fraction_id',
+                'eko_collection_schedule_id',
+                'eko_zone_id',
+                'eko_waste_fraction_id',
                 'collection_date',
-            ], 'eco_schedule_date_unique');
+            ], 'eko_schedule_date_unique');
             $table->index(['client_id', 'collection_date']);
         });
 
-        Schema::create('eco_news_categories', function (Blueprint $table): void {
+        Schema::create('eko_news_categories', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
             $table->string('name', 150);
@@ -166,14 +166,14 @@ return new class extends Migration
             $table->unique(['client_id', 'slug']);
         });
 
-        Schema::create('eco_news_posts', function (Blueprint $table): void {
+        Schema::create('eko_news_posts', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
-            $table->foreignId('eco_news_category_id')->nullable()->constrained('eco_news_categories')->nullOnDelete();
+            $table->foreignId('eko_news_category_id')->nullable()->constrained('eko_news_categories')->nullOnDelete();
             $table->string('title', 180);
             $table->string('slug', 180);
             $table->string('scope_type', 30)->default('global');
-            $table->foreignId('eco_zone_id')->nullable()->constrained('eco_zones')->nullOnDelete();
+            $table->foreignId('eko_zone_id')->nullable()->constrained('eko_zones')->nullOnDelete();
             $table->string('status', 30)->default('draft');
             $table->string('lead', 500)->nullable();
             $table->longText('body');
@@ -184,7 +184,7 @@ return new class extends Migration
             $table->index(['client_id', 'status', 'published_at']);
         });
 
-        Schema::create('eco_air_quality_stations', function (Blueprint $table): void {
+        Schema::create('eko_air_quality_stations', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
             $table->string('external_id', 80)->nullable();
@@ -198,10 +198,10 @@ return new class extends Migration
             $table->unique(['client_id', 'external_id']);
         });
 
-        Schema::create('eco_air_quality_readings', function (Blueprint $table): void {
+        Schema::create('eko_air_quality_readings', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
-            $table->foreignId('eco_air_quality_station_id')->constrained('eco_air_quality_stations')->cascadeOnDelete();
+            $table->foreignId('eko_air_quality_station_id')->constrained('eko_air_quality_stations')->cascadeOnDelete();
             $table->string('parameter_code', 40);
             $table->string('parameter_name', 120);
             $table->decimal('value', 12, 4)->nullable();
@@ -214,7 +214,7 @@ return new class extends Migration
             $table->index(['client_id', 'measured_at']);
         });
 
-        Schema::create('eco_notification_templates', function (Blueprint $table): void {
+        Schema::create('eko_notification_templates', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
             $table->string('name', 180);
@@ -232,10 +232,10 @@ return new class extends Migration
             $table->index(['client_id', 'trigger_type', 'status']);
         });
 
-        Schema::create('eco_notification_events', function (Blueprint $table): void {
+        Schema::create('eko_notification_events', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('client_id')->index();
-            $table->foreignId('eco_notification_template_id')->nullable()->constrained('eco_notification_templates')->nullOnDelete();
+            $table->foreignId('eko_notification_template_id')->nullable()->constrained('eko_notification_templates')->nullOnDelete();
             $table->string('event_type', 60);
             $table->string('source_key', 180)->nullable();
             $table->string('audience_scope', 120)->nullable();
@@ -252,21 +252,21 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('eco_notification_events');
-        Schema::dropIfExists('eco_notification_templates');
-        Schema::dropIfExists('eco_air_quality_readings');
-        Schema::dropIfExists('eco_air_quality_stations');
-        Schema::dropIfExists('eco_news_posts');
-        Schema::dropIfExists('eco_news_categories');
-        Schema::dropIfExists('eco_collection_schedule_dates');
-        Schema::dropIfExists('eco_collection_schedules');
-        Schema::dropIfExists('eco_pszok_fraction');
-        Schema::dropIfExists('eco_pszok_points');
-        Schema::dropIfExists('eco_waste_item_synonyms');
-        Schema::dropIfExists('eco_waste_items');
-        Schema::dropIfExists('eco_waste_fractions');
-        Schema::dropIfExists('eco_resident_addresses');
-        Schema::dropIfExists('eco_zone_address_rules');
-        Schema::dropIfExists('eco_zones');
+        Schema::dropIfExists('eko_notification_events');
+        Schema::dropIfExists('eko_notification_templates');
+        Schema::dropIfExists('eko_air_quality_readings');
+        Schema::dropIfExists('eko_air_quality_stations');
+        Schema::dropIfExists('eko_news_posts');
+        Schema::dropIfExists('eko_news_categories');
+        Schema::dropIfExists('eko_collection_schedule_dates');
+        Schema::dropIfExists('eko_collection_schedules');
+        Schema::dropIfExists('eko_pszok_fraction');
+        Schema::dropIfExists('eko_pszok_points');
+        Schema::dropIfExists('eko_waste_item_synonyms');
+        Schema::dropIfExists('eko_waste_items');
+        Schema::dropIfExists('eko_waste_fractions');
+        Schema::dropIfExists('eko_resident_addresses');
+        Schema::dropIfExists('eko_zone_address_rules');
+        Schema::dropIfExists('eko_zones');
     }
 };

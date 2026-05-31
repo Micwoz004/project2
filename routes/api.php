@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\Mobile\MobileResidentAuthController;
 use App\Products\CivicBudget\Http\Controllers\Api\Mobile\MobileCivicBudgetController;
 use App\Products\CivicBudget\Http\Controllers\Api\Mobile\MobileResidentProjectController;
 use App\Products\CivicBudget\Http\Controllers\Api\Mobile\MobileVotingController;
-use App\Products\EcoUslugi\Http\Controllers\Api\Mobile\MobileEcoUslugiController;
+use App\Products\EkoUslugi\Http\Controllers\Api\Mobile\MobileEkoUslugiController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('mobile')->name('mobile.')->group(function (): void {
@@ -34,24 +34,24 @@ Route::prefix('mobile')->name('mobile.')->group(function (): void {
             Route::post('/voting/cast', [MobileVotingController::class, 'cast'])->middleware('throttle:10,1')->name('voting.cast');
         });
 
-    Route::prefix('eco-uslugi')
-        ->middleware('product.enabled:eco_uslugi')
-        ->name('eco-uslugi.')
+    Route::prefix('eko-uslugi')
+        ->middleware('product.enabled:eko_uslugi')
+        ->name('eko-uslugi.')
         ->group(function (): void {
-            Route::get('/overview', [MobileEcoUslugiController::class, 'overview'])->name('overview');
-            Route::get('/waste/fractions', [MobileEcoUslugiController::class, 'fractions'])->name('waste.fractions');
-            Route::get('/waste/search', [MobileEcoUslugiController::class, 'searchWaste'])->name('waste.search');
-            Route::post('/waste/recognize', [MobileEcoUslugiController::class, 'recognizeWaste'])->middleware('auth.mobile')->name('waste.recognize');
-            Route::get('/pszok', [MobileEcoUslugiController::class, 'pszok'])->name('pszok.index');
-            Route::get('/pszok/{point}', [MobileEcoUslugiController::class, 'pszokPoint'])->name('pszok.show');
-            Route::get('/air-quality', [MobileEcoUslugiController::class, 'airQuality'])->name('air-quality.index');
-            Route::get('/news', [MobileEcoUslugiController::class, 'news'])->name('news.index');
-            Route::get('/news/{post}', [MobileEcoUslugiController::class, 'newsPost'])->name('news.show');
+            Route::get('/overview', [MobileEkoUslugiController::class, 'overview'])->name('overview');
+            Route::get('/waste/fractions', [MobileEkoUslugiController::class, 'fractions'])->name('waste.fractions');
+            Route::get('/waste/search', [MobileEkoUslugiController::class, 'searchWaste'])->name('waste.search');
+            Route::post('/waste/recognize', [MobileEkoUslugiController::class, 'recognizeWaste'])->middleware('auth.mobile')->name('waste.recognize');
+            Route::get('/pszok', [MobileEkoUslugiController::class, 'pszok'])->name('pszok.index');
+            Route::get('/pszok/{point}', [MobileEkoUslugiController::class, 'pszokPoint'])->name('pszok.show');
+            Route::get('/air-quality', [MobileEkoUslugiController::class, 'airQuality'])->name('air-quality.index');
+            Route::get('/news', [MobileEkoUslugiController::class, 'news'])->name('news.index');
+            Route::get('/news/{post}', [MobileEkoUslugiController::class, 'newsPost'])->name('news.show');
 
             Route::middleware('auth.mobile')->group(function (): void {
-                Route::get('/resident/addresses', [MobileEcoUslugiController::class, 'addresses'])->name('resident.addresses.index');
-                Route::post('/resident/addresses', [MobileEcoUslugiController::class, 'storeAddress'])->name('resident.addresses.store');
-                Route::get('/resident/schedules/upcoming', [MobileEcoUslugiController::class, 'upcoming'])->name('resident.schedules.upcoming');
+                Route::get('/resident/addresses', [MobileEkoUslugiController::class, 'addresses'])->name('resident.addresses.index');
+                Route::post('/resident/addresses', [MobileEkoUslugiController::class, 'storeAddress'])->name('resident.addresses.store');
+                Route::get('/resident/schedules/upcoming', [MobileEkoUslugiController::class, 'upcoming'])->name('resident.schedules.upcoming');
             });
         });
 

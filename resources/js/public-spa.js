@@ -103,21 +103,21 @@ function canSubmitProjects() {
     return Boolean(state.app?.authenticated);
 }
 
-function hasEcoUslugi() {
-    return (state.platform?.enabledProducts || []).some((product) => product.key === 'eco_uslugi')
-        || Boolean(state.ecoUslugi);
+function hasEkoUslugi() {
+    return (state.platform?.enabledProducts || []).some((product) => product.key === 'eko_uslugi')
+        || Boolean(state.ekoUslugi);
 }
 
-function ecoHref(key) {
+function ekoHref(key) {
     return state.links?.[key] || {
-        ecoHome: '/eco-uslugi',
-        ecoSchedule: '/eco-uslugi/harmonogram',
-        ecoSegregation: '/eco-uslugi/segregacja',
-        ecoWasteSearch: '/eco-uslugi/wyszukiwarka',
-        ecoPszok: '/eco-uslugi/pszok',
-        ecoAirQuality: '/eco-uslugi/jakosc-powietrza',
-        ecoNews: '/eco-uslugi/aktualnosci',
-        ecoAddresses: '/eco-uslugi/adresy',
+        ekoHome: '/eko-uslugi',
+        ekoSchedule: '/eko-uslugi/harmonogram',
+        ekoSegregation: '/eko-uslugi/segregacja',
+        ekoWasteSearch: '/eko-uslugi/wyszukiwarka',
+        ekoPszok: '/eko-uslugi/pszok',
+        ekoAirQuality: '/eko-uslugi/jakosc-powietrza',
+        ekoNews: '/eko-uslugi/aktualnosci',
+        ekoAddresses: '/eko-uslugi/adresy',
     }[key] || '#';
 }
 
@@ -324,7 +324,7 @@ function layout(content) {
             <nav id="primary-navigation" class="main-nav" data-nav-menu aria-label="Główna nawigacja">
                 <ul class="nav-list">
                     <li><a class="nav-link" href="${href('projects')}" data-spa-link ${active('/projekty') || active('/projekt') ? 'aria-current="page"' : ''} data-i18n="navProjects">${c.navProjects}</a></li>
-                    ${hasEcoUslugi() ? `<li><a class="nav-link" href="${ecoHref('ecoHome')}" data-spa-link ${active('/eco-uslugi') ? 'aria-current="page"' : ''}>Ekousługi</a></li>` : ''}
+                    ${hasEkoUslugi() ? `<li><a class="nav-link" href="${ekoHref('ekoHome')}" data-spa-link ${active('/eko-uslugi') ? 'aria-current="page"' : ''}>Eko usługi</a></li>` : ''}
                     ${renderInfoDropdown(c.navInfo)}
                     ${residentNav}
                     ${canSubmitProjects() ? `<li><a class="btn btn-primary" href="${href('residentSubmit')}" data-spa-link data-i18n="navSubmit">${c.navSubmit}</a></li>` : ''}
@@ -1976,52 +1976,52 @@ function resultsView() {
     `;
 }
 
-function ecoData() {
-    return state.ecoUslugi || {};
+function ekoData() {
+    return state.ekoUslugi || {};
 }
 
-function ecoNav(activeKey) {
+function ekoNav(activeKey) {
     const items = [
-        ['ecoHome', 'Pulpit'],
-        ['ecoSchedule', 'Harmonogram'],
-        ['ecoWasteSearch', 'Wyszukiwarka'],
-        ['ecoSegregation', 'Segregacja'],
-        ['ecoPszok', 'PSZOK'],
-        ['ecoAirQuality', 'Powietrze'],
-        ['ecoNews', 'Aktualności'],
-        ['ecoAddresses', 'Adresy'],
+        ['ekoHome', 'Pulpit'],
+        ['ekoSchedule', 'Harmonogram'],
+        ['ekoWasteSearch', 'Wyszukiwarka'],
+        ['ekoSegregation', 'Segregacja'],
+        ['ekoPszok', 'PSZOK'],
+        ['ekoAirQuality', 'Powietrze'],
+        ['ekoNews', 'Aktualności'],
+        ['ekoAddresses', 'Adresy'],
     ];
 
     return `
-        <nav class="eco-tabs" aria-label="Nawigacja ekousług">
+        <nav class="eko-tabs" aria-label="Nawigacja eko usług">
             ${items.map(([key, label]) => `
-                <a href="${ecoHref(key)}" data-spa-link ${key === activeKey ? 'aria-current="page"' : ''}>${label}</a>
+                <a href="${ekoHref(key)}" data-spa-link ${key === activeKey ? 'aria-current="page"' : ''}>${label}</a>
             `).join('')}
         </nav>
     `;
 }
 
-function ecoShell(activeKey, body) {
+function ekoShell(activeKey, body) {
     return `
-        <section class="eco-hero" aria-labelledby="eco-title">
+        <section class="eko-hero" aria-labelledby="eko-title">
             <div>
-                <p class="eyebrow">Ekousługi</p>
-                <h1 id="eco-title">Odpady, harmonogramy i jakość powietrza</h1>
+                <p class="eyebrow">Eko usługi</p>
+                <h1 id="eko-title">Odpady, harmonogramy i jakość powietrza</h1>
                 <p class="lead">Sprawdź najbliższy odbiór, znajdź właściwą frakcję, zobacz punkty PSZOK i lokalne komunikaty środowiskowe.</p>
             </div>
-            <div class="eco-hero-actions">
-                <a class="btn btn-primary" href="${ecoHref('ecoSchedule')}" data-spa-link>Harmonogram</a>
-                <a class="btn btn-secondary" href="${ecoHref('ecoWasteSearch')}" data-spa-link>Gdzie wyrzucić?</a>
+            <div class="eko-hero-actions">
+                <a class="btn btn-primary" href="${ekoHref('ekoSchedule')}" data-spa-link>Harmonogram</a>
+                <a class="btn btn-secondary" href="${ekoHref('ekoWasteSearch')}" data-spa-link>Gdzie wyrzucić?</a>
             </div>
         </section>
-        ${ecoNav(activeKey)}
+        ${ekoNav(activeKey)}
         ${body}
     `;
 }
 
-function ecoCollectionCard(item) {
+function ekoCollectionCard(item) {
     return `
-        <article class="eco-row">
+        <article class="eko-row">
             <time>${escapeHtml(item.collectionDate || 'Termin do ustalenia')}</time>
             <div>
                 <strong>${escapeHtml(item.fraction?.name || 'Frakcja')}</strong>
@@ -2032,38 +2032,38 @@ function ecoCollectionCard(item) {
     `;
 }
 
-function ecoHomeView() {
-    const eco = ecoData();
+function ekoHomeView() {
+    const eco = ekoData();
     const activeAddress = (eco.addresses || []).find((address) => address.id === eco.activeAddressId);
     const latestNews = (eco.news || [])[0];
 
-    return ecoShell('ecoHome', `
-        <section class="eco-dashboard">
-            <div class="eco-panel eco-panel-main">
+    return ekoShell('ekoHome', `
+        <section class="eko-dashboard">
+            <div class="eko-panel eko-panel-main">
                 <p class="eyebrow">Najbliższy odbiór</p>
                 <h2>${activeAddress ? escapeHtml(activeAddress.label || `${activeAddress.street || ''} ${activeAddress.buildingNumber}`) : 'Dodaj adres odbioru'}</h2>
-                ${(eco.upcomingCollections || []).slice(0, 3).map(ecoCollectionCard).join('') || '<p class="muted">Brak nadchodzących terminów dla aktywnego adresu.</p>'}
-                <a class="btn btn-secondary" href="${ecoHref('ecoAddresses')}" data-spa-link>Zarządzaj adresami</a>
+                ${(eco.upcomingCollections || []).slice(0, 3).map(ekoCollectionCard).join('') || '<p class="muted">Brak nadchodzących terminów dla aktywnego adresu.</p>'}
+                <a class="btn btn-secondary" href="${ekoHref('ekoAddresses')}" data-spa-link>Zarządzaj adresami</a>
             </div>
-            <div class="eco-panel">
+            <div class="eko-panel">
                 <p class="eyebrow">Jakość powietrza</p>
-                ${ecoAirStationSummary((eco.airQualityStations || [])[0])}
-                <a class="btn btn-secondary" href="${ecoHref('ecoAirQuality')}" data-spa-link>Wszystkie stacje</a>
+                ${ekoAirStationSummary((eco.airQualityStations || [])[0])}
+                <a class="btn btn-secondary" href="${ekoHref('ekoAirQuality')}" data-spa-link>Wszystkie stacje</a>
             </div>
-            <div class="eco-panel">
+            <div class="eko-panel">
                 <p class="eyebrow">Aktualności</p>
                 ${latestNews ? `<h2>${escapeHtml(latestNews.title)}</h2><p>${escapeHtml(latestNews.lead || stripHtml(latestNews.body).slice(0, 150))}</p>` : '<p class="muted">Brak opublikowanych aktualności.</p>'}
-                <a class="btn btn-secondary" href="${ecoHref('ecoNews')}" data-spa-link>Czytaj</a>
+                <a class="btn btn-secondary" href="${ekoHref('ekoNews')}" data-spa-link>Czytaj</a>
             </div>
         </section>
     `);
 }
 
-function ecoScheduleView() {
-    const items = ecoData().upcomingCollections || [];
+function ekoScheduleView() {
+    const items = ekoData().upcomingCollections || [];
 
-    return ecoShell('ecoSchedule', `
-        <section class="eco-content">
+    return ekoShell('ekoSchedule', `
+        <section class="eko-content">
             <div class="section-head compact">
                 <div>
                     <p class="eyebrow">Harmonogram</p>
@@ -2071,21 +2071,21 @@ function ecoScheduleView() {
                 </div>
                 <p class="lead">Terminy są dopasowane do aktywnego adresu mieszkańca i przypisanej strefy odbioru.</p>
             </div>
-            <div class="eco-list">${items.map(ecoCollectionCard).join('') || '<p class="panel">Dodaj aktywny adres, aby zobaczyć harmonogram odbioru.</p>'}</div>
+            <div class="eko-list">${items.map(ekoCollectionCard).join('') || '<p class="panel">Dodaj aktywny adres, aby zobaczyć harmonogram odbioru.</p>'}</div>
         </section>
     `);
 }
 
-function ecoSegregationView() {
-    const fractions = ecoData().fractions || [];
+function ekoSegregationView() {
+    const fractions = ekoData().fractions || [];
 
-    return ecoShell('ecoSegregation', `
-        <section class="eco-content">
+    return ekoShell('ekoSegregation', `
+        <section class="eko-content">
             <div class="section-head compact"><div><p class="eyebrow">Segregacja</p><h1>Frakcje odpadów</h1></div></div>
-            <div class="eco-grid">
+            <div class="eko-grid">
                 ${fractions.map((fraction) => `
-                    <article class="eco-panel">
-                        <i class="eco-swatch" style="--fraction:${escapeHtml(fraction.color || '#168e45')}"></i>
+                    <article class="eko-panel">
+                        <i class="eko-swatch" style="--fraction:${escapeHtml(fraction.color || '#168e45')}"></i>
                         <h2>${escapeHtml(fraction.name)}</h2>
                         <p>${escapeHtml(fraction.description || '')}</p>
                         ${fraction.whatToPut ? `<h3>Wrzucaj</h3><p>${escapeHtml(stripHtml(fraction.whatToPut))}</p>` : ''}
@@ -2097,37 +2097,37 @@ function ecoSegregationView() {
     `);
 }
 
-function ecoWasteSearchView() {
-    return ecoShell('ecoWasteSearch', `
-        <section class="eco-content">
+function ekoWasteSearchView() {
+    return ekoShell('ekoWasteSearch', `
+        <section class="eko-content">
             <div class="section-head compact"><div><p class="eyebrow">Wyszukiwarka</p><h1>Gdzie wyrzucić odpad?</h1></div></div>
-            <form class="eco-search" data-eco-waste-search>
+            <form class="eko-search" data-eko-waste-search>
                 <label class="field">
                     <span>Nazwa odpadu</span>
                     <input name="query" type="search" placeholder="np. karton po mleku, farba, bateria" autocomplete="off">
                 </label>
                 <button class="btn btn-primary" type="submit">Szukaj</button>
             </form>
-            <div class="eco-list" data-eco-waste-results>
+            <div class="eko-list" data-eko-waste-results>
                 <p class="panel">Wpisz nazwę odpadu, aby zobaczyć frakcję i instrukcję postępowania.</p>
             </div>
         </section>
     `);
 }
 
-function ecoPszokView() {
-    const points = ecoData().pszokPoints || [];
+function ekoPszokView() {
+    const points = ekoData().pszokPoints || [];
 
-    return ecoShell('ecoPszok', `
-        <section class="eco-content">
+    return ekoShell('ekoPszok', `
+        <section class="eko-content">
             <div class="section-head compact"><div><p class="eyebrow">PSZOK</p><h1>Punkty selektywnej zbiórki</h1></div></div>
-            <div class="eco-grid">
+            <div class="eko-grid">
                 ${points.map((point) => `
-                    <article class="eco-panel">
+                    <article class="eko-panel">
                         <h2>${escapeHtml(point.name)}</h2>
                         <p>${escapeHtml([point.address?.street, point.address?.buildingNumber, point.address?.locality].filter(Boolean).join(' '))}</p>
                         <p>${escapeHtml(point.description || '')}</p>
-                        <p class="eco-tags">${(point.fractions || []).map((fraction) => `<span>${escapeHtml(fraction.name)}</span>`).join('')}</p>
+                        <p class="eko-tags">${(point.fractions || []).map((fraction) => `<span>${escapeHtml(fraction.name)}</span>`).join('')}</p>
                     </article>
                 `).join('') || '<p class="panel">Brak aktywnych punktów PSZOK.</p>'}
             </div>
@@ -2135,7 +2135,7 @@ function ecoPszokView() {
     `);
 }
 
-function ecoAirStationSummary(station) {
+function ekoAirStationSummary(station) {
     if (!station) return '<p class="muted">Brak aktualnych odczytów.</p>';
 
     return `
@@ -2144,17 +2144,17 @@ function ecoAirStationSummary(station) {
     `;
 }
 
-function ecoAirQualityView() {
-    const stations = ecoData().airQualityStations || [];
+function ekoAirQualityView() {
+    const stations = ekoData().airQualityStations || [];
 
-    return ecoShell('ecoAirQuality', `
-        <section class="eco-content">
+    return ekoShell('ekoAirQuality', `
+        <section class="eko-content">
             <div class="section-head compact"><div><p class="eyebrow">Jakość powietrza</p><h1>Lokalne stacje pomiarowe</h1></div></div>
-            <div class="eco-grid">
+            <div class="eko-grid">
                 ${stations.map((station) => `
-                    <article class="eco-panel">
-                        ${ecoAirStationSummary(station)}
-                        <dl class="eco-readings">
+                    <article class="eko-panel">
+                        ${ekoAirStationSummary(station)}
+                        <dl class="eko-readings">
                             ${(station.readings || []).map((reading) => `
                                 <div><dt>${escapeHtml(reading.parameterCode)}</dt><dd>${escapeHtml(reading.value ?? '-')} ${escapeHtml(reading.unit || '')}</dd></div>
                             `).join('')}
@@ -2166,16 +2166,16 @@ function ecoAirQualityView() {
     `);
 }
 
-function ecoNewsView() {
-    const slug = currentPath().startsWith('/eco-uslugi/aktualnosci/')
-        ? decodeURIComponent(currentPath().replace('/eco-uslugi/aktualnosci/', ''))
+function ekoNewsView() {
+    const slug = currentPath().startsWith('/eko-uslugi/aktualnosci/')
+        ? decodeURIComponent(currentPath().replace('/eko-uslugi/aktualnosci/', ''))
         : null;
-    const posts = ecoData().news || [];
+    const posts = ekoData().news || [];
     const selected = slug ? posts.find((post) => post.slug === slug) : null;
 
     if (selected) {
-        return ecoShell('ecoNews', `
-            <article class="eco-content eco-article">
+        return ekoShell('ekoNews', `
+            <article class="eko-content eko-article">
                 <p class="eyebrow">${escapeHtml(selected.category || 'Aktualność')}</p>
                 <h1>${escapeHtml(selected.title)}</h1>
                 <p class="lead">${escapeHtml(selected.lead || '')}</p>
@@ -2184,12 +2184,12 @@ function ecoNewsView() {
         `);
     }
 
-    return ecoShell('ecoNews', `
-        <section class="eco-content">
+    return ekoShell('ekoNews', `
+        <section class="eko-content">
             <div class="section-head compact"><div><p class="eyebrow">Aktualności</p><h1>Komunikaty środowiskowe</h1></div></div>
-            <div class="eco-list">
+            <div class="eko-list">
                 ${posts.map((post) => `
-                    <article class="eco-row">
+                    <article class="eko-row">
                         <time>${escapeHtml(post.publishedAt || '')}</time>
                         <div><strong>${escapeHtml(post.title)}</strong><span>${escapeHtml(post.lead || stripHtml(post.body).slice(0, 140))}</span></div>
                         <a class="btn btn-secondary" href="${escapeHtml(post.url)}" data-spa-link>Czytaj</a>
@@ -2200,29 +2200,29 @@ function ecoNewsView() {
     `);
 }
 
-function ecoAddressesView() {
-    const eco = ecoData();
+function ekoAddressesView() {
+    const eco = ekoData();
 
     if (!state.app?.authenticated) {
-        return ecoShell('ecoAddresses', `
-            <section class="eco-content"><p class="panel">Zaloguj się, aby dodać adres i zobaczyć harmonogram odbioru.</p></section>
+        return ekoShell('ekoAddresses', `
+            <section class="eko-content"><p class="panel">Zaloguj się, aby dodać adres i zobaczyć harmonogram odbioru.</p></section>
         `);
     }
 
-    return ecoShell('ecoAddresses', `
-        <section class="eco-content eco-address-layout">
+    return ekoShell('ekoAddresses', `
+        <section class="eko-content eko-address-layout">
             <div>
                 <div class="section-head compact"><div><p class="eyebrow">Adresy</p><h1>Adresy odbioru</h1></div></div>
-                <div class="eco-list">
+                <div class="eko-list">
                     ${(eco.addresses || []).map((address) => `
-                        <article class="eco-row">
+                        <article class="eko-row">
                             <div>
                                 <strong>${escapeHtml(address.label || `${address.street || ''} ${address.buildingNumber}`)}</strong>
                                 <span>${escapeHtml([address.street, address.buildingNumber, address.locality].filter(Boolean).join(' '))}</span>
                                 <span>Strefa: ${escapeHtml(address.zone?.name || 'nieustalona')}</span>
                             </div>
                             ${address.active ? '<span class="status-pill">Aktywny</span>' : `
-                                <form method="post" action="/eco-uslugi/adresy/${address.id}/aktywny">
+                                <form method="post" action="/eko-uslugi/adresy/${address.id}/aktywny">
                                     <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
                                     <input type="hidden" name="_method" value="PATCH">
                                     <button class="btn btn-secondary" type="submit">Ustaw aktywny</button>
@@ -2232,7 +2232,7 @@ function ecoAddressesView() {
                     `).join('') || '<p class="panel">Nie masz jeszcze dodanego adresu.</p>'}
                 </div>
             </div>
-            <form class="eco-panel resident-form" method="post" action="${ecoHref('ecoAddressStore')}">
+            <form class="eko-panel resident-form" method="post" action="${ekoHref('ekoAddressStore')}">
                 <input type="hidden" name="_token" value="${escapeHtml(state.app?.csrfToken)}">
                 <h2>Dodaj adres</h2>
                 <label class="field"><span>Etykieta</span><input name="label" maxlength="100"></label>
@@ -2249,14 +2249,14 @@ function ecoAddressesView() {
 
 function renderRoute() {
     const path = currentPath();
-    if (path === '/eco-uslugi') return ecoHomeView();
-    if (path === '/eco-uslugi/harmonogram') return ecoScheduleView();
-    if (path === '/eco-uslugi/segregacja') return ecoSegregationView();
-    if (path === '/eco-uslugi/wyszukiwarka') return ecoWasteSearchView();
-    if (path === '/eco-uslugi/pszok') return ecoPszokView();
-    if (path === '/eco-uslugi/jakosc-powietrza') return ecoAirQualityView();
-    if (path === '/eco-uslugi/aktualnosci' || path.startsWith('/eco-uslugi/aktualnosci/')) return ecoNewsView();
-    if (path === '/eco-uslugi/adresy') return ecoAddressesView();
+    if (path === '/eko-uslugi') return ekoHomeView();
+    if (path === '/eko-uslugi/harmonogram') return ekoScheduleView();
+    if (path === '/eko-uslugi/segregacja') return ekoSegregationView();
+    if (path === '/eko-uslugi/wyszukiwarka') return ekoWasteSearchView();
+    if (path === '/eko-uslugi/pszok') return ekoPszokView();
+    if (path === '/eko-uslugi/jakosc-powietrza') return ekoAirQualityView();
+    if (path === '/eko-uslugi/aktualnosci' || path.startsWith('/eko-uslugi/aktualnosci/')) return ekoNewsView();
+    if (path === '/eko-uslugi/adresy') return ekoAddressesView();
     if (path === '/') return homeView();
     if (path === '/login') return loginView();
     if (path === '/rejestracja') return registerView();
@@ -2497,25 +2497,25 @@ function bindActions() {
         filter();
     }
 
-    const ecoWasteSearch = document.querySelector('[data-eco-waste-search]');
-    if (ecoWasteSearch) {
-        const results = document.querySelector('[data-eco-waste-results]');
-        ecoWasteSearch.addEventListener('submit', async (event) => {
+    const ekoWasteSearch = document.querySelector('[data-eko-waste-search]');
+    if (ekoWasteSearch) {
+        const results = document.querySelector('[data-eko-waste-results]');
+        ekoWasteSearch.addEventListener('submit', async (event) => {
             event.preventDefault();
-            const query = String(new FormData(ecoWasteSearch).get('query') || '').trim();
+            const query = String(new FormData(ekoWasteSearch).get('query') || '').trim();
             if (!query || !results) return;
 
             results.innerHTML = '<p class="panel">Szukam odpadu...</p>';
 
             try {
-                const response = await fetch(`/api/mobile/eco-uslugi/waste/search?query=${encodeURIComponent(query)}`, {
+                const response = await fetch(`/api/mobile/eko-uslugi/waste/search?query=${encodeURIComponent(query)}`, {
                     headers: { Accept: 'application/json' },
                 });
                 if (!response.ok) throw new Error('Search failed');
                 const payload = await response.json();
                 const items = payload.items || [];
                 results.innerHTML = items.length ? items.map((item) => `
-                    <article class="eco-row">
+                    <article class="eko-row">
                         <div>
                             <strong>${escapeHtml(item.name)}</strong>
                             <span>${escapeHtml(item.instruction || 'Sprawdź lokalne zasady segregacji dla tej frakcji.')}</span>

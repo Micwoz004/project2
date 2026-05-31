@@ -40,6 +40,27 @@ Dodatkowe zasady precyzujące:
 - Widoki mieszkańca (np. panel, moje projekty, zgłoszenie projektu, korekta projektu, konto, logowanie mieszkańca) renderuj przez publiczny SPA shell i stan przekazywany do frontendu, a nie przez osobne Blade views.
 - Backendowe endpointy POST/PUT/PATCH mogą pozostać klasycznymi endpointami Laravel, ale ekran wejściowy i nawigacja mieszkańca mają pozostać w SPA.
 - Panel administracyjny i zasoby Filament nie są częścią tej reguły.
+
+### Platforma i nowe produkty (obowiązkowe)
+- Aplikacja jest jedną platformą multi-produktową. Wspólne mechanizmy kont, klientów, produktów, uprawnień, membershipów, kontekstu klienta i panelu platformowego rozwijaj w `app/Platform`.
+- Logika konkretnego produktu musi trafiać do `app/Products/{ProductName}`, nie do dawnego `app/Domain` ani bezpośrednio do warstwy platformowej.
+- Nowy produkt twórz według struktury:
+  - `app/Products/{ProductName}/Domain` - modele, akcje, serwisy, enumy i reguły domenowe produktu.
+  - `app/Products/{ProductName}/Filament` - zasoby, strony i panel administracyjny produktu.
+  - `app/Products/{ProductName}/Http` - kontrolery, requesty, resource/payload API i wejścia publiczne produktu.
+  - `tests/Feature/{ProductName}` lub spójny katalog feature testów produktu.
+- Każdy nowy produkt musi mieć wpis w `App\Platform\Products\Enums\ProductKey`. Klucz produktu zapisuj w snake_case, np. `eco_services`, a etykietę użytkową trzymaj w metodzie `label()`.
+- Włączenie produktu per klient obsługuj przez `client_products`, model `ClientProduct` i middleware `product.enabled:{product_key}`. Nie sprawdzaj aktywności produktu ręcznie w wielu kontrolerach.
+- Dane biznesowe produktu muszą być scoped po aktualnym kliencie. Główne modele produktu mają używać `BelongsToClient`, a zapytania muszą działać przez `CurrentClient`. Nie wolno tworzyć danych produktu bez `client_id`.
+- Jeśli import, `upsert`, bulk insert albo integracja omija Eloquent events, `client_id` ustaw jawnie z `CurrentClient`.
+- Role i uprawnienia nazywaj produktowo: `{product_key}.{obszar}.{akcja}`, np. `eco_services.schedules.manage`. Uprawnienia wspólne platformy nazywaj `platform.*`.
+- Każdy produkt administracyjny powinien mieć osobny `PanelProvider` i ścieżkę pod `/admin/{produkt}`. Panel platformowy `/admin` zostaje dla klientów, produktów, użytkowników i ustawień wspólnych.
+- Nie duplikuj kont użytkowników ani mechanizmu ról per produkt. Użytkownik ma jedno konto, a dostęp wynika z membershipu klienta, aktywnego produktu i uprawnień.
+- Publiczna część mieszkańca dla nowego produktu ma być częścią wspólnego SPA shellu. Produkt może dodać własne sekcje stanu i endpointy, ale nie może wprowadzać osobnych Blade views jako głównego UI mieszkańca.
+- Mobile/API produktu wystawiaj pod produktowym prefiksem, np. `/api/mobile/eco-services/...`, i zabezpieczaj przez `product.enabled`.
+- Migracje nowego produktu muszą tworzyć tabele z `client_id` na głównych encjach, indeksami pod zapytania per klient i bez założeń o jednym kliencie.
+- Testy nowego produktu muszą obejmować co najmniej: włączenie/wyłączenie produktu per klient, izolację danych między klientami, dostęp do panelu produktu i podstawowy publiczny/mobile endpoint.
+- Budżet obywatelski jest referencyjnym modułem produktu w `app/Products/CivicBudget`; nowe produkty mają kopiować jego granice architektoniczne, nie jego nazewnictwo domenowe.
 <!-- MANUAL ADDITIONS END -->
 
 # Liquibase scripts

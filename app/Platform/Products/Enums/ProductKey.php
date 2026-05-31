@@ -6,14 +6,14 @@ enum ProductKey: string
 {
     case CivicBudget = 'civic_budget';
     case Consultations = 'consultations';
-    case EcoServices = 'eco_services';
+    case EcoUslugi = 'eco_uslugi';
 
     public function label(): string
     {
         return match ($this) {
             self::CivicBudget => 'Budżet obywatelski',
             self::Consultations => 'Konsultacje społeczne',
-            self::EcoServices => 'Ekousługi',
+            self::EcoUslugi => 'Ekousługi',
         };
     }
 
@@ -22,7 +22,7 @@ enum ProductKey: string
         return match ($this) {
             self::CivicBudget => 'civic-budget',
             self::Consultations => 'consultations',
-            self::EcoServices => 'eco-services',
+            self::EcoUslugi => 'eco-uslugi',
         };
     }
 }

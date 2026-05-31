@@ -11,9 +11,9 @@ use App\Products\CivicBudget\Http\Controllers\Public\PublicProjectSubmissionCard
 use App\Products\CivicBudget\Http\Controllers\Public\PublicResultsController;
 use App\Products\CivicBudget\Http\Controllers\Public\PublicSpaController;
 use App\Products\CivicBudget\Http\Controllers\Public\PublicVotingController;
-use App\Products\EcoServices\Http\Controllers\Api\Mobile\MobileEcoServicesController;
-use App\Products\EcoServices\Http\Controllers\Public\PublicEcoServicesSpaController;
-use App\Products\EcoServices\Http\Controllers\Public\PublicResidentAddressController;
+use App\Products\EcoUslugi\Http\Controllers\Api\Mobile\MobileEcoUslugiController;
+use App\Products\EcoUslugi\Http\Controllers\Public\PublicEcoUslugiSpaController;
+use App\Products\EcoUslugi\Http\Controllers\Public\PublicResidentAddressController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', PublicSpaController::class)->name('public.home');
@@ -62,24 +62,24 @@ Route::get('/wyniki', PublicSpaController::class)->name('public.results.index');
 Route::get('/wyniki/export.csv', [PublicResultsController::class, 'export'])->name('public.results.export');
 Route::get('/raporty-publiczne', PublicSpaController::class)->name('public.reports.index');
 
-Route::middleware('product.enabled:eco_services')->group(function (): void {
-    Route::get('/eco-uslugi', PublicEcoServicesSpaController::class)->name('eco-services.home');
-    Route::get('/eco-uslugi/harmonogram', PublicEcoServicesSpaController::class)->name('eco-services.schedule');
-    Route::get('/eco-uslugi/segregacja', PublicEcoServicesSpaController::class)->name('eco-services.segregation');
-    Route::get('/eco-uslugi/wyszukiwarka', PublicEcoServicesSpaController::class)->name('eco-services.waste-search');
-    Route::post('/eco-uslugi/wyszukiwarka/rozpoznaj', [MobileEcoServicesController::class, 'recognizeWaste'])
+Route::middleware('product.enabled:eco_uslugi')->group(function (): void {
+    Route::get('/eco-uslugi', PublicEcoUslugiSpaController::class)->name('eco-uslugi.home');
+    Route::get('/eco-uslugi/harmonogram', PublicEcoUslugiSpaController::class)->name('eco-uslugi.schedule');
+    Route::get('/eco-uslugi/segregacja', PublicEcoUslugiSpaController::class)->name('eco-uslugi.segregation');
+    Route::get('/eco-uslugi/wyszukiwarka', PublicEcoUslugiSpaController::class)->name('eco-uslugi.waste-search');
+    Route::post('/eco-uslugi/wyszukiwarka/rozpoznaj', [MobileEcoUslugiController::class, 'recognizeWaste'])
         ->middleware('auth')
-        ->name('eco-services.waste.recognize');
-    Route::get('/eco-uslugi/pszok', PublicEcoServicesSpaController::class)->name('eco-services.pszok');
-    Route::get('/eco-uslugi/jakosc-powietrza', PublicEcoServicesSpaController::class)->name('eco-services.air-quality');
-    Route::get('/eco-uslugi/aktualnosci', PublicEcoServicesSpaController::class)->name('eco-services.news.index');
-    Route::get('/eco-uslugi/aktualnosci/{post:slug}', PublicEcoServicesSpaController::class)->name('eco-services.news.show');
+        ->name('eco-uslugi.waste.recognize');
+    Route::get('/eco-uslugi/pszok', PublicEcoUslugiSpaController::class)->name('eco-uslugi.pszok');
+    Route::get('/eco-uslugi/jakosc-powietrza', PublicEcoUslugiSpaController::class)->name('eco-uslugi.air-quality');
+    Route::get('/eco-uslugi/aktualnosci', PublicEcoUslugiSpaController::class)->name('eco-uslugi.news.index');
+    Route::get('/eco-uslugi/aktualnosci/{post:slug}', PublicEcoUslugiSpaController::class)->name('eco-uslugi.news.show');
 
     Route::middleware(['auth', 'verified'])->group(function (): void {
-        Route::get('/eco-uslugi/adresy', PublicEcoServicesSpaController::class)->name('eco-services.addresses');
-        Route::post('/eco-uslugi/adresy', [PublicResidentAddressController::class, 'store'])->name('eco-services.addresses.store');
-        Route::patch('/eco-uslugi/adresy/{address}/aktywny', [PublicResidentAddressController::class, 'activate'])->name('eco-services.addresses.activate');
-        Route::delete('/eco-uslugi/adresy/{address}', [PublicResidentAddressController::class, 'destroy'])->name('eco-services.addresses.destroy');
+        Route::get('/eco-uslugi/adresy', PublicEcoUslugiSpaController::class)->name('eco-uslugi.addresses');
+        Route::post('/eco-uslugi/adresy', [PublicResidentAddressController::class, 'store'])->name('eco-uslugi.addresses.store');
+        Route::patch('/eco-uslugi/adresy/{address}/aktywny', [PublicResidentAddressController::class, 'activate'])->name('eco-uslugi.addresses.activate');
+        Route::delete('/eco-uslugi/adresy/{address}', [PublicResidentAddressController::class, 'destroy'])->name('eco-uslugi.addresses.destroy');
     });
 });
 

@@ -4,12 +4,12 @@ namespace App\Console\Commands;
 
 use App\Platform\Clients\Models\Client;
 use App\Platform\Clients\Services\CurrentClient;
-use App\Products\EcoServices\Domain\AirQuality\Actions\SyncAirQualityStationsAction;
+use App\Products\EcoUslugi\Domain\AirQuality\Actions\SyncAirQualityStationsAction;
 use Illuminate\Console\Command;
 
 class SyncEcoAirQualityCommand extends Command
 {
-    protected $signature = 'eco-services:sync-air-quality {--client=default : Slug klienta platformy}';
+    protected $signature = 'eco-uslugi:sync-air-quality {--client=default : Slug klienta platformy}';
 
     protected $description = 'Synchronizuje stacje i indeks jakości powietrza GIOŚ dla produktu Ekousługi.';
 

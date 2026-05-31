@@ -103,9 +103,9 @@ function canSubmitProjects() {
     return Boolean(state.app?.authenticated);
 }
 
-function hasEcoServices() {
-    return (state.platform?.enabledProducts || []).some((product) => product.key === 'eco_services')
-        || Boolean(state.ecoServices);
+function hasEcoUslugi() {
+    return (state.platform?.enabledProducts || []).some((product) => product.key === 'eco_uslugi')
+        || Boolean(state.ecoUslugi);
 }
 
 function ecoHref(key) {
@@ -324,7 +324,7 @@ function layout(content) {
             <nav id="primary-navigation" class="main-nav" data-nav-menu aria-label="Główna nawigacja">
                 <ul class="nav-list">
                     <li><a class="nav-link" href="${href('projects')}" data-spa-link ${active('/projekty') || active('/projekt') ? 'aria-current="page"' : ''} data-i18n="navProjects">${c.navProjects}</a></li>
-                    ${hasEcoServices() ? `<li><a class="nav-link" href="${ecoHref('ecoHome')}" data-spa-link ${active('/eco-uslugi') ? 'aria-current="page"' : ''}>Ekousługi</a></li>` : ''}
+                    ${hasEcoUslugi() ? `<li><a class="nav-link" href="${ecoHref('ecoHome')}" data-spa-link ${active('/eco-uslugi') ? 'aria-current="page"' : ''}>Ekousługi</a></li>` : ''}
                     ${renderInfoDropdown(c.navInfo)}
                     ${residentNav}
                     ${canSubmitProjects() ? `<li><a class="btn btn-primary" href="${href('residentSubmit')}" data-spa-link data-i18n="navSubmit">${c.navSubmit}</a></li>` : ''}
@@ -1977,7 +1977,7 @@ function resultsView() {
 }
 
 function ecoData() {
-    return state.ecoServices || {};
+    return state.ecoUslugi || {};
 }
 
 function ecoNav(activeKey) {
@@ -2508,7 +2508,7 @@ function bindActions() {
             results.innerHTML = '<p class="panel">Szukam odpadu...</p>';
 
             try {
-                const response = await fetch(`/api/mobile/eco-services/waste/search?query=${encodeURIComponent(query)}`, {
+                const response = await fetch(`/api/mobile/eco-uslugi/waste/search?query=${encodeURIComponent(query)}`, {
                     headers: { Accept: 'application/json' },
                 });
                 if (!response.ok) throw new Error('Search failed');

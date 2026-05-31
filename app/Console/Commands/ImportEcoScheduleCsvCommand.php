@@ -4,12 +4,12 @@ namespace App\Console\Commands;
 
 use App\Platform\Clients\Models\Client;
 use App\Platform\Clients\Services\CurrentClient;
-use App\Products\EcoServices\Domain\Schedule\Actions\ImportCollectionScheduleCsvAction;
+use App\Products\EcoUslugi\Domain\Schedule\Actions\ImportCollectionScheduleCsvAction;
 use Illuminate\Console\Command;
 
 class ImportEcoScheduleCsvCommand extends Command
 {
-    protected $signature = 'eco-services:import-schedule
+    protected $signature = 'eco-uslugi:import-schedule
         {path : Ścieżka do pliku CSV}
         {--client=default : Slug klienta platformy}
         {--name= : Nazwa harmonogramu}

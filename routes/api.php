@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\Mobile\MobileResidentAuthController;
 use App\Products\CivicBudget\Http\Controllers\Api\Mobile\MobileCivicBudgetController;
 use App\Products\CivicBudget\Http\Controllers\Api\Mobile\MobileResidentProjectController;
 use App\Products\CivicBudget\Http\Controllers\Api\Mobile\MobileVotingController;
-use App\Products\EcoServices\Http\Controllers\Api\Mobile\MobileEcoServicesController;
+use App\Products\EcoUslugi\Http\Controllers\Api\Mobile\MobileEcoUslugiController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('mobile')->name('mobile.')->group(function (): void {
@@ -34,24 +34,24 @@ Route::prefix('mobile')->name('mobile.')->group(function (): void {
             Route::post('/voting/cast', [MobileVotingController::class, 'cast'])->middleware('throttle:10,1')->name('voting.cast');
         });
 
-    Route::prefix('eco-services')
-        ->middleware('product.enabled:eco_services')
-        ->name('eco-services.')
+    Route::prefix('eco-uslugi')
+        ->middleware('product.enabled:eco_uslugi')
+        ->name('eco-uslugi.')
         ->group(function (): void {
-            Route::get('/overview', [MobileEcoServicesController::class, 'overview'])->name('overview');
-            Route::get('/waste/fractions', [MobileEcoServicesController::class, 'fractions'])->name('waste.fractions');
-            Route::get('/waste/search', [MobileEcoServicesController::class, 'searchWaste'])->name('waste.search');
-            Route::post('/waste/recognize', [MobileEcoServicesController::class, 'recognizeWaste'])->middleware('auth.mobile')->name('waste.recognize');
-            Route::get('/pszok', [MobileEcoServicesController::class, 'pszok'])->name('pszok.index');
-            Route::get('/pszok/{point}', [MobileEcoServicesController::class, 'pszokPoint'])->name('pszok.show');
-            Route::get('/air-quality', [MobileEcoServicesController::class, 'airQuality'])->name('air-quality.index');
-            Route::get('/news', [MobileEcoServicesController::class, 'news'])->name('news.index');
-            Route::get('/news/{post}', [MobileEcoServicesController::class, 'newsPost'])->name('news.show');
+            Route::get('/overview', [MobileEcoUslugiController::class, 'overview'])->name('overview');
+            Route::get('/waste/fractions', [MobileEcoUslugiController::class, 'fractions'])->name('waste.fractions');
+            Route::get('/waste/search', [MobileEcoUslugiController::class, 'searchWaste'])->name('waste.search');
+            Route::post('/waste/recognize', [MobileEcoUslugiController::class, 'recognizeWaste'])->middleware('auth.mobile')->name('waste.recognize');
+            Route::get('/pszok', [MobileEcoUslugiController::class, 'pszok'])->name('pszok.index');
+            Route::get('/pszok/{point}', [MobileEcoUslugiController::class, 'pszokPoint'])->name('pszok.show');
+            Route::get('/air-quality', [MobileEcoUslugiController::class, 'airQuality'])->name('air-quality.index');
+            Route::get('/news', [MobileEcoUslugiController::class, 'news'])->name('news.index');
+            Route::get('/news/{post}', [MobileEcoUslugiController::class, 'newsPost'])->name('news.show');
 
             Route::middleware('auth.mobile')->group(function (): void {
-                Route::get('/resident/addresses', [MobileEcoServicesController::class, 'addresses'])->name('resident.addresses.index');
-                Route::post('/resident/addresses', [MobileEcoServicesController::class, 'storeAddress'])->name('resident.addresses.store');
-                Route::get('/resident/schedules/upcoming', [MobileEcoServicesController::class, 'upcoming'])->name('resident.schedules.upcoming');
+                Route::get('/resident/addresses', [MobileEcoUslugiController::class, 'addresses'])->name('resident.addresses.index');
+                Route::post('/resident/addresses', [MobileEcoUslugiController::class, 'storeAddress'])->name('resident.addresses.store');
+                Route::get('/resident/schedules/upcoming', [MobileEcoUslugiController::class, 'upcoming'])->name('resident.schedules.upcoming');
             });
         });
 

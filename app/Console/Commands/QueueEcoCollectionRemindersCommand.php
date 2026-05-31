@@ -4,12 +4,12 @@ namespace App\Console\Commands;
 
 use App\Platform\Clients\Models\Client;
 use App\Platform\Clients\Services\CurrentClient;
-use App\Products\EcoServices\Domain\Notifications\Actions\QueueCollectionReminderNotificationsAction;
+use App\Products\EcoUslugi\Domain\Notifications\Actions\QueueCollectionReminderNotificationsAction;
 use Illuminate\Console\Command;
 
 class QueueEcoCollectionRemindersCommand extends Command
 {
-    protected $signature = 'eco-services:queue-reminders {--client=default : Slug klienta platformy}';
+    protected $signature = 'eco-uslugi:queue-reminders {--client=default : Slug klienta platformy}';
 
     protected $description = 'Tworzy zdarzenia przypomnień o odbiorze odpadów dla produktu Ekousługi.';
 

@@ -1,22 +1,75 @@
 <?php
 
-use App\Domain\BudgetEditions\Actions\EnsureContentPagesForBudgetEditionAction;
-use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\BudgetEditions\Services\BudgetEditionScheduleValidator;
-use App\Domain\Settings\Models\ApplicationSetting;
-use App\Domain\Settings\Models\ContentPage;
-use App\Domain\Settings\Services\ApplicationSettings;
-use App\Domain\Settings\Services\ContentPageResolver;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Filament\Resources\ApplicationSettings\ApplicationSettingResource;
-use App\Filament\Resources\ContentPages\ContentPageResource;
+use App\Products\CivicBudget\Domain\BudgetEditions\Actions\EnsureContentPagesForBudgetEditionAction;
+use App\Products\CivicBudget\Domain\BudgetEditions\Enums\BudgetEditionState;
+use App\Products\CivicBudget\Domain\BudgetEditions\Enums\BudgetEditionStatus;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\BudgetEditions\Services\BudgetEditionScheduleValidator;
+use App\Products\CivicBudget\Domain\BudgetEditions\Services\BudgetEditionStateResolver;
+use App\Products\CivicBudget\Domain\Settings\Models\ApplicationSetting;
+use App\Products\CivicBudget\Domain\Settings\Models\ContentPage;
+use App\Products\CivicBudget\Domain\Settings\Services\ApplicationSettings;
+use App\Products\CivicBudget\Domain\Settings\Services\ContentPageResolver;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Platform\Users\Enums\SystemRole;
+use App\Products\CivicBudget\Filament\Resources\ApplicationSettings\ApplicationSettingResource;
+use App\Products\CivicBudget\Filament\Resources\BudgetEditions\BudgetEditionResource;
+use App\Products\CivicBudget\Filament\Resources\ContentPages\ContentPageResource;
 use App\Models\User;
 
 it('accepts a valid budget edition schedule', function (): void {
     app(BudgetEditionScheduleValidator::class)->assertValid(editionAttributes());
 
     expect(true)->toBeTrue();
+});
+
+it('keeps budget edition inactive when manual status disables it', function (): void {
+    $edition = new BudgetEdition([
+        ...editionAttributes(),
+        'status' => BudgetEditionStatus::Inactive,
+    ]);
+
+    expect(app(BudgetEditionStateResolver::class)->resolve($edition))
+        ->toBe(BudgetEditionState::Inactive);
+});
+
+it('renders budget edition identity, status and schedule in admin resource', function (): void {
+    app(SyncSystemRolesAndPermissionsAction::class)->execute();
+
+    $admin = User::factory()->create(['status' => true]);
+    $admin->assignRole(SystemRole::Admin->value);
+
+    BudgetEdition::query()->create([
+        ...editionAttributes(),
+        'name' => 'SBO 2026',
+        'year' => 2026,
+        'status' => BudgetEditionStatus::Active,
+    ]);
+
+    BudgetEdition::query()->create([
+        ...editionAttributes(),
+        'propose_start' => now()->addYear()->subMonths(3),
+        'propose_end' => now()->addYear()->subMonths(2),
+        'pre_voting_verification_end' => now()->addYear()->subMonth(),
+        'voting_start' => now()->addYear()->subDay(),
+        'voting_end' => now()->addYear()->addDay(),
+        'post_voting_verification_end' => now()->addYear()->addWeek(),
+        'result_announcement_end' => now()->addYear()->addMonth(),
+        'name' => 'SBO 2027',
+        'year' => 2027,
+        'status' => BudgetEditionStatus::Inactive,
+    ]);
+
+    $this->actingAs($admin)
+        ->get(BudgetEditionResource::getUrl(panel: 'admin'))
+        ->assertOk()
+        ->assertSee('SBO 2026')
+        ->assertSee('Aktywna')
+        ->assertSee('Dezaktywuj')
+        ->assertSee('SBO 2027')
+        ->assertSee('Nieaktywna')
+        ->assertSee('Aktywuj');
 });
 
 it('rejects budget editions overlapping by legacy propose start rule', function (): void {

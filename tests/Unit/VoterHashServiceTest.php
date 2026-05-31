@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Voting\Services\VoterHashService;
+use App\Products\CivicBudget\Domain\Voting\Services\VoterHashService;
 
 it('normalizes voter identity like the legacy verification hash', function (): void {
     $service = new VoterHashService;

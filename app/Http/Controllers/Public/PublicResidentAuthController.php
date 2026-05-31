@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Platform\Clients\Services\CurrentClient;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
@@ -68,6 +69,7 @@ class PublicResidentAuthController extends Controller
             'status' => true,
         ]);
 
+        $user->ensureClientMembership(app(CurrentClient::class)->require());
         Auth::login($user);
         $request->session()->regenerate();
         $user->sendEmailVerificationNotification();

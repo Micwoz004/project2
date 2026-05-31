@@ -1,7 +1,7 @@
 <?php
 
-use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\LegacyImport\Models\LegacyImportBatch;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\LegacyImport\Models\LegacyImportBatch;
 use Illuminate\Support\Facades\File;
 
 it('imports normalized legacy json through artisan command', function (): void {

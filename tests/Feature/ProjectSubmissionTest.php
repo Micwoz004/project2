@@ -1,13 +1,13 @@
 <?php
 
-use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\Files\Enums\ProjectFileType;
-use App\Domain\Files\Models\ProjectFile;
-use App\Domain\Projects\Actions\SubmitProjectAction;
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Projects\Services\ProjectCostLimitService;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\Files\Enums\ProjectFileType;
+use App\Products\CivicBudget\Domain\Files\Models\ProjectFile;
+use App\Products\CivicBudget\Domain\Projects\Actions\SubmitProjectAction;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Projects\Services\ProjectCostLimitService;
 use App\Models\User;
 
 it('submits a project and records a version snapshot', function (): void {

@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Services\ProjectLifecycleService;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Services\ProjectLifecycleService;
 use App\Models\User;
 
 class ProjectPolicy

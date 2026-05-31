@@ -1,8 +1,8 @@
 <?php
 
-use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

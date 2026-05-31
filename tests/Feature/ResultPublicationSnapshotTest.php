@@ -1,17 +1,17 @@
 <?php
 
-use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Category;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Results\Actions\PublishResultSnapshotAction;
-use App\Domain\Results\Models\ResultPublication;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Domain\Voting\Enums\VoteCardStatus;
-use App\Domain\Voting\Models\VoteCard;
-use App\Domain\Voting\Models\Voter;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Category;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Results\Actions\PublishResultSnapshotAction;
+use App\Products\CivicBudget\Domain\Results\Models\ResultPublication;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Domain\Voting\Enums\VoteCardStatus;
+use App\Products\CivicBudget\Domain\Voting\Models\VoteCard;
+use App\Products\CivicBudget\Domain\Voting\Models\Voter;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 

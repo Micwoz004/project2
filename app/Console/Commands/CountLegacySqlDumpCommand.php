@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Domain\LegacyImport\Services\LegacyImportCountComparator;
-use App\Domain\LegacyImport\Services\LegacySqlDumpTableCounter;
+use App\Products\CivicBudget\Domain\LegacyImport\Services\LegacyImportCountComparator;
+use App\Products\CivicBudget\Domain\LegacyImport\Services\LegacySqlDumpTableCounter;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use JsonException;

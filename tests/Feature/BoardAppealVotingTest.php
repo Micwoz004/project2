@@ -1,25 +1,25 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemRole;
-use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
-use App\Domain\Verification\Actions\CloseBoardVotingAction;
-use App\Domain\Verification\Actions\DecideProjectAppealAction;
-use App\Domain\Verification\Actions\RecordBoardVoteRejectionAction;
-use App\Domain\Verification\Actions\RespondProjectAppealAction;
-use App\Domain\Verification\Actions\RestartBoardVotingAction;
-use App\Domain\Verification\Actions\StartBoardVotingAction;
-use App\Domain\Verification\Actions\SubmitProjectAppealAction;
-use App\Domain\Verification\Enums\AtVoteChoice;
-use App\Domain\Verification\Enums\BoardDecision;
-use App\Domain\Verification\Enums\BoardType;
-use App\Domain\Verification\Enums\OtVoteChoice;
-use App\Domain\Verification\Enums\ProjectAppealFirstDecision;
-use App\Domain\Verification\Enums\ZkVoteChoice;
-use App\Domain\Verification\Services\BoardDecisionResolver;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemRole;
+use App\Products\CivicBudget\Domain\Verification\Actions\CastProjectBoardVoteAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\CloseBoardVotingAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\DecideProjectAppealAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\RecordBoardVoteRejectionAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\RespondProjectAppealAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\RestartBoardVotingAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\StartBoardVotingAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\SubmitProjectAppealAction;
+use App\Products\CivicBudget\Domain\Verification\Enums\AtVoteChoice;
+use App\Products\CivicBudget\Domain\Verification\Enums\BoardDecision;
+use App\Products\CivicBudget\Domain\Verification\Enums\BoardType;
+use App\Products\CivicBudget\Domain\Verification\Enums\OtVoteChoice;
+use App\Products\CivicBudget\Domain\Verification\Enums\ProjectAppealFirstDecision;
+use App\Products\CivicBudget\Domain\Verification\Enums\ZkVoteChoice;
+use App\Products\CivicBudget\Domain\Verification\Services\BoardDecisionResolver;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 

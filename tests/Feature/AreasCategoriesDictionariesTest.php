@@ -1,13 +1,13 @@
 <?php
 
-use App\Domain\Dictionaries\Enums\DictionaryKind;
-use App\Domain\Dictionaries\Models\DictionaryEntry;
-use App\Domain\Projects\Models\Category;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Projects\Services\ProjectAreaCatalog;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Filament\Resources\DictionaryEntries\DictionaryEntryResource;
+use App\Products\CivicBudget\Domain\Dictionaries\Enums\DictionaryKind;
+use App\Products\CivicBudget\Domain\Dictionaries\Models\DictionaryEntry;
+use App\Products\CivicBudget\Domain\Projects\Models\Category;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Projects\Services\ProjectAreaCatalog;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Filament\Resources\DictionaryEntries\DictionaryEntryResource;
 use App\Models\User;
 
 it('returns local areas ordered like legacy list data', function (): void {

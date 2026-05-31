@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Users\Services\LegacyRbacImportService;
+use App\Platform\Users\Services\LegacyRbacImportService;
 use App\Models\User;
 
 it('imports legacy rbac items children and user assignments', function (): void {

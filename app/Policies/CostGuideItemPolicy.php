@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Domain\Settings\Models\CostGuideItem;
-use App\Domain\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Domain\Settings\Models\CostGuideItem;
+use App\Platform\Users\Enums\SystemPermission;
 use App\Models\User;
 
 class CostGuideItemPolicy

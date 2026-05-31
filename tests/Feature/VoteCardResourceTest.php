@@ -1,16 +1,16 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemRole;
-use App\Domain\Voting\Enums\CitizenConfirmation;
-use App\Domain\Voting\Enums\VoteCardStatus;
-use App\Domain\Voting\Models\VoteCard;
-use App\Domain\Voting\Models\Voter;
-use App\Filament\Resources\VoteCards\Pages\EditVoteCard;
-use App\Filament\Resources\VoteCards\VoteCardResource;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemRole;
+use App\Products\CivicBudget\Domain\Voting\Enums\CitizenConfirmation;
+use App\Products\CivicBudget\Domain\Voting\Enums\VoteCardStatus;
+use App\Products\CivicBudget\Domain\Voting\Models\VoteCard;
+use App\Products\CivicBudget\Domain\Voting\Models\Voter;
+use App\Products\CivicBudget\Filament\Resources\VoteCards\Pages\EditVoteCard;
+use App\Products\CivicBudget\Filament\Resources\VoteCards\VoteCardResource;
 use App\Models\User;
 
 it('registers vote card filament resource pages and blocks creation', function (): void {

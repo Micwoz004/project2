@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Domain\LegacyImport\Services\LegacyFixtureImportService;
+use App\Products\CivicBudget\Domain\LegacyImport\Services\LegacyFixtureImportService;
 use DomainException;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;

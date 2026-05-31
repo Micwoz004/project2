@@ -1,12 +1,12 @@
 <?php
 
-use App\Domain\Communications\Jobs\SendProjectNotificationJob;
-use App\Domain\Communications\Models\ProjectNotification;
-use App\Domain\Communications\Models\ProjectPublicComment;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemRole;
-use App\Filament\Resources\ProjectPublicComments\ProjectPublicCommentResource;
+use App\Products\CivicBudget\Domain\Communications\Jobs\SendProjectNotificationJob;
+use App\Products\CivicBudget\Domain\Communications\Models\ProjectNotification;
+use App\Products\CivicBudget\Domain\Communications\Models\ProjectPublicComment;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemRole;
+use App\Products\CivicBudget\Filament\Resources\ProjectPublicComments\ProjectPublicCommentResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Bus;
 

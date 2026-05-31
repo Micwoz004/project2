@@ -1,5 +1,5 @@
 @php
-    use App\Domain\BudgetEditions\Enums\BudgetEditionState;
+    use App\Products\CivicBudget\Domain\BudgetEditions\Enums\BudgetEditionState;
 
     $stateLabel = match ($state) {
         BudgetEditionState::Propose => 'Trwa nabór projektów',

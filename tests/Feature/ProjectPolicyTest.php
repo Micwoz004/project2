@@ -1,8 +1,8 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Permission;

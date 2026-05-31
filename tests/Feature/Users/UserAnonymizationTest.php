@@ -1,10 +1,10 @@
 <?php
 
-use App\Domain\Users\Actions\AnonymizeUserAction;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Domain\Users\Enums\SystemRole;
-use App\Domain\Users\Models\Department;
+use App\Platform\Users\Actions\AnonymizeUserAction;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Platform\Users\Enums\SystemRole;
+use App\Platform\Users\Models\Department;
 use App\Models\User;
 
 it('anonymizes user account instead of deleting it like legacy', function (): void {

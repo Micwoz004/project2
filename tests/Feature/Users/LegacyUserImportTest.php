@@ -1,7 +1,7 @@
 <?php
 
-use App\Domain\Users\Models\Department;
-use App\Domain\Users\Services\LegacyUserImportService;
+use App\Platform\Users\Models\Department;
+use App\Platform\Users\Services\LegacyUserImportService;
 use App\Models\User;
 
 it('imports legacy departments and users by legacy ids', function (): void {

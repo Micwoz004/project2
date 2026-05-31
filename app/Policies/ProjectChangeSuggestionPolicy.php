@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Domain\Projects\Models\ProjectChangeSuggestion;
-use App\Domain\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectChangeSuggestion;
+use App\Platform\Users\Enums\SystemPermission;
 use App\Models\User;
 
 class ProjectChangeSuggestionPolicy

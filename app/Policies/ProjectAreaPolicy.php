@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
 use App\Models\User;
 
 class ProjectAreaPolicy

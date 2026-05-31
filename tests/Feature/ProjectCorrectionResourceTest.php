@@ -1,18 +1,18 @@
 <?php
 
-use App\Domain\Files\Enums\ProjectFileType;
-use App\Domain\Files\Models\ProjectFile;
-use App\Domain\Projects\Enums\ProjectChangeSuggestionDecision;
-use App\Domain\Projects\Enums\ProjectCorrectionField;
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Projects\Models\ProjectChangeSuggestion;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Domain\Users\Enums\SystemRole;
-use App\Filament\Resources\ProjectChangeSuggestions\ProjectChangeSuggestionResource;
-use App\Filament\Resources\Projects\ProjectResource;
+use App\Products\CivicBudget\Domain\Files\Enums\ProjectFileType;
+use App\Products\CivicBudget\Domain\Files\Models\ProjectFile;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectChangeSuggestionDecision;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectCorrectionField;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectChangeSuggestion;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Platform\Users\Enums\SystemRole;
+use App\Products\CivicBudget\Filament\Resources\ProjectChangeSuggestions\ProjectChangeSuggestionResource;
+use App\Products\CivicBudget\Filament\Resources\Projects\ProjectResource;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 

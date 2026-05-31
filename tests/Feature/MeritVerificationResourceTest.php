@@ -1,17 +1,17 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Domain\Users\Enums\SystemRole;
-use App\Domain\Users\Models\Department;
-use App\Domain\Verification\Actions\AssignVerificationDepartmentAction;
-use App\Domain\Verification\Enums\VerificationAssignmentType;
-use App\Domain\Verification\Enums\VerificationCardStatus;
-use App\Domain\Verification\Models\VerificationVersion;
-use App\Filament\Resources\Projects\ProjectResource;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Platform\Users\Enums\SystemRole;
+use App\Platform\Users\Models\Department;
+use App\Products\CivicBudget\Domain\Verification\Actions\AssignVerificationDepartmentAction;
+use App\Products\CivicBudget\Domain\Verification\Enums\VerificationAssignmentType;
+use App\Products\CivicBudget\Domain\Verification\Enums\VerificationCardStatus;
+use App\Products\CivicBudget\Domain\Verification\Models\VerificationVersion;
+use App\Products\CivicBudget\Filament\Resources\Projects\ProjectResource;
 use App\Models\User;
 
 function meritResourceProject(ProjectStatus $status): Project

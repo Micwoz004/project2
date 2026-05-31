@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
 use App\Models\User;
 
 class BudgetEditionPolicy

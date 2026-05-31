@@ -1,17 +1,17 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemRole;
-use App\Domain\Verification\Actions\CastProjectBoardVoteAction;
-use App\Domain\Verification\Enums\BoardType;
-use App\Domain\Verification\Enums\OtVoteChoice;
-use App\Domain\Verification\Enums\ProjectAppealFirstDecision;
-use App\Domain\Verification\Models\ProjectAppeal;
-use App\Filament\Resources\ProjectAppeals\ProjectAppealResource;
-use App\Filament\Resources\Projects\ProjectResource;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemRole;
+use App\Products\CivicBudget\Domain\Verification\Actions\CastProjectBoardVoteAction;
+use App\Products\CivicBudget\Domain\Verification\Enums\BoardType;
+use App\Products\CivicBudget\Domain\Verification\Enums\OtVoteChoice;
+use App\Products\CivicBudget\Domain\Verification\Enums\ProjectAppealFirstDecision;
+use App\Products\CivicBudget\Domain\Verification\Models\ProjectAppeal;
+use App\Products\CivicBudget\Filament\Resources\ProjectAppeals\ProjectAppealResource;
+use App\Products\CivicBudget\Filament\Resources\Projects\ProjectResource;
 use App\Models\User;
 
 function boardVotingResourceProject(ProjectStatus $status): Project

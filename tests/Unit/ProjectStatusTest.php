@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
 
 it('keeps legacy project status values and labels', function (): void {
     expect(ProjectStatus::Picked->value)->toBe(5)

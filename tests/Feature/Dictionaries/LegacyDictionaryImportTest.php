@@ -1,8 +1,8 @@
 <?php
 
-use App\Domain\Dictionaries\Enums\DictionaryKind;
-use App\Domain\Dictionaries\Models\DictionaryEntry;
-use App\Domain\Dictionaries\Services\LegacyDictionaryImportService;
+use App\Products\CivicBudget\Domain\Dictionaries\Enums\DictionaryKind;
+use App\Products\CivicBudget\Domain\Dictionaries\Models\DictionaryEntry;
+use App\Products\CivicBudget\Domain\Dictionaries\Services\LegacyDictionaryImportService;
 
 it('imports legacy name dictionaries with source table scoped legacy ids', function (): void {
     $stats = app(LegacyDictionaryImportService::class)->import([

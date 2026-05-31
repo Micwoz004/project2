@@ -1,12 +1,12 @@
 <?php
 
-use App\Domain\Reports\Enums\AdminReportType;
-use App\Domain\Reports\Enums\ReportExportFormat;
-use App\Domain\Reports\Enums\ReportExportStatus;
-use App\Domain\Reports\Models\ReportExport;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Filament\Resources\ReportExports\ReportExportResource;
+use App\Products\CivicBudget\Domain\Reports\Enums\AdminReportType;
+use App\Products\CivicBudget\Domain\Reports\Enums\ReportExportFormat;
+use App\Products\CivicBudget\Domain\Reports\Enums\ReportExportStatus;
+use App\Products\CivicBudget\Domain\Reports\Models\ReportExport;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Filament\Resources\ReportExports\ReportExportResource;
 use App\Models\User;
 
 it('shows report export resource only for report exporters', function (): void {

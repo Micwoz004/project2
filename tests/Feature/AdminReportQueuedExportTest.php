@@ -1,14 +1,14 @@
 <?php
 
-use App\Domain\Reports\Actions\QueueAdminReportExportAction;
-use App\Domain\Reports\Enums\AdminReportType;
-use App\Domain\Reports\Enums\ReportExportFormat;
-use App\Domain\Reports\Enums\ReportExportStatus;
-use App\Domain\Reports\Jobs\GenerateAdminReportExportJob;
-use App\Domain\Reports\Models\ReportExport;
-use App\Domain\Reports\Services\AdminReportExportGenerator;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Domain\Reports\Actions\QueueAdminReportExportAction;
+use App\Products\CivicBudget\Domain\Reports\Enums\AdminReportType;
+use App\Products\CivicBudget\Domain\Reports\Enums\ReportExportFormat;
+use App\Products\CivicBudget\Domain\Reports\Enums\ReportExportStatus;
+use App\Products\CivicBudget\Domain\Reports\Jobs\GenerateAdminReportExportJob;
+use App\Products\CivicBudget\Domain\Reports\Models\ReportExport;
+use App\Products\CivicBudget\Domain\Reports\Services\AdminReportExportGenerator;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
 use App\Models\User;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Storage;

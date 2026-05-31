@@ -1,9 +1,9 @@
 <?php
 
-use App\Domain\Results\Models\ResultPublication;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Filament\Resources\ResultPublications\ResultPublicationResource;
+use App\Products\CivicBudget\Domain\Results\Models\ResultPublication;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Filament\Resources\ResultPublications\ResultPublicationResource;
 use App\Models\User;
 
 it('shows result publication snapshots only to result viewers', function (): void {

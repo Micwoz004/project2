@@ -128,7 +128,11 @@ function currentDraftProject() {
 }
 
 function currentPath() {
-    return window.location.pathname.replace(/\/$/, '') || '/';
+    const path = window.location.pathname.replace(/\/$/, '') || '/';
+    if (path === '/budzet') return '/';
+    if (path.startsWith('/budzet/')) return path.slice('/budzet'.length) || '/';
+
+    return path;
 }
 
 function queryValue(name) {

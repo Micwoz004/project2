@@ -1,13 +1,13 @@
 <?php
 
-use App\Domain\Projects\Models\Category;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Domain\Users\Enums\SystemRole;
-use App\Domain\Voting\Enums\VoteCardStatus;
-use App\Domain\Voting\Models\VoteCard;
-use App\Domain\Voting\Models\Voter;
+use App\Products\CivicBudget\Domain\Projects\Models\Category;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Platform\Users\Enums\SystemRole;
+use App\Products\CivicBudget\Domain\Voting\Enums\VoteCardStatus;
+use App\Products\CivicBudget\Domain\Voting\Models\VoteCard;
+use App\Products\CivicBudget\Domain\Voting\Models\Voter;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Gate;

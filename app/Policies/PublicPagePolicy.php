@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Domain\Settings\Models\PublicPage;
-use App\Domain\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Domain\Settings\Models\PublicPage;
+use App\Platform\Users\Enums\SystemPermission;
 use App\Models\User;
 
 class PublicPagePolicy

@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Domain\Users\Enums\SystemPermission;
-use App\Domain\Verification\Models\ProjectAppeal;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Domain\Verification\Models\ProjectAppeal;
 use App\Models\User;
 
 class ProjectAppealPolicy

@@ -1,10 +1,10 @@
 <?php
 
-use App\Domain\Files\Models\ProjectFile;
-use App\Domain\LegacyImport\Services\LegacyFixtureImportService;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Verification\Models\FinalMeritVerification;
-use App\Domain\Verification\Models\ProjectBoardVote;
+use App\Products\CivicBudget\Domain\Files\Models\ProjectFile;
+use App\Products\CivicBudget\Domain\LegacyImport\Services\LegacyFixtureImportService;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Verification\Models\FinalMeritVerification;
+use App\Products\CivicBudget\Domain\Verification\Models\ProjectBoardVote;
 
 it('imports legacy projects with empty category and area ids as nullable relations', function (): void {
     app(LegacyFixtureImportService::class)->import([

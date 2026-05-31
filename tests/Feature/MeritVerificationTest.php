@@ -1,17 +1,17 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Users\Models\Department;
-use App\Domain\Verification\Actions\AssignVerificationDepartmentAction;
-use App\Domain\Verification\Actions\ReturnVerificationCardAction;
-use App\Domain\Verification\Actions\SubmitConsultationVerificationAction;
-use App\Domain\Verification\Actions\SubmitFinalMeritVerificationAction;
-use App\Domain\Verification\Actions\SubmitInitialMeritVerificationAction;
-use App\Domain\Verification\Enums\VerificationAssignmentType;
-use App\Domain\Verification\Enums\VerificationCardStatus;
-use App\Domain\Verification\Models\VerificationVersion;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Platform\Users\Models\Department;
+use App\Products\CivicBudget\Domain\Verification\Actions\AssignVerificationDepartmentAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\ReturnVerificationCardAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\SubmitConsultationVerificationAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\SubmitFinalMeritVerificationAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\SubmitInitialMeritVerificationAction;
+use App\Products\CivicBudget\Domain\Verification\Enums\VerificationAssignmentType;
+use App\Products\CivicBudget\Domain\Verification\Enums\VerificationCardStatus;
+use App\Products\CivicBudget\Domain\Verification\Models\VerificationVersion;
 use App\Models\User;
 
 function meritProject(ProjectStatus $status): Project

@@ -1,12 +1,12 @@
 <?php
 
-use App\Domain\Settings\Models\ApplicationSetting;
-use App\Domain\Users\Actions\ActivateUserAccountAction;
-use App\Domain\Users\Actions\ResetUserPasswordAction;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\ActivationTokenType;
-use App\Domain\Users\Enums\SystemRole;
-use App\Domain\Users\Models\UserActivationToken;
+use App\Products\CivicBudget\Domain\Settings\Models\ApplicationSetting;
+use App\Platform\Users\Actions\ActivateUserAccountAction;
+use App\Platform\Users\Actions\ResetUserPasswordAction;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\ActivationTokenType;
+use App\Platform\Users\Enums\SystemRole;
+use App\Platform\Users\Models\UserActivationToken;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 

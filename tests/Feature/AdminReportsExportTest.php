@@ -1,7 +1,7 @@
 <?php
 
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
 use App\Models\User;
 use OpenSpout\Reader\XLSX\Reader;
 

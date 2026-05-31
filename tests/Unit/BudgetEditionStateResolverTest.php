@@ -1,8 +1,8 @@
 <?php
 
-use App\Domain\BudgetEditions\Enums\BudgetEditionState;
-use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\BudgetEditions\Services\BudgetEditionStateResolver;
+use App\Products\CivicBudget\Domain\BudgetEditions\Enums\BudgetEditionState;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\BudgetEditions\Services\BudgetEditionStateResolver;
 use Illuminate\Support\Carbon;
 
 it('resolves legacy voting window states', function (): void {

@@ -1,12 +1,12 @@
 <?php
 
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemRole;
-use App\Domain\Users\Models\Department;
-use App\Filament\Resources\Departments\DepartmentResource;
-use App\Filament\Resources\Users\Pages\CreateUser;
-use App\Filament\Resources\Users\Pages\EditUser;
-use App\Filament\Resources\Users\UserResource;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemRole;
+use App\Platform\Users\Models\Department;
+use App\Platform\Filament\Resources\Departments\DepartmentResource;
+use App\Platform\Filament\Resources\Users\Pages\CreateUser;
+use App\Platform\Filament\Resources\Users\Pages\EditUser;
+use App\Platform\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 

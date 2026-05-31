@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Domain\Voting\Services\Sms\SmsConfigurationValidator;
+use App\Products\CivicBudget\Domain\Voting\Services\Sms\SmsConfigurationValidator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use JsonException;

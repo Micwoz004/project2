@@ -32,12 +32,18 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->discoverResources(in: app_path('Platform/Filament/Resources'), for: 'App\Platform\Filament\Resources')
+            ->discoverResources(
+                in: app_path('Products/CivicBudget/Filament/Resources'),
+                for: 'App\Products\CivicBudget\Filament\Resources',
+            )
+            ->discoverPages(
+                in: app_path('Products/CivicBudget/Filament/Pages'),
+                for: 'App\Products\CivicBudget\Filament\Pages',
+            )
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,

@@ -1,15 +1,15 @@
 <?php
 
-use App\Domain\Communications\Jobs\SendProjectNotificationJob;
-use App\Domain\Communications\Models\ProjectPublicComment;
-use App\Domain\Files\Actions\MarkProjectAttachmentsAnonymizedAction;
-use App\Domain\Files\Enums\ProjectFileType;
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Category;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemRole;
+use App\Products\CivicBudget\Domain\Communications\Jobs\SendProjectNotificationJob;
+use App\Products\CivicBudget\Domain\Communications\Models\ProjectPublicComment;
+use App\Products\CivicBudget\Domain\Files\Actions\MarkProjectAttachmentsAnonymizedAction;
+use App\Products\CivicBudget\Domain\Files\Enums\ProjectFileType;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Category;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Bus;
 

@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Domain\Users\Enums\SystemPermission;
-use App\Domain\Users\Models\Department;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Platform\Users\Models\Department;
 use App\Models\User;
 
 class DepartmentPolicy

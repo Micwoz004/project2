@@ -1,12 +1,12 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Voting\Enums\CitizenConfirmation;
-use App\Domain\Voting\Enums\VoteCardStatus;
-use App\Domain\Voting\Models\VoteCard;
-use App\Domain\Voting\Models\VotingToken;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Voting\Enums\CitizenConfirmation;
+use App\Products\CivicBudget\Domain\Voting\Enums\VoteCardStatus;
+use App\Products\CivicBudget\Domain\Voting\Models\VoteCard;
+use App\Products\CivicBudget\Domain\Voting\Models\VotingToken;
 use App\Livewire\PublicVotingFlow;
 use Livewire\Livewire;
 

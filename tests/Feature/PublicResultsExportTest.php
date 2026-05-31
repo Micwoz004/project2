@@ -1,13 +1,13 @@
 <?php
 
-use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Reports\Exports\PublicResultsCsvExporter;
-use App\Domain\Voting\Enums\VoteCardStatus;
-use App\Domain\Voting\Models\VoteCard;
-use App\Domain\Voting\Models\Voter;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Reports\Exports\PublicResultsCsvExporter;
+use App\Products\CivicBudget\Domain\Voting\Enums\VoteCardStatus;
+use App\Products\CivicBudget\Domain\Voting\Models\VoteCard;
+use App\Products\CivicBudget\Domain\Voting\Models\Voter;
 use Illuminate\Support\Carbon;
 
 afterEach(function (): void {

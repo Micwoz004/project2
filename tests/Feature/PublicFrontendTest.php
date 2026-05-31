@@ -1,16 +1,16 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Projects\Models\ProjectCorrection;
-use App\Domain\Settings\Models\CostGuideItem;
-use App\Domain\Settings\Models\PublicAnnouncement;
-use App\Domain\Settings\Models\PublicPage;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Filament\Resources\CostGuideItems\CostGuideItemResource;
-use App\Filament\Resources\PublicAnnouncements\PublicAnnouncementResource;
-use App\Filament\Resources\PublicPages\PublicPageResource;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectCorrection;
+use App\Products\CivicBudget\Domain\Settings\Models\CostGuideItem;
+use App\Products\CivicBudget\Domain\Settings\Models\PublicAnnouncement;
+use App\Products\CivicBudget\Domain\Settings\Models\PublicPage;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Filament\Resources\CostGuideItems\CostGuideItemResource;
+use App\Products\CivicBudget\Filament\Resources\PublicAnnouncements\PublicAnnouncementResource;
+use App\Products\CivicBudget\Filament\Resources\PublicPages\PublicPageResource;
 use App\Models\User;
 use App\Notifications\ResidentEmailVerification;
 use App\Notifications\ResidentResetPassword;

@@ -1,15 +1,15 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Results\Actions\ResolveResultTieDecisionAction;
-use App\Domain\Results\Models\ResultTieDecision;
-use App\Domain\Results\Services\ResultTieBreakerService;
-use App\Domain\Users\Actions\SyncSystemRolesAndPermissionsAction;
-use App\Domain\Users\Enums\SystemPermission;
-use App\Domain\Voting\Enums\VoteCardStatus;
-use App\Domain\Voting\Models\VoteCard;
-use App\Domain\Voting\Models\Voter;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Results\Actions\ResolveResultTieDecisionAction;
+use App\Products\CivicBudget\Domain\Results\Models\ResultTieDecision;
+use App\Products\CivicBudget\Domain\Results\Services\ResultTieBreakerService;
+use App\Platform\Users\Actions\SyncSystemRolesAndPermissionsAction;
+use App\Platform\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Domain\Voting\Enums\VoteCardStatus;
+use App\Products\CivicBudget\Domain\Voting\Models\VoteCard;
+use App\Products\CivicBudget\Domain\Voting\Models\Voter;
 use App\Models\User;
 
 it('stores manual result tie decision for an active tied group', function (): void {

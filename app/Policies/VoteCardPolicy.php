@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Domain\Voting\Models\VoteCard;
+use App\Products\CivicBudget\Domain\Voting\Models\VoteCard;
 use App\Models\User;
 
 class VoteCardPolicy

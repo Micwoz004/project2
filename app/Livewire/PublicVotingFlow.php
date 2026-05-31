@@ -2,12 +2,12 @@
 
 namespace App\Livewire;
 
-use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Voting\Data\VoterIdentityData;
-use App\Domain\Voting\Enums\CitizenConfirmation;
-use App\Domain\Voting\Services\CastVoteService;
-use App\Domain\Voting\Services\VotingTokenService;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Voting\Data\VoterIdentityData;
+use App\Products\CivicBudget\Domain\Voting\Enums\CitizenConfirmation;
+use App\Products\CivicBudget\Domain\Voting\Services\CastVoteService;
+use App\Products\CivicBudget\Domain\Voting\Services\VotingTokenService;
 use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Log;

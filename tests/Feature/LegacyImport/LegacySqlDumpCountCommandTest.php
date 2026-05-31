@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\LegacyImport\Services\LegacySqlDumpTableCounter;
+use App\Products\CivicBudget\Domain\LegacyImport\Services\LegacySqlDumpTableCounter;
 use Illuminate\Support\Facades\File;
 
 it('counts rows from raw mysql dump without exposing row payloads', function (): void {

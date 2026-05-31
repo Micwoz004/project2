@@ -1,9 +1,9 @@
 <?php
 
-use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\LegacyImport\Models\LegacyImportBatch;
-use App\Domain\LegacyImport\Services\LegacyImportCountComparator;
-use App\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\LegacyImport\Models\LegacyImportBatch;
+use App\Products\CivicBudget\Domain\LegacyImport\Services\LegacyImportCountComparator;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
 use App\Models\User;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\DB;

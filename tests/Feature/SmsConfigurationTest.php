@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Voting\Services\Sms\SmsConfigurationValidator;
+use App\Products\CivicBudget\Domain\Voting\Services\Sms\SmsConfigurationValidator;
 
 it('accepts local null sms provider configuration', function (): void {
     config([

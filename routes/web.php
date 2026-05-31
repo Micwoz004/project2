@@ -1,16 +1,16 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminReportController;
-use App\Http\Controllers\Admin\AdminReportExportDownloadController;
-use App\Http\Controllers\Public\PublicCoauthorConfirmationController;
-use App\Http\Controllers\Public\PublicProjectCommentController;
-use App\Http\Controllers\Public\PublicProjectController;
-use App\Http\Controllers\Public\PublicProjectSubmissionCardController;
+use App\Products\CivicBudget\Http\Controllers\Admin\AdminReportController;
+use App\Products\CivicBudget\Http\Controllers\Admin\AdminReportExportDownloadController;
+use App\Products\CivicBudget\Http\Controllers\Public\PublicCoauthorConfirmationController;
+use App\Products\CivicBudget\Http\Controllers\Public\PublicProjectCommentController;
+use App\Products\CivicBudget\Http\Controllers\Public\PublicProjectController;
+use App\Products\CivicBudget\Http\Controllers\Public\PublicProjectSubmissionCardController;
 use App\Http\Controllers\Public\PublicResidentAccountController;
 use App\Http\Controllers\Public\PublicResidentAuthController;
-use App\Http\Controllers\Public\PublicResultsController;
-use App\Http\Controllers\Public\PublicSpaController;
-use App\Http\Controllers\Public\PublicVotingController;
+use App\Products\CivicBudget\Http\Controllers\Public\PublicResultsController;
+use App\Products\CivicBudget\Http\Controllers\Public\PublicSpaController;
+use App\Products\CivicBudget\Http\Controllers\Public\PublicVotingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', PublicSpaController::class)->name('public.home');
@@ -59,7 +59,7 @@ Route::get('/wyniki', PublicSpaController::class)->name('public.results.index');
 Route::get('/wyniki/export.csv', [PublicResultsController::class, 'export'])->name('public.results.export');
 Route::get('/raporty-publiczne', PublicSpaController::class)->name('public.reports.index');
 
-Route::middleware('auth')->prefix('admin/reports')->name('admin.reports.')->group(function (): void {
+Route::middleware(['auth', 'product.enabled:civic_budget'])->prefix('admin/budzet/reports')->name('admin.reports.')->group(function (): void {
     Route::get('/exports/{reportExport}/download', AdminReportExportDownloadController::class)->name('exports.download');
     Route::get('/vote-cards/{budgetEdition}.csv', [AdminReportController::class, 'voteCards'])->name('vote-cards');
     Route::get('/vote-cards/{budgetEdition}.xlsx', [AdminReportController::class, 'voteCardsXlsx'])->name('vote-cards.xlsx');

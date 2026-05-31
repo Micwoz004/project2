@@ -1,9 +1,9 @@
 <?php
 
-use App\Domain\Communications\Actions\SendLegacySmsNotificationAction;
-use App\Domain\Communications\Enums\LegacyCommunicationTrigger;
-use App\Domain\Voting\Models\SmsLog;
-use App\Domain\Voting\Services\Sms\SmsProvider;
+use App\Products\CivicBudget\Domain\Communications\Actions\SendLegacySmsNotificationAction;
+use App\Products\CivicBudget\Domain\Communications\Enums\LegacyCommunicationTrigger;
+use App\Products\CivicBudget\Domain\Voting\Models\SmsLog;
+use App\Products\CivicBudget\Domain\Voting\Services\Sms\SmsProvider;
 
 class FakeLegacySmsProvider implements SmsProvider
 {

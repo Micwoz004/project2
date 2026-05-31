@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Domain\LegacyImport\Services\LegacyImportCountComparator;
+use App\Products\CivicBudget\Domain\LegacyImport\Services\LegacyImportCountComparator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use JsonException;

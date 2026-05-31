@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Voting\Services\PeselService;
+use App\Products\CivicBudget\Domain\Voting\Services\PeselService;
 use Illuminate\Support\Carbon;
 
 it('validates pesel checksum and derives voter metadata', function (): void {

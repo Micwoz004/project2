@@ -2,26 +2,27 @@
 
 namespace App\Providers;
 
-use App\Domain\BudgetEditions\Models\BudgetEdition;
-use App\Domain\Dictionaries\Models\DictionaryEntry;
-use App\Domain\Projects\Models\Category;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Projects\Models\ProjectChangeSuggestion;
-use App\Domain\Results\Models\ResultPublication;
-use App\Domain\Settings\Models\ApplicationSetting;
-use App\Domain\Settings\Models\ContentPage;
-use App\Domain\Settings\Models\CostGuideItem;
-use App\Domain\Settings\Models\PublicAnnouncement;
-use App\Domain\Settings\Models\PublicPage;
-use App\Domain\Users\Enums\SystemRole;
-use App\Domain\Users\Models\Department;
-use App\Domain\Verification\Enums\BoardType;
-use App\Domain\Verification\Models\ProjectAppeal;
-use App\Domain\Voting\Models\VoteCard;
-use App\Domain\Voting\Services\Sms\HttpSmsProvider;
-use App\Domain\Voting\Services\Sms\NullSmsProvider;
-use App\Domain\Voting\Services\Sms\SmsProvider;
+use App\Products\CivicBudget\Domain\BudgetEditions\Models\BudgetEdition;
+use App\Products\CivicBudget\Domain\Dictionaries\Models\DictionaryEntry;
+use App\Products\CivicBudget\Domain\Projects\Models\Category;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectChangeSuggestion;
+use App\Products\CivicBudget\Domain\Results\Models\ResultPublication;
+use App\Products\CivicBudget\Domain\Settings\Models\ApplicationSetting;
+use App\Products\CivicBudget\Domain\Settings\Models\ContentPage;
+use App\Products\CivicBudget\Domain\Settings\Models\CostGuideItem;
+use App\Products\CivicBudget\Domain\Settings\Models\PublicAnnouncement;
+use App\Products\CivicBudget\Domain\Settings\Models\PublicPage;
+use App\Platform\Users\Enums\SystemRole;
+use App\Platform\Users\Models\Department;
+use App\Platform\Clients\Services\CurrentClient;
+use App\Products\CivicBudget\Domain\Verification\Enums\BoardType;
+use App\Products\CivicBudget\Domain\Verification\Models\ProjectAppeal;
+use App\Products\CivicBudget\Domain\Voting\Models\VoteCard;
+use App\Products\CivicBudget\Domain\Voting\Services\Sms\HttpSmsProvider;
+use App\Products\CivicBudget\Domain\Voting\Services\Sms\NullSmsProvider;
+use App\Products\CivicBudget\Domain\Voting\Services\Sms\SmsProvider;
 use App\Models\User;
 use App\Policies\ApplicationSettingPolicy;
 use App\Policies\BudgetEditionPolicy;
@@ -50,6 +51,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(CurrentClient::class);
+
         $this->app->bind(SmsProvider::class, function (): SmsProvider {
             return config('services.sms.driver') === 'http'
                 ? new HttpSmsProvider
@@ -85,10 +88,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ResultPublication::class, ResultPublicationPolicy::class);
         Gate::policy(VoteCard::class, VoteCardPolicy::class);
 
-        Gate::define('view-results', fn (User $user) => $user->can('results.view') || $user->hasAnyRole(['admin', 'bdo']));
-        Gate::define('export-reports', fn (User $user) => $user->can('reports.export') || $user->hasAnyRole(['admin', 'bdo']));
+        Gate::define('view-results', fn (User $user) => $user->can('civic_budget.results.view') || $user->can('results.view') || $user->hasAnyRole(['admin', 'bdo']));
+        Gate::define('export-reports', fn (User $user) => $user->can('civic_budget.reports.export') || $user->can('reports.export') || $user->hasAnyRole(['admin', 'bdo']));
         Gate::define('cast-board-vote', fn (User $user, BoardType $boardType) => $this->canCastBoardVote($user, $boardType));
-        Gate::define('manage-board-voting', fn (User $user) => $user->can('projects.manage') || $user->hasAnyRole(['admin', 'bdo']));
+        Gate::define('manage-board-voting', fn (User $user) => $user->can('civic_budget.projects.manage') || $user->can('projects.manage') || $user->hasAnyRole(['admin', 'bdo']));
     }
 
     private function canCastBoardVote(User $user, BoardType $boardType): bool

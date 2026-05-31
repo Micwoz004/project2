@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Domain\Results\Models\ResultPublication;
-use App\Domain\Users\Enums\SystemPermission;
+use App\Products\CivicBudget\Domain\Results\Models\ResultPublication;
+use App\Platform\Users\Enums\SystemPermission;
 use App\Models\User;
 
 class ResultPublicationPolicy

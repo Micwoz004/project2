@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Domain\Projects\Models\Category;
+use App\Products\CivicBudget\Domain\Projects\Models\Category;
 use App\Models\User;
 
 class CategoryPolicy

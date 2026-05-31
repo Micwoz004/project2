@@ -1,16 +1,16 @@
 <?php
 
-use App\Domain\Projects\Enums\ProjectCorrectionField;
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Users\Models\Department;
-use App\Domain\Verification\Actions\BeginFormalVerificationAction;
-use App\Domain\Verification\Actions\CompleteFormalVerificationAction;
-use App\Domain\Verification\Actions\ForwardFormalVerificationToInitialVerificationAction;
-use App\Domain\Verification\Actions\RequestFormalCorrectionAction;
-use App\Domain\Verification\Enums\VerificationAssignmentType;
-use App\Domain\Verification\Models\VerificationVersion;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectCorrectionField;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Platform\Users\Models\Department;
+use App\Products\CivicBudget\Domain\Verification\Actions\BeginFormalVerificationAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\CompleteFormalVerificationAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\ForwardFormalVerificationToInitialVerificationAction;
+use App\Products\CivicBudget\Domain\Verification\Actions\RequestFormalCorrectionAction;
+use App\Products\CivicBudget\Domain\Verification\Enums\VerificationAssignmentType;
+use App\Products\CivicBudget\Domain\Verification\Models\VerificationVersion;
 use App\Models\User;
 
 function submittedProjectForFormalVerification(array $overrides = []): Project

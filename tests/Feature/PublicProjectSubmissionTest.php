@@ -1,14 +1,14 @@
 <?php
 
-use App\Domain\Files\Enums\ProjectFileType;
-use App\Domain\Files\Models\ProjectFile;
-use App\Domain\Projects\Actions\StartCorrectionAction;
-use App\Domain\Projects\Enums\ProjectCorrectionField;
-use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Category;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
-use App\Domain\Projects\Support\LegacyProjectFormText;
+use App\Products\CivicBudget\Domain\Files\Enums\ProjectFileType;
+use App\Products\CivicBudget\Domain\Files\Models\ProjectFile;
+use App\Products\CivicBudget\Domain\Projects\Actions\StartCorrectionAction;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectCorrectionField;
+use App\Products\CivicBudget\Domain\Projects\Enums\ProjectStatus;
+use App\Products\CivicBudget\Domain\Projects\Models\Category;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Projects\Support\LegacyProjectFormText;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

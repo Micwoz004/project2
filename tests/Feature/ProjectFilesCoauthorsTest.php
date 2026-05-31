@@ -1,11 +1,11 @@
 <?php
 
-use App\Domain\Files\Actions\RegisterProjectFileAction;
-use App\Domain\Files\Actions\StoreProjectFileAction;
-use App\Domain\Files\Enums\ProjectFileType;
-use App\Domain\Projects\Actions\SyncProjectCoauthorsAction;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectArea;
+use App\Products\CivicBudget\Domain\Files\Actions\RegisterProjectFileAction;
+use App\Products\CivicBudget\Domain\Files\Actions\StoreProjectFileAction;
+use App\Products\CivicBudget\Domain\Files\Enums\ProjectFileType;
+use App\Products\CivicBudget\Domain\Projects\Actions\SyncProjectCoauthorsAction;
+use App\Products\CivicBudget\Domain\Projects\Models\Project;
+use App\Products\CivicBudget\Domain\Projects\Models\ProjectArea;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
